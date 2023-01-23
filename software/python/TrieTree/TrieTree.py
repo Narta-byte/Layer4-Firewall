@@ -6,9 +6,6 @@ class TrieNode:
         self.value = ch
         self.children = {}
         self.bIsEnd = False
-        
-    def getChildren(self):
-        return self.children
     
     def getValue(self):
         return self.value
@@ -22,15 +19,16 @@ class TrieNode:
 class Trie:
     def __init__(self):
         self.root = TrieNode('')
-        self.n = Network("500px","500px")
-        self.n.add_node(0,label = "root")
+        self.n = Network("1000px","1000px")
     
     def insert(self, word):
         length = len(word)
         crawl = self.root
         for level in range(length):
-            child = crawl.getChildren()
+            child = crawl.children
             ch = word[level]
+            if ch == ".":
+                continue
             if ch in child:
                 crawl = child[ch]
             else:
@@ -46,7 +44,7 @@ class Trie:
         level, prevMatch = 0, 0
         for level in range(length):
             ch = input[level]
-            child = crawl.getChildren()
+            child = crawl.children()
             if ch in child:
                 result += ch
                 crawl = child[ch]
@@ -64,7 +62,7 @@ class Trie:
             return
         print(node.getValue())
         self.n.add_node(level,label=node.getValue())
-        children = node.getChildren()
+        children = node.children
         myLevel = level
         for child in children:
             level+=1
@@ -72,29 +70,35 @@ class Trie:
             self.n.add_edge(myLevel,level)
         
     def drawGraph(self):
-        self.inOrder(self.root,1)
-        children = self.root.getChildren()
-        for child in children:
-            self.n.add_edge(0,child)
+        self.bfs()
         self.n.show("trie_tree.html")
-                
+    def bfs(self):
+        visited = []
+        queue = [self.root]
+        parrentQueue = [1]
+        idx = 1
+        while queue:
+            node = queue.pop(0)
+            parrent = parrentQueue.pop(0)
+            visited.append(node)
+            print(node.value)
+            self.n.add_node(idx, label=node.value,color="#FF0000")
+            for child in node.children.values():
+                if child not in visited:
+                    queue.append(child)
+                    idx +=1
+                    parrentQueue.append(idx)
+                    self.n.add_node(idx, label=child.value)
+                    self.n.add_edge(parrent, idx)
+            
             
 
 dict = Trie()
-dict.insert("hat")
-dict.insert("cat")
-
-# input = "192.168.1.1"
-# print(input + ":   ", end="")
-# print(dict.getMatchingPrefix(input))
-
-# input = "192.168.1.2"
-# print(input + ":   ", end="")
-# print(dict.getMatchingPrefix(input))
-
-# input = "192.168.2.2"
-# print(input + ":   ", end="")
-# print(dict.getMatchingPrefix(input))
-
-
+#dict.insert("hat")
+#dict.insert("cat")
+#dict.insert("car")
+#dict.insert("cathat")
+#dict.insert("catmat")
+dict.insert("192.168.1.1")
+dict.insert("192.168.2.1")
 dict.drawGraph()

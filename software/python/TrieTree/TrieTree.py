@@ -33,15 +33,19 @@ class Trie:
         crawl.rule = rule
         
     def match(self, ipv4, binaryInput = False):
+        ipv4, junk = self.extractCIDR(ipv4)
         if not binaryInput:
             ipv4 = self.ipv4Tobinary(ipv4)
         result = ""
         length = len(ipv4)
         crawl = self.root
         level, prevMatch = 0, 0
+        latestRule = "NO_RULES"
         for level in range(length):
             ch = ipv4[level]
             child = crawl.children
+            if crawl.rule != "NO_RULE":
+                latestRule = crawl.rule
             if ch in child:
                 result += ch
                 crawl = child[ch]
@@ -49,18 +53,21 @@ class Trie:
                     prevMatch = level + 1
             else:
                 break
+        if crawl.rule != "NO_RULE":
+                latestRule = crawl.rule
         if not crawl.isEnd:
-            return crawl.rule + " : " + result[:prevMatch]
+            return latestRule + " : " + result[:prevMatch]
         else:
-            return crawl.rule + " : " + result    
+            return latestRule + " : " + result    
         
-    def ipv4Tobinary(self,ipv4Addr):
-        ipv4Addr_seg = ipv4Addr.split(".")
-        binaryIpv4Addr = ""
-        for octet in ipv4Addr_seg:
+    def ipv4Tobinary(self,ipv4):
+        ipv4, junk = self.extractCIDR(ipv4)
+        ipv4Seg = ipv4.split(".")
+        binaryIpv4 = ""
+        for octet in ipv4Seg:
             tmp = bin(int(octet))[2:].zfill(8)
-            binaryIpv4Addr += tmp
-        return str(binaryIpv4Addr)
+            binaryIpv4 += tmp
+        return str(binaryIpv4)
 
     def extractCIDR(self,ipv4):
         if "/" not in ipv4:
@@ -72,7 +79,7 @@ class Trie:
     def drawGraph(self,html):
         
         if html == True:
-            self.n = Network("1000px","1000px")
+            self.n = Network("1000px","1000px", directed=True)
             self.bfs()
             self.n.show("trie_tree.html",False)
         else: 

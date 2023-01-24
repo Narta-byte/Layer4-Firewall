@@ -2,3 +2,7 @@ TODO
 
 #TrieTree.py
   --make it use networkx since it should not pop up ms edge
+  --add enums for rules
+  --add depth of search in cidr notation
+#Questions for Micheal
+  --What do you do in a chain

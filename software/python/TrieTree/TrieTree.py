@@ -2,20 +2,21 @@
 from pyvis.network import Network
 import networkx as nx
 import matplotlib.pyplot as plt
-
 class TrieNode:
     def __init__(self, ch):
         self.value = ch
         self.children = {}
         self.isEnd = False
+        self.rule = "NO_RULE"
 class Trie:
     def __init__(self):
         self.root = TrieNode('')
-        # self.n = Network("1000px","1000px")
-        #self.n = nx.Graph()
-    def insert(self, ipv4):
-        ipv4 = self.ipv4Tobinary(ipv4)
-        length = len(ipv4)
+
+    def insert(self, ipv4, rule, binaryInput = False):
+        ipv4, length = self.extractCIDR(ipv4)
+        if not binaryInput:
+            ipv4 = self.ipv4Tobinary(ipv4)
+        
         crawl = self.root
         for level in range(length):
             child = crawl.children
@@ -29,15 +30,17 @@ class Trie:
                 child[ch] = temp
                 crawl = temp
         crawl.isEnd = True
+        crawl.rule = rule
         
-    def getMatchingPrefix(self, input):
+    def match(self, ipv4, binaryInput = False):
+        if not binaryInput:
+            ipv4 = self.ipv4Tobinary(ipv4)
         result = ""
-        input = self.ipv4Tobinary(input)
-        length = len(input)
+        length = len(ipv4)
         crawl = self.root
         level, prevMatch = 0, 0
         for level in range(length):
-            ch = input[level]
+            ch = ipv4[level]
             child = crawl.children
             if ch in child:
                 result += ch
@@ -47,10 +50,10 @@ class Trie:
             else:
                 break
         if not crawl.isEnd:
-            return result[:prevMatch]
+            return crawl.rule + " : " + result[:prevMatch]
         else:
-            return result
-
+            return crawl.rule + " : " + result    
+        
     def ipv4Tobinary(self,ipv4Addr):
         ipv4Addr_seg = ipv4Addr.split(".")
         binaryIpv4Addr = ""
@@ -58,6 +61,13 @@ class Trie:
             tmp = bin(int(octet))[2:].zfill(8)
             binaryIpv4Addr += tmp
         return str(binaryIpv4Addr)
+
+    def extractCIDR(self,ipv4):
+        if "/" not in ipv4:
+            return ipv4, 32
+        else:
+            ipv4, cidr = ipv4.split("/")
+            return ipv4, int(cidr)
 
     def drawGraph(self,html):
         
@@ -80,15 +90,24 @@ class Trie:
             node = queue.pop(0)
             parrent = parrentQueue.pop(0)
             visited.append(node)
-            self.n.add_node(idx, label=node.value,color="#FF0000")
+            self.n.add_node(idx, label = node.value, color = "#FF00FF")
             for child in node.children.values():
                 if child not in visited:
                     queue.append(child)
                     idx +=1
                     parrentQueue.append(idx)
-                    self.n.add_node(idx, label = child.value)
+                    self.n.add_node(idx, label = child.value, color = self.getColor(child)) 
                     self.n.add_edge(parrent, idx)
-            
+    def getColor(self, node):
+        match node.rule:
+            case "NO_RULE":
+                return "#AAAAFF"
+            case "PERMIT":
+                return "#00FF00"
+            case "DENY":
+                return "#FF0000"
+            case _:
+                raise Exception("Error rule "+ node.rule +" not supported")
             
 
 # %%

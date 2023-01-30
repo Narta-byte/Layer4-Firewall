@@ -1,4 +1,7 @@
 #%%
+import sys
+sys.path.append('')
+
 from TrieTree import Trie
 dict = Trie()
 dict.insert("192.168.1.1","PERMIT")

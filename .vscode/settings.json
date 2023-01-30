@@ -2,7 +2,7 @@
     "python.testing.unittestArgs": [
         "-v",
         "-s",
-        "./software/python/tests",
+        "./trie_tree_parser/python/tests",
         "-p",
         "test_*.py"
     ],

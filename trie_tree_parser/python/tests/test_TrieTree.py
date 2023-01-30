@@ -1,6 +1,6 @@
 import unittest
 
-from software.python.TrieTree.TrieTree import Trie
+from trie_tree_parser.python.TrieTree.TrieTree import Trie
 class TestTrie(unittest.TestCase):
     def setUp(self):
         self.dict = Trie()

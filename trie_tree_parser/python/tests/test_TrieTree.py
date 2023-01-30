@@ -26,7 +26,6 @@ class TestTrie(unittest.TestCase):
         self.assertEqual("PERMIT : " + self.dict.ipv4Tobinary(arg), self.dict.match("192.168.3.1"))
         self.assertEqual("DENY : " + self.dict.ipv4Tobinary("192.168.3"), self.dict.match("192.168.3.2"))
         
-    
     def test_extractCIDR(self):
         self.assertEqual(('192.168.1.1', 24),self.dict.extractCIDR("192.168.1.1/24"))
         self.assertEqual(('192.168.1.1',32),self.dict.extractCIDR("192.168.1.1"))

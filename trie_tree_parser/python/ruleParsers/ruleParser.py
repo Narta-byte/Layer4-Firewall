@@ -1,4 +1,6 @@
 # %%
+
+# from trie_tree_parser.python.parsers.rule import Rule
 class Rule:
     def __init__(self,protocol, srcIp, srcPort, dstIp, dstPort, rule):
         self.protocol = protocol
@@ -7,11 +9,13 @@ class Rule:
         self.dstIp = dstIp
         self.dstPort = dstPort
         self.rule = rule
-class Parser:
-    def __init__(self, path):
-        self.fileHandler = open(path)
+
+
+class RuleParser:
+    def __init__(self):
         self.ruleList = []
-    def parse(self):
+    def parse(self,path):
+        self.fileHandler = open(path)
         lines = self.fileHandler.readlines()
         for line in lines:
             if line[0] == "#": 
@@ -36,8 +40,8 @@ class Parser:
             
 folderPath = "..\\..\\rules"
 file = "\\singleRule.rule"
-parser = Parser(folderPath+file)
-parser.parse()
+parser = RuleParser()
+parser.parse(folderPath+file)
 print(parser.toString())
         
 

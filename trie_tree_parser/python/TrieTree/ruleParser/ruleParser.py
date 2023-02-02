@@ -1,15 +1,6 @@
 # %%
-
-# from trie_tree_parser.python.parsers.rule import Rule
-class Rule:
-    def __init__(self,protocol, srcIp, srcPort, dstIp, dstPort, rule):
-        self.protocol = protocol
-        self.srcIp = srcIp
-        self.srcPort = srcPort
-        self.dstIp = dstIp
-        self.dstPort = dstPort
-        self.rule = rule
-
+if __name__ != '__main__':
+    import trie_tree_parser.python.TrieTree.ruleParser.rule as rule
 
 class RuleParser:
     def __init__(self):
@@ -21,8 +12,8 @@ class RuleParser:
             if line[0] == "#": 
                 continue
             fields = line.split()
-            rule = Rule(fields[0],fields[1],fields[2],fields[3],fields[4],fields[5])
-            self.ruleList.append(rule)
+            newRule = rule.Rule(fields[0],fields[1],fields[2],fields[3],fields[4],fields[5])
+            self.ruleList.append(newRule)
     def toString(self):
         output="------------------------\n"
         i = 0
@@ -37,12 +28,17 @@ class RuleParser:
             i+=1
         return output
     
-            
-folderPath = "..\\..\\rules"
-file = "\\singleRule.rule"
-parser = RuleParser()
-parser.parse(folderPath+file)
-print(parser.toString())
+    
+if __name__ == '__main__':
+    import rule
+    folderPath = "..\\..\\..\\rules"
+    # folderPath = "trie_tree_parser\\rules"
+    file = "\\singleRule.rule"
+    import os
+    print(os.getcwd())
+    parser = RuleParser()
+    parser.parse(folderPath+file)
+    print(parser.toString())
         
 
 # %%

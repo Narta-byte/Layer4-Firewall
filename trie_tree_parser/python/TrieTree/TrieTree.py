@@ -2,27 +2,23 @@
 from pyvis.network import Network
 import networkx as nx
 import matplotlib.pyplot as plt
+
 class TrieNode:
     def __init__(self, ch):
         self.value = ch
         self.children = {}
         self.isEnd = False
         self.rule = "NO_RULE"
-class Trie:
+class TrieTree:
     def __init__(self):
         self.root = TrieNode('')
 
-    def insert(self, ipv4, rule, binaryInput = False):
-        ipv4, length = self.extractCIDR(ipv4)
-        if not binaryInput:
-            ipv4 = self.ipv4Tobinary(ipv4)
-        
+    def insert(self, key):
+        length = len(key)
         crawl = self.root
         for level in range(length):
             child = crawl.children
-            ch = ipv4[level]
-            if ch == ".":
-                continue
+            ch = key[level]
             if ch in child:
                 crawl = child[ch]
             else:
@@ -30,22 +26,15 @@ class Trie:
                 child[ch] = temp
                 crawl = temp
         crawl.isEnd = True
-        crawl.rule = rule
         
-    def match(self, ipv4, binaryInput = False):
-        ipv4, junk = self.extractCIDR(ipv4)
-        if not binaryInput:
-            ipv4 = self.ipv4Tobinary(ipv4)
+    def match(self, key):
         result = ""
-        length = len(ipv4)
+        length = len(key)
         crawl = self.root
         level, prevMatch = 0, 0
-        latestRule = "NO_RULES"
         for level in range(length):
-            ch = ipv4[level]
+            ch = key[level]
             child = crawl.children
-            if crawl.rule != "NO_RULE":
-                latestRule = crawl.rule
             if ch in child:
                 result += ch
                 crawl = child[ch]
@@ -53,28 +42,10 @@ class Trie:
                     prevMatch = level + 1
             else:
                 break
-        if crawl.rule != "NO_RULE":
-                latestRule = crawl.rule
         if not crawl.isEnd:
-            return latestRule + " : " + result[:prevMatch]
+            return result[:prevMatch]
         else:
-            return latestRule + " : " + result    
-        
-    def ipv4Tobinary(self,ipv4):
-        ipv4, junk = self.extractCIDR(ipv4)
-        ipv4Seg = ipv4.split(".")
-        binaryIpv4 = ""
-        for octet in ipv4Seg:
-            tmp = bin(int(octet))[2:].zfill(8)
-            binaryIpv4 += tmp
-        return str(binaryIpv4)
-
-    def extractCIDR(self,ipv4):
-        if "/" not in ipv4:
-            return ipv4, 32
-        else:
-            ipv4, cidr = ipv4.split("/")
-            return ipv4, int(cidr)
+            return result    
 
     def drawGraph(self,html):
         
@@ -105,6 +76,7 @@ class Trie:
                     parrentQueue.append(idx)
                     self.n.add_node(idx, label = child.value, color = self.getColor(child)) 
                     self.n.add_edge(parrent, idx)
+                    
     def getColor(self, node):
         match node.rule:
             case "NO_RULE":
@@ -115,6 +87,11 @@ class Trie:
                 return "#FF0000"
             case _:
                 raise Exception("Error rule "+ node.rule +" not supported")
+    
             
-
+if __name__ == '__main__':
+    dict = TrieTree()
+    dict.insert("TCP")
+    dict.insert("TTP")
+    dict.drawGraph(html = True)
 # %%

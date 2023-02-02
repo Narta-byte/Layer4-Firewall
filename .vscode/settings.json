@@ -2,11 +2,14 @@
     "python.testing.unittestArgs": [
         "-v",
         "-s",
-        "./trie_tree_parser/python/tests",
+        "./tests",
         "-p",
         "test_*.py"
     ],
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true,
-    "python.analysis.typeCheckingMode": "basic"
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.extraPaths": [
+        "./trie_tree_parser/python/ruleParsers"
+    ]
 }

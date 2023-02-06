@@ -3,7 +3,7 @@ from pyvis.network import Network
 import networkx as nx
 import matplotlib.pyplot as plt
 # import trieTree
-import trie_tree_parser.python.TrieTree.trieTree as trieTree
+import trie_tree_parser.python.TrieTree.TrieTree as trieTree
 
 class Ipv4TrieTree(trieTree.TrieTree):
     def insert(self, ipv4, rule, binaryInput = False):

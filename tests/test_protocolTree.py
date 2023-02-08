@@ -12,9 +12,9 @@ class testProtocolTree(unittest.TestCase):
     def test_insert(self):
         self.ruleObject = ruleObject.Rule("UDP","1.1.1.1/8","80","2.2.2.2/8","90","DENY")
         self.tree.insert(self.ruleObject)
-        self.ruleObject = ruleObject.Rule("TCP","1*","80","2*","90","DENY")
-        # self.tree.insert(self.ruleObject)
-        self.ruleObject = ruleObject.Rule("TCP","1*","80","2*","90","DENY")
+        self.ruleObject = ruleObject.Rule("UDP","1.1.1.1/8","90","1.2.2.2/8","80","PERMIT")
+        self.tree.insert(self.ruleObject)
+        # self.ruleObject = ruleObject.Rule("TCP","1*","80","2*","90","DENY")
         # self.tree.insert(self.ruleObject)
         # self.assertEqual(2, len(self.tree.root.children))
         self.tree.drawGraph(html=True)

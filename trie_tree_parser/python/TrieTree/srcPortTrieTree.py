@@ -31,7 +31,7 @@ class SrcPortTrieTree(trieTree.TrieTree):
                     crawl = temp
                     
                 else:
-                    temp =srcIpv4TrieTree.DstIpv4TrieNode(ch)
+                    temp =SrcPortTrieNode(ch)
                     child[ch] = temp
                     dstIpv4Tree =  srcIpv4TrieTree.DstIpv4TrieTree()
                     dstIpv4Tree.insert(rule.dstIp,"PERMIT",rule)
@@ -73,7 +73,7 @@ class dstPortTrieTree(SrcPortTrieTree):
                     crawl = temp
                     
                 else:
-                    temp = ruleNode.RuleNode(ch)
+                    temp = ruleNode.RuleNode(rule.rule)
                     child[ch] = temp
                     # # dstIpv4Tree =  srcIpv4TrieTree.DstIpv4TrieTree()
                     # # dstIpv4Tree.insert(rule.dstIp,"PERMIT",rule)

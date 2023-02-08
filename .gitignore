@@ -76,4 +76,4 @@ db/
 _output_files/
 PLLJ_PLLSPE_INFO.txt
 *.html
-tests/__pycache__/test_ipv4TrieTree.cpython-311.pyc
+*.pyc

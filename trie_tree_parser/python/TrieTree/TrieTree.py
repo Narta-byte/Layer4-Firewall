@@ -9,9 +9,10 @@ class TrieNode:
         self.children = {}
         self.isEnd = False
         self.rule = "NO_RULE"
+        self.color = "#AAAAAA"
 class TrieTree:
-    def __init__(self):
-        self.root = TrieNode('')
+    def __init__(self,ch = ''):
+        self.root = TrieNode(ch)
 
     def insert(self, key):
         length = len(key)
@@ -74,7 +75,8 @@ class TrieTree:
                     queue.append(child)
                     idx +=1
                     parrentQueue.append(idx)
-                    self.n.add_node(idx, label = child.value, color = self.getColor(child)) 
+                    self.n.add_node(idx, label = child.value, color = child.color) 
+                        
                     self.n.add_edge(parrent, idx)
                     
     def getColor(self, node):
@@ -86,7 +88,9 @@ class TrieTree:
             case "DENY":
                 return "#FF0000"
             case _:
-                raise Exception("Error rule "+ node.rule +" not supported")
+                # return "#123456"
+                return "#123456"
+                # raise Exception("Error rule "+ node.rule +" not supported")
     
             
 if __name__ == '__main__':

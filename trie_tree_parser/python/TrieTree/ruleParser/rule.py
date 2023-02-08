@@ -1,5 +1,5 @@
 class Rule:
-    def __init__(self,protocol, srcIp, srcPort, dstIp, dstPort, rule):
+    def __init__(self, protocol, srcIp, srcPort, dstIp, dstPort, rule):
         self.protocol = protocol
         self.srcIp = srcIp
         self.srcPort = srcPort

@@ -1,17 +1,14 @@
 # %%
 import unittest
 
-# from trie_tree_parser.python.TrieTree.ipv4TrieTree import Ipv4TrieTree
-import trie_tree_parser.python.TrieTree.ipv4TrieTree as ipv4TrieTree
-# import trie_tree_parser.python.TrieTree.trieTree as ipv4TrieTree
-
-# from trie_tree_parser.python.TrieTree.IpTree import IpTree
-
+import trie_tree_parser.python.TrieTree.srcIpv4TrieTree as srcIpv4TrieTree
+import trie_tree_parser.python.TrieTree.ruleParser.rule as ruleObject
 
 class TestTrie(unittest.TestCase):
     def setUp(self):
-        self.tree = ipv4TrieTree.Ipv4TrieTree()
-        self.tree.insert("192.168.1.1", "PERMIT")
+        self.tree = srcIpv4TrieTree.SrcIpv4TrieTree()
+        self.ruleObject = ruleObject.Rule("UDP","1.1.1.1/8","80","2.2.2.2","90","DENY")
+        self.tree.insert("192.168.1.1", "PERMIT",self.ruleObject)
 
     def test_match(self):
         arg = "192.168.1.1"
@@ -21,15 +18,15 @@ class TestTrie(unittest.TestCase):
 
     def test_matchRule(self):
         arg = "192.168.2.1"
-        self.tree.insert(arg, "DENY")
+        self.tree.insert(arg, "DENY", self.ruleObject)
         self.assertEqual("DENY : " + self.tree.ipv4Tobinary(arg), self.tree.match(arg))
         self.assertNotEqual("PERMIT : " + self.tree.ipv4Tobinary(arg), self.tree.match(arg))
 
     def test_matchDepth(self):
         arg = "192.168.3.1/24"
-        self.tree.insert(arg, "DENY")
+        self.tree.insert(arg, "DENY", self.ruleObject)
         arg = "192.168.3.1"
-        self.tree.insert(arg, "PERMIT")
+        self.tree.insert(arg, "PERMIT", self.ruleObject)
         self.assertEqual("PERMIT : " + self.tree.ipv4Tobinary(arg), self.tree.match("192.168.3.1"))
         self.assertEqual("DENY : " + self.tree.ipv4Tobinary("192.168.3"), self.tree.match("192.168.3.2"))
 

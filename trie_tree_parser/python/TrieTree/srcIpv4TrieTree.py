@@ -5,13 +5,15 @@ import trie_tree_parser.python.TrieTree.TrieTree as trieTree
 import trie_tree_parser.python.TrieTree.srcPortTrieTree as srcPortTrieTree
 
 class SrcIpv4TrieNode(trieTree.TrieNode):
-    def __init__(self, ch):
+    def __init__(self, ch,origin):
         super().__init__(ch)
         self.color = "#FFA500"
+        self.origin = origin
 class SrcIpv4TrieTree(trieTree.TrieTree):
     def __init__(self,ch = ''):
-        self.root = SrcIpv4TrieNode(ch)
+        self.root = SrcIpv4TrieNode(ch,self)
         self.root.color = "#AAA500"
+        # self.root.origin = self # <-- Start here
     def insert(self, ipv4, rule, ruleObject, binaryInput = False):
         ipv4, length = self.extractCIDR(ipv4)
         if not binaryInput:
@@ -24,16 +26,23 @@ class SrcIpv4TrieTree(trieTree.TrieTree):
             if ch == ".":
                 continue
             if ch in child:
+                # srcPortTree = srcPortTrieTree.SrcPortTrieTree()
+                # srcPortTree = child[ch].children[rule.srcIp]
+                # srcPortTree.insert(ruleObject)
+                # child[ch].children[rule.srcIp] = srcPortTree.root
                 crawl = child[ch]
+                # dst ip address to have propper branching
+                
+                
             else:
                 if level != length-1:
-                    temp =SrcIpv4TrieNode(ch)
+                    temp =SrcIpv4TrieNode(ch, self)
                     child[ch] = temp
                     crawl = temp
                     
                 else:
                     # temp =srcPortTrieTree.SrcPortTrieNode(ch)
-                    temp =SrcIpv4TrieNode(ch)
+                    temp =SrcIpv4TrieNode(ch, self)
                     child[ch] = temp
                     srcPortTree =  srcPortTrieTree.SrcPortTrieTree()
                     srcPortTree.insert(ruleObject)
@@ -91,25 +100,25 @@ class SrcIpv4TrieTree(trieTree.TrieTree):
         
         if html == True:
             self.n = Network("1000px","1000px", directed=True)
-            self.bfs()
+            self.aggregrateBfs()
             self.n.show("trie_tree.html",False)
         else: 
             self.n = nx.DiGraph()
             nx.draw(self.n, with_labels=True, font_weight='bold')
-            self.bfs()
+            self.aggregrateBfs()
             plt.show()
 
 
 
 class DstIpv4TrieNode(SrcIpv4TrieNode):
-    def __init__(self, ch):
-        super().__init__(ch)
+    def __init__(self, ch, origin):
+        super().__init__(ch, origin) # TODO REMOVE NONE
         self.color = "#00FFFF"
 
 
 class DstIpv4TrieTree(SrcIpv4TrieTree):
     def __init__(self,ch = ''):
-        self.root = DstIpv4TrieNode(ch)
+        self.root = DstIpv4TrieNode(ch, self)
         self.root.color = "#00AAAA"
     def insert(self, ipv4, rule, ruleObject, binaryInput = False):
         ipv4, length = self.extractCIDR(ipv4)
@@ -126,13 +135,13 @@ class DstIpv4TrieTree(SrcIpv4TrieTree):
                 crawl = child[ch]
             else:
                 if level != length-1:
-                    temp =DstIpv4TrieNode(ch)
+                    temp =DstIpv4TrieNode(ch, self)
                     child[ch] = temp
                     crawl = temp
                     pass
                     
                 else:
-                    temp =DstIpv4TrieNode(ch)
+                    temp =DstIpv4TrieNode(ch, self)
                     child[ch] = temp
                     dstPortTree =  srcPortTrieTree.dstPortTrieTree()
                     dstPortTree.insert(ruleObject)

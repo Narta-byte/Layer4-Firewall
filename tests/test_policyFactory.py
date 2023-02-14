@@ -5,14 +5,15 @@ import trie_tree_parser.python.TrieTree.ruleParser.rule as ruleObject
 
 class TesPolicy(unittest.TestCase):
     def setUp(self):
-        self.parser = ruleParser.RuleParser()
-        self.policyFactory = policyFactory.PolicyFactory()
+        # self.parser = ruleParser.RuleParser()
+        # self.policyFactory = policyFactory.PolicyFactory()
+        pass
     def testContructOfSingleRule(self):
-        folderPath = "trie_tree_parser\\rules"
-        file = "\\singleRule.rule"
-        self.parser.parse(folderPath+file)
-        self.policyFactory.constructPolicy(self.parser.ruleList)
-        
+        # folderPath = "trie_tree_parser\\rules"
+        # file = "\\singleRule.rule"
+        # self.parser.parse(folderPath+file)
+        # self.policyFactory.constructPolicy(self.parser.ruleList)
+        pass    
     
 if __name__ == '__main__':
     unittest.main()

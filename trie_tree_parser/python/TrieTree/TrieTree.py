@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 class TrieNode:
     def __init__(self, ch):
+        # self.Noderoot = None
         self.value = ch
         self.children = {}
         self.isEnd = False
@@ -13,7 +14,7 @@ class TrieNode:
 class TrieTree:
     def __init__(self,ch = ''):
         self.root = TrieNode(ch)
-
+        # self.root.Noderoot = self.root
     def insert(self, key):
         length = len(key)
         crawl = self.root
@@ -52,15 +53,15 @@ class TrieTree:
         
         if html == True:
             self.n = Network("1000px","1000px", directed=True)
-            self.bfs()
+            self.aggregrateBfs()
             self.n.show("trie_tree.html",False)
         else: 
             self.n = nx.DiGraph()
             nx.draw(self.n, with_labels=True, font_weight='bold')
-            self.bfs()
+            self.aggregrateBfs()
             plt.show()
             
-    def bfs(self):
+    def aggregrateBfs(self):
         visited = []
         queue = [self.root]
         parrentQueue = [1]

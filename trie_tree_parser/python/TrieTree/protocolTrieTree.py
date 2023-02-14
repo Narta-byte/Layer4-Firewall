@@ -14,19 +14,29 @@ class ProtocolTrieTree(trieTree.TrieTree):
     def insert(self, rule):
         # length = 1
         crawl = self.root
-        # for level in range(length):
-        child = crawl.children
-        ch = rule.protocol
-        if ch in child:
-            crawl = child[ch]
-        else:
-            temp = ProtocolNode(ch)
-            child[ch] = temp
-            ipv4Tree =  srcIpv4TrieTree.SrcIpv4TrieTree()
-            ipv4Tree.insert(rule.srcIp,"PERMIT",rule)
-            child[ch].children[rule.srcIp] = ipv4Tree.root
-            crawl = temp
-        crawl.isEnd = True
+        for level in range(1):
+            child = crawl.children
+            ch = rule.protocol
+            if ch in child:
+                # ipv4Tree = srcIpv4TrieTree.SrcIpv4TrieTree()
+                # # ipv4Tree = child[ch].children[rule.srcIp]
+                
+                # # ipv4Tree = child[ch].children["1.1.1.1/16"] # <--- This is the line that is causing the error
+                # ipv4Tree.insert(rule.srcIp,"PERMIT",rule)
+                # child[ch].children[rule.srcIp] = ipv4Tree.root
+                # crawl = child[ch]
+                
+                srcTree = self.root.children[rule.protocol].children["defualt"].origin
+                srcTree.insert(rule.srcIp,"PERMIT",rule)
+                
+            else:
+                temp = ProtocolNode(ch)
+                child[ch] = temp
+                ipv4Tree = srcIpv4TrieTree.SrcIpv4TrieTree()
+                ipv4Tree.insert(rule.srcIp,"PERMIT",rule)
+                child[ch].children["defualt"] = ipv4Tree.root
+                crawl = temp
+        crawl.isEnd = False
         
 if __name__ == '__main__':
     # import trie_tree_parser.python.TrieTree.TrieTree as trieTree

@@ -3,6 +3,8 @@ import trie_tree_parser.python.TrieTree.ruleNode as ruleNode
 from pyvis.network import Network
 import networkx as nx
 import matplotlib.pyplot as plt
+import logging
+
 
 class PortNumberTrieNode(trieTree.TrieNode):
     def __init__(self, ch):
@@ -11,10 +13,15 @@ class PortNumberTrieNode(trieTree.TrieNode):
         self.totalRules = 0
         self.aggrateRule = ""
         self.aggragateChildren = {}
+        self.codeword = ""
 class PortNumberTrieTree(trieTree.TrieTree):
     def __init__(self,ch = ''):
         self.root = PortNumberTrieNode(ch)
         self.root.color = "#123456"
+        logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+        datefmt='%d-%m-%Y:%H:%M:%S',
+        level=logging.DEBUG,
+        filename='logs.txt')
     def insertRange(self, key, strRule):
         keyList = self.portToBinary(key)
         for key in keyList:
@@ -51,7 +58,10 @@ class PortNumberTrieTree(trieTree.TrieTree):
                     self.root.aggragateChildren[key] = temp
                     self.root.totalRules += 1
                     child[ch] = temp
-                    temp.children[codeword] = ruleNode.RuleNode(codeword)
+                    # temp.children["codeword"] = ruleNode.RuleNode(codeword)
+                    
+                    temp.color = "#694200"
+                    temp.codeword = codeword
                     
                     
         crawl.isEnd = True
@@ -63,8 +73,36 @@ class PortNumberTrieTree(trieTree.TrieTree):
         
         return keyList
     
-    def getCodeword(self):
-        return False, 0
+    def getCodeword(self, key):
+        length = len(key)
+        crawl = self.root
+        child = crawl.children
+        ch = ""
+        for level in range(length):
+            child = crawl.children
+            ch = key[level]
+            if ch in child:
+                crawl = child[ch]
+                # logging.debug("first : "+ child[ch].codeword)
+                # logging.debug("first : "+child[ch].codeword)
+                
+            else:
+           
+                return False, 0
+        # logging.debug("last : "+str(crawl.codeword))
+        return True, crawl.codeword
+                    
+               
+                    
+                    
+        
+        
+        
+    
+    
+        
+
+        
     # def drawAggregatedGraph(self):
     #     self.n = Network("1000px","1000px", directed=True)
     #     self.aggregrateBfs()

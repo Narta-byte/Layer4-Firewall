@@ -1,57 +1,77 @@
 import random
+import logging
 
 
 class PolicyFactory:
     def __init__(self,treeList):
         self.treeList = treeList
-        self.previousRuleTuble = []
+        self.previousRuleTuple = []
         self.ruleCodeWord = ""
     
     def insertRuleIntoTree(self,rule,tree):
         i = 0
         ruleCodeword = ""
         for tree in self.treeList:
-            
-            exists, codeword = tree.getCodeword()
-            if not exists:
+            exists, codeword = tree.getCodeword(rule[i])
+            if not exists: 
                 codeword = self.generateCodeword(8)
-            
-            
             
             ruleCodeword += codeword
             tree.insert(rule[i],rule[len(rule)-1], codeword)
             i += 1
         return ruleCodeword
-        
+    
+    def ruleAlreadyExists(self,rule):
+        # if the rules fields are equal skip the iteration and let the old rule have precedence
+        for oldRuleTuple in self.previousRuleTuple:
+            if oldRuleTuple[0][0:len(rule)-1] == rule[0:len(rule)-1]:
+                logging.debug("The rules are equal")
+                return True
     def insertRule(self,rule):
-        ruleCodeword = self.insertRuleIntoTree(rule,self.treeList)
+        # if the rule already exists, skip the iteration
+        if self.ruleAlreadyExists(rule):
+            return
+        ruleCodeword = self.insertRuleIntoTree(rule, self.treeList)
         
-        # if self.previousRuleTuble != []:
-        #     intersectionCodeword = self.generateCodeword(24)
-        #     ruleIntersection = []
+        # if there are no previous rules, add the new rule to the list
+        if self.previousRuleTuple == []:
+            self.previousRuleTuple.append([rule, ruleCodeword])
+            return
+        
+        intersectionCodeword = self.generateCodeword(24)
+        ruleIntersection = []
+        
+        for oldRuleTuble in self.previousRuleTuple:
+            ruleIntersection = self.intersection(oldRuleTuble, rule)
+            if ruleIntersection is None:
+                continue
+            intersectionCodeword = self.insertRuleIntoTree(ruleIntersection,self.treeList)
             
-        #     for oldRuleTuble in self.previousRuleTuble:
-        #         ruleIntersection = self.intersection(oldRuleTuble, rule)
-        #         intersectionCodeword = self.insertRuleIntoTree(ruleIntersection,self.treeList)
-                
-        #     self.previousRuleTuble.append([ruleIntersection,intersectionCodeword])
-        self.previousRuleTuble.append([rule, ruleCodeword])
+        if ruleIntersection is not None:
+            self.previousRuleTuple.append([ruleIntersection,intersectionCodeword])
+        # self.previousRuleTuple.append([ruleIntersection,intersectionCodeword])
+        self.previousRuleTuple.append([rule, ruleCodeword])
        
-    def intersection(self,rule0,rule1):
+    def intersection(self,rule0Tuple,rule1):
         ruleIntersection = ["placeholder0","placeholder1","placeholder2","placeholder3"]
-        for i in range(3):
+        
+
+        for i in range(len(rule1)-1):
             
             if i == 0 : # add the protocol for the old rule to the intersection rule
-                ruleIntersection[3] = rule0[0][3] 
+                ruleIntersection[3] = rule1[3] 
                 
-            if rule0[0][i] == rule1[i]: # if they are equal
+            if rule0Tuple[0][i] == rule1[i]: # if they are equal
                 ruleIntersection[i] = "1"
                 
-            elif rule0[0][i] == "*" and not rule1 == "*": # rule1 is a subset of rule0
+            elif rule0Tuple[0][i] == "*" and not rule1 == "*": # rule1 is a subset of rule0
                 ruleIntersection[i] = rule1[i]
             
-            elif rule1[i] == "*" and not rule0[0] == "*": # or the other way around
-                ruleIntersection[i] = rule0[0][i]
+            elif rule1[i] == "*" and not rule0Tuple[0] == "*": # or the other way around
+                ruleIntersection[i] = rule0Tuple[0][i]
+        
+        if self.ruleAlreadyExists(ruleIntersection):
+            return None
         return ruleIntersection
     
     def generateCodeword(self, length):
@@ -63,7 +83,18 @@ class PolicyFactory:
     def writeCodewords(self):
         
         file = open("codewords.txt","w") 
-        for rule in self.previousRuleTuble:
+        for rule in self.previousRuleTuple:
             file.write(str(rule[0]) + " " + rule[1] + "\n")
 
         file.close() 
+    
+    def getRuleTuple(self):
+        
+        output = ""
+        for rule in self.previousRuleTuple:
+            output += (str(rule[0]) + " " + rule[1] + "\n")
+        return output
+    
+    def setSeed(self, seed):
+        random.seed(seed)
+    

@@ -22,10 +22,10 @@ class PortNumberTrieTree(trieTree.TrieTree):
         datefmt='%d-%m-%Y:%H:%M:%S',
         level=logging.DEBUG,
         filename='logs.txt')
-    def insertRange(self, key, strRule):
-        keyList = self.portToBinary(key)
-        for key in keyList:
-            self.insert(key, strRule)
+    # def insertRange(self, key, strRule):
+    #     keyList = self.portToBinary(key)
+    #     for key in keyList:
+    #         self.insert(key, strRule)
 
     def insert(self, key, strRule,codeword):
         length = len(key)

@@ -24,7 +24,7 @@ class TestPortNumberRange(unittest.TestCase):
         self.policyFactory.insertRule(rule0)
         self.policyFactory.insertRule(rule1)
         self.policyFactory.writeCodewords()
-        expectedOutput =open("tests\\expectedOutput\\test_3Trees_overlap.txt","r")
+        expectedOutput =open("tests/expectedOutput/test_3Trees_overlap.txt","r")
         self.assertEqual(self.policyFactory.getRuleTuple(),expectedOutput.read())
         
     def test_3Trees_overlap_with_default_rule(self):
@@ -37,7 +37,9 @@ class TestPortNumberRange(unittest.TestCase):
         self.policyFactory.insertRule(defualtRule)
         self.policyFactory.writeCodewords()
         
-        expectedOutput =open("tests\\expectedOutput\\test_3Trees_overlap_with_default_rule.txt","r")
+        self.policyFactory.getRuleTuple()
+
+        expectedOutput =open("tests/expectedOutput/test_3Trees_overlap_with_default_rule.txt","r")
         self.assertEqual(self.policyFactory.getRuleTuple(),expectedOutput.read())
         
     def test_sameRule_twice(self):
@@ -48,7 +50,7 @@ class TestPortNumberRange(unittest.TestCase):
         self.policyFactory.insertRule(rule1)
         self.policyFactory.writeCodewords()
         
-        expectedOutput =open("tests\\expectedOutput\\test_sameRule_twice.txt","r")
+        expectedOutput =open("tests/expectedOutput/test_sameRule_twice.txt","r")
         self.assertEqual(self.policyFactory.getRuleTuple(),expectedOutput.read())
 
    
@@ -61,19 +63,28 @@ class TestPortNumberRange(unittest.TestCase):
         self.policyFactory.insertRule(rule1)
         self.policyFactory.writeCodewords()
         
-        expectedOutput =open("tests\\expectedOutput\\test_simple_rule.txt","r")
+        #self.policyFactory.getRuleTuple()
+
+
+        expectedOutput =open("tests/expectedOutput/test_simple_rule.txt","r")
+        #logging.info(expectedOutput.read())
         self.assertEqual(self.policyFactory.getRuleTuple(),expectedOutput.read())
 
 
     def test_specific_ranges(self):
         self.init3Trees()
-        rule0 = ["1","1","2-3","alpha"]
-        rule1 = ["1","1","3-4","beta"]
+        rule0 = ["1","0","2-3","alpha"]
+        rule1 = ["1","0","3-4","beta"]
+        
         self.policyFactory.insertRange(rule0)
+        self.policyFactory.insertRange(rule1)
+
+        self.policyFactory.writeCodewords()
         
+        #self.policyFactory.getRuleTuple()
         
-        
-        expectedOutput =open("tests\\expectedOutput\\test_specific_ranges.txt","r")
+        expectedOutput =open("tests/expectedOutput/test_specific_ranges.txt","r")
+        #logging.info(expectedOutput.read())
         self.assertEqual(self.policyFactory.getRuleTuple,expectedOutput.read())
 
     def init3Trees(self):

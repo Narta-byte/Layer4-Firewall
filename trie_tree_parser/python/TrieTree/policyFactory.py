@@ -1,5 +1,6 @@
 import random
 import logging
+import time
 # import trie_tree_parser.python.TrieTree.rangeTree as rangetree
 
 class PolicyFactory:
@@ -28,67 +29,30 @@ class PolicyFactory:
                 logging.debug("The rules are equal")
                 return True
         return False
+
+
     def insertRange(self,rule):
-        
-        # self.rangeTree = rangeTree.RangeTree()
-        
-        subRuleInRange = []
-        i = 0 
-        newRuleList = []
+        result = [[]]
+
         for field in rule:
-            subRule = ["placeholder0", "placeholder1", "placeholder2", "placeholder3"]
-            if field == "*":
-                subRule[i] = "*"
-                continue        
-            if "-" not in field:
-                subRule[i] = field
-                
             if "-" in field:
-                indiciesRange = field.split("-")
-                #newLists = []
-                for j in range(int(indiciesRange[0]),int(indiciesRange[1])+1):
-                    #subRule[i] = 
-                    newSubRule = subRule.copy()
-                    newSubRule = format(int(j), '016b')
-                    subRuleInRange[i].append(newSubRule)
-                    #subRule[i] = format(int(j), '016b')
+                start, end = field.split("-")
+                new_lists = []
+                for tal in range(int(start), int(end)+1):
+                    for res in result:
+                        new_list = res + [str(tal)]
+                        new_lists.append(new_list)
+                result = new_lists
+            else:
+                for i in range(len(result)):
+                    result[i].append(field)
 
-                    # newRuleList.append(subRuleInRange.copy())
-            subRuleInRange.append(subRule)
-            i+=1        
-    
-
-    def Insertafstand(self,rule):
-        
-        # self.rangeTree = rangeTree.RangeTree()
-        
-        subRuleInRange = []
-        i = 0 
-        newRuleList = []
-        for field in rule:
-            subRule = ["placeholder0", "placeholder1", "placeholder2", "placeholder3"]
-            if field == "*":
-                subRule[i] = "*"
-                continue        
-            if "-" not in field:
-                subRule[i] = field
-                
-            if "-" in field:
-                indiciesRange = field.split("-")
-                #newLists = []
-                for j in range(int(indiciesRange[0]),int(indiciesRange[1])+1):
-                    #subRule[i] = 
-                    newSubRule = subRule.copy()
-                    newSubRule = format(int(j), '016b')
-                    subRuleInRange[i].append(newSubRule)
-                    #subRule[i] = format(int(j), '016b')
-
-                    # newRuleList.append(subRuleInRange.copy())
-            subRuleInRange.append(subRule)
-            i+=1        
-    
-
-
+        for sublist in result:
+            #str_sublist = str(sublist).replace("'", "\"")
+            #logging.debug(sublist)
+            self.insertRule(sublist)
+            
+            #time.sleep(1)
 
     def insertRule(self,rule):
         # if the rule already exists, skip the iteration
@@ -113,12 +77,13 @@ class PolicyFactory:
         if ruleIntersection is not None:
             self.previousRuleTuple.append([ruleIntersection,intersectionCodeword])
        
-       
         self.previousRuleTuple.append([rule, ruleCodeword])
+        
+        
        
     def intersection(self,rule0Tuple,rule1):
         ruleIntersection = ["placeholder0", "placeholder1", "placeholder2", "placeholder3"]
-        
+
 
         for i in range(len(rule1)-1):
             
@@ -126,13 +91,16 @@ class PolicyFactory:
                 ruleIntersection[3] = rule0Tuple[0][3] 
                 
             if rule0Tuple[0][i] == rule1[i]: # if they are equal
-                ruleIntersection[i] = "1"
+                ruleIntersection[i] = rule1[i]
                 
             elif rule0Tuple[0][i] == "*" and not rule1 == "*": # rule1 is a subset of rule0
                 ruleIntersection[i] = rule1[i]
             
             elif rule1[i] == "*" and not rule0Tuple[0] == "*": # or the other way around
                 ruleIntersection[i] = rule0Tuple[0][i]
+
+            else:
+                return None
                 
         if self.ruleAlreadyExists(ruleIntersection) or rule1[0:len(rule1)-1] == ruleIntersection[0:len(rule1)-1]:
             return None
@@ -157,6 +125,8 @@ class PolicyFactory:
         output = ""
         for rule in self.previousRuleTuple:
             output += (str(rule[0]) + " " + rule[1] + "\n")
+            
+        #logging.debug(output)
         return output
     
     def setSeed(self, seed):

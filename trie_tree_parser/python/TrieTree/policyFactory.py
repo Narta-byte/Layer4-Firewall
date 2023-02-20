@@ -1,5 +1,6 @@
 import random
 import logging
+import warnings
 # import trie_tree_parser.python.TrieTree.rangeTree as rangetree
 
 
@@ -26,7 +27,6 @@ class PolicyFactory:
         # if the rules fields are equal skip the iteration and let the old rule have precedence
         for oldRuleTuple in self.previousRuleTuple:
             if oldRuleTuple[0][0:len(rule)-1] == rule[0:len(rule)-1]:
-                logging.debug("The rules are equal")
                 return True
         return False
 
@@ -48,10 +48,7 @@ class PolicyFactory:
                     result[i].append(field)
 
         for sublist in result:
-            #str_sublist = str(sublist).replace("'", "\"")
-            #logging.debug(sublist)
             self.insertRule(sublist)
-            
             #time.sleep(1)
 
     def insertRule(self,rule):
@@ -131,4 +128,26 @@ class PolicyFactory:
     
     def setSeed(self, seed):
         random.seed(seed)
+        
+    def getCodeword(self, packet):
+        i = 0
+        packetCodeword = ""
+        for tree in self.treeList:
+            exists, subCodeword = tree.getCodeword(packet[i])
+            if not exists:
+                warnings.warn("Error there is no codeword for the packet, will then use wildcard route")
+                defualtRoute = ""
+                for tree in self.treeList:
+                    exists, subCodeword= tree.getCodeword("*")
+                    if not exists:
+                        raise Exception("Error there is no wildcard route")
+                    defualtRoute += subCodeword
+                logging.debug("Using default route")
+                logging.debug("the codeword for defaultroute"+ str(defualtRoute))
+                return defualtRoute
+            
+            packetCodeword += subCodeword
+            i += 1
+            
+        return packetCodeword
     

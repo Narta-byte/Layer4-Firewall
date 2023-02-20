@@ -9,4 +9,3 @@ class CuckooHashTable:
     def lookup(self, codeword):
         return self.dictionary[codeword]
 
-    

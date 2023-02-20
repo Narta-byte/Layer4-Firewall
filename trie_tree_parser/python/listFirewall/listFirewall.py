@@ -45,3 +45,9 @@ class ListFirewall:
             #str_sublist = str(sublist).replace("'", "\"")
             #logging.debug(sublist)
             self.insert(sublist)
+    
+    def getRules(self):
+        output = ""
+        for rule in self.rules:
+            output += str(rule) + "\n"
+        return output

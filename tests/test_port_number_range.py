@@ -12,11 +12,6 @@ class TestPortNumberRange(unittest.TestCase):
         level=logging.DEBUG,
         filename='logs.txt')
         
-        
-    # def test_insert(self):
-    #     self.tree.insertRange("0-2","DENY")
-    #     self.tree.insertRange("1-3","PERMIT")
-    #     self.assertEqual(self.tree.root.totalRules,4)
     def test_3Trees_overlap(self):
         self.init3Trees()
         rule0 = ["*","1","1","alpha"]
@@ -24,6 +19,7 @@ class TestPortNumberRange(unittest.TestCase):
         self.policyFactory.insertRule(rule0)
         self.policyFactory.insertRule(rule1)
         self.policyFactory.writeCodewords()
+        
         expectedOutput =open("tests/expectedOutput/test_3Trees_overlap.txt","r")
         self.assertEqual(self.policyFactory.getRuleTuple(),expectedOutput.read())
         
@@ -53,7 +49,7 @@ class TestPortNumberRange(unittest.TestCase):
         expectedOutput =open("tests/expectedOutput/test_sameRule_twice.txt","r")
         self.assertEqual(self.policyFactory.getRuleTuple(),expectedOutput.read())
 
-   
+
         
     def test_simple_rule(self):
         self.init3Trees()
@@ -69,23 +65,39 @@ class TestPortNumberRange(unittest.TestCase):
         expectedOutput =open("tests/expectedOutput/test_simple_rule.txt","r")
         #logging.info(expectedOutput.read())
         self.assertEqual(self.policyFactory.getRuleTuple(),expectedOutput.read())
-
-
-    def test_specific_ranges(self):
+        
+    def test_specific_ranges_with_second_field(self):
         self.init3Trees()
-        rule0 = ["1","0","2-3","alpha"]
-        rule1 = ["1","0","3-4","beta"]
+        rule0 = ["1","2-3","4-5","alpha"]
+        rule1 = ["1","*","4-6","beta"]
         
         self.policyFactory.insertRange(rule0)
         self.policyFactory.insertRange(rule1)
 
         self.policyFactory.writeCodewords()
         
-        #self.policyFactory.getRuleTuple()
+        self.tree0.drawGraph(html=True)
+        self.tree1.drawGraph(html=True)
+        self.tree2.drawGraph(html=True)
+        expectedOutput = open("tests/expectedOutput/test_specific_ranges_with_second_field.txt","r")
+      
+        self.assertEqual(self.policyFactory.getRuleTuple(),expectedOutput.read())
+
+    def test_specific_ranges_with_wildcard(self):
+        self.init3Trees()
+        rule0 = ["1","0","3*","alpha"]
+        rule1 = ["1","0","3-4","beta"]
         
-        expectedOutput =open("tests/expectedOutput/test_specific_ranges.txt","r")
-        #logging.info(expectedOutput.read())
-        self.assertEqual(self.policyFactory.getRuleTuple,expectedOutput.read())
+        self.policyFactory.insertRange(rule0)
+        self.policyFactory.insertRange(rule1)
+
+        expectedOutput = open("tests/expectedOutput/test_specific_ranges.txt","r")
+        logging.info(expectedOutput.read())
+        logging.info(self.policyFactory.getRuleTuple())
+        
+        self.assertEqual(self.policyFactory.getRuleTuple(),expectedOutput.read())
+
+    
 
     def init3Trees(self):
        self.tree0 = portnumbertrie.PortNumberTrieTree()

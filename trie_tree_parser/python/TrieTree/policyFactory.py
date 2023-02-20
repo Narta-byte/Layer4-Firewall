@@ -1,7 +1,7 @@
 import random
 import logging
-import time
 # import trie_tree_parser.python.TrieTree.rangeTree as rangetree
+
 
 class PolicyFactory:
     def __init__(self,treeList):
@@ -126,7 +126,7 @@ class PolicyFactory:
         for rule in self.previousRuleTuple:
             output += (str(rule[0]) + " " + rule[1] + "\n")
             
-        #logging.debug(output)
+        # logging.debug(output)
         return output
     
     def setSeed(self, seed):

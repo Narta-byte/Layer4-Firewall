@@ -1,3 +1,4 @@
+import logging
 
 
 class ListFirewall:
@@ -10,11 +11,14 @@ class ListFirewall:
     def lookup(self, inputPacket):
         for thisRule in self.rules:
             if self.matches(thisRule, inputPacket):
+                logging.debug("Matched rule: "+str(thisRule)+" Matched with " + str(inputPacket))
                 return thisRule[len(thisRule)-1]
         return "No Match"
     
     def matches(self, thisRule, inputPacket):
-        if thisRule == inputPacket:
+        
+        
+        if thisRule[:len(thisRule)-1] == inputPacket:
             return True
         for i in range(len(thisRule)-1):
             if thisRule[i] == inputPacket[i]: 
@@ -23,6 +27,8 @@ class ListFirewall:
                 continue 
             else:
                 return False
+        logging.debug("thisRule: "+str(thisRule))
+        logging.debug("inputPacket: "+str(inputPacket))
         return True
     
     def insertRange(self, rule):

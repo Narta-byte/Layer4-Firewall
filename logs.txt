@@ -1,51 +1,17 @@
-20-02-2023:14:45:47 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:45:47 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:45:47 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:45:47 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:45:47 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:45:47 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:45:47 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:45:47 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:45:47 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:45:47 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:45:47 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:45:47 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:45:47 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:45:47 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:45:47 DEBUG    [test_equivalence_of_list_and_trie_tree.py:101] codeword: 101000000111110111100000
-20-02-2023:14:45:47 DEBUG    [test_equivalence_of_list_and_trie_tree.py:102] packetnum: 6 packet: ['13', '16', '8']
-20-02-2023:14:45:47 DEBUG    [test_equivalence_of_list_and_trie_tree.py:103] hashTableValue: delta
-20-02-2023:14:52:50 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:52:50 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:52:50 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:52:50 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:52:50 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:52:50 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:52:50 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:52:50 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:52:50 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:52:50 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:52:50 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:52:50 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:52:50 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:52:50 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:52:50 DEBUG    [test_equivalence_of_list_and_trie_tree.py:101] codeword: 101000000111110111100000
-20-02-2023:14:52:50 DEBUG    [test_equivalence_of_list_and_trie_tree.py:102] packetnum: 6 packet: ['13', '16', '8']
-20-02-2023:14:52:50 DEBUG    [test_equivalence_of_list_and_trie_tree.py:103] hashTableValue: delta
-20-02-2023:14:53:57 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:53:57 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:53:57 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:53:57 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:53:57 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:53:57 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:53:57 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:53:57 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:53:57 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:53:57 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:53:57 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:53:57 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:53:57 DEBUG    [policyFactory.py:145] Using default route
-20-02-2023:14:53:57 DEBUG    [policyFactory.py:146] the codeword for defaultroute101000000111110111100000
-20-02-2023:14:53:57 DEBUG    [test_equivalence_of_list_and_trie_tree.py:101] codeword: 101000000111110111100000
-20-02-2023:14:53:57 DEBUG    [test_equivalence_of_list_and_trie_tree.py:102] packetnum: 6 packet: ['13', '16', '8']
-20-02-2023:14:53:57 DEBUG    [test_equivalence_of_list_and_trie_tree.py:103] hashTableValue: delta
+21-02-2023:12:10:17 DEBUG    [test_port_number_range.py:109] ['*', '*', '3', 'alpha'] 011111000000001101101010
+['0', '2', '3', 'alpha'] 100101110011100001101010
+['0', '2', '*', 'beta'] 100101110011100010011111
+
+21-02-2023:12:19:58 DEBUG    [cuckooHashTable.py:23] No match for codeword: ['8', '2', '3']
+21-02-2023:12:19:58 DEBUG    [test_port_number_range.py:112] hashtable lookup['*', '*', '3', 'alpha']
+21-02-2023:12:19:58 DEBUG    [test_port_number_range.py:113] ['*', '*', '3', 'alpha'] 011111000000001101101010
+['0', '2', '3', 'alpha'] 100101110011100001101010
+['0', '2', '*', 'beta'] 100101110011100010011111
+
+21-02-2023:12:20:33 DEBUG    [cuckooHashTable.py:23] No match for codeword: ['8', '2', '3']
+21-02-2023:12:20:33 DEBUG    [test_port_number_range.py:114] hashtable lookup['*', '*', '*', 'gamma']
+21-02-2023:12:20:33 DEBUG    [test_port_number_range.py:115] ['*', '*', '3', 'alpha'] 011111000000001101101010
+['0', '2', '3', 'alpha'] 100101110011100001101010
+['0', '2', '*', 'beta'] 100101110011100010011111
+['*', '*', '*', 'gamma'] 011111000000001110011111
+

@@ -9,14 +9,14 @@ class PolicyFactory:
         self.treeList = treeList
         self.previousRuleTuple = []
         self.ruleCodeWord = ""
-        
+        self.codewordLength = 8
     def insertRuleIntoTree(self,rule,tree):
         i = 0
         ruleCodeword = ""
         for tree in self.treeList:
             exists, codeword = tree.getCodeword(rule[i])
             if not exists: 
-                codeword = self.generateCodeword(8)
+                codeword = self.generateCodeword(self.codewordLength)
             
             ruleCodeword += codeword
             tree.insert(rule[i],rule[len(rule)-1], codeword)
@@ -62,7 +62,7 @@ class PolicyFactory:
             self.previousRuleTuple.append([rule, ruleCodeword])
             return
         
-        intersectionCodeword = self.generateCodeword(24)
+        intersectionCodeword = self.generateCodeword(self.codewordLength*len(self.treeList))
         ruleIntersection = []
         
         for oldRuleTuble in self.previousRuleTuple:
@@ -129,22 +129,19 @@ class PolicyFactory:
     def setSeed(self, seed):
         random.seed(seed)
         
-    def getCodeword(self, packet):
+    def getCodewordPolicyFactory(self, packet):
         i = 0
         packetCodeword = ""
+        
+        
+
         for tree in self.treeList:
             exists, subCodeword = tree.getCodeword(packet[i])
             if not exists:
-                warnings.warn("Error there is no codeword for the packet, will then use wildcard route")
-                defualtRoute = ""
-                for tree in self.treeList:
-                    exists, subCodeword= tree.getCodeword("*")
-                    if not exists:
-                        raise Exception("Error there is no wildcard route")
-                    defualtRoute += subCodeword
-                logging.debug("Using default route")
-                logging.debug("the codeword for defaultroute"+ str(defualtRoute))
-                return defualtRoute
+                exists, subCodeword = tree.getCodeword("*")
+                if not exists:
+                    raise Exception("Error there is no wildcard route")
+                
             
             packetCodeword += subCodeword
             i += 1

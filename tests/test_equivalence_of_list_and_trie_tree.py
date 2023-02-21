@@ -21,6 +21,12 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         self.hashTable = cuckooHashTable.CuckooHashTable()
         
         self.listFirewall = listFirewall.ListFirewall()
+        
+        #deleting all the logs
+        file = open("logs.txt", "w")
+        file.flush()
+        file.close()
+        
         logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
         datefmt='%d-%m-%Y:%H:%M:%S',
         level=logging.DEBUG,
@@ -38,23 +44,23 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         self.listFirewall.insertRange(rule0)
         self.listFirewall.insert(rule1)
         
-        codeword = self.policyFactory.getCodeword(["1","1","1"])
+        codeword = self.policyFactory.getCodewordPolicyFactory(["1","1","1"])
         
         self.policyFactory.writeCodewords()
         self.assertEqual(self.listFirewall.lookup(["1","1","1"]), self.hashTable.lookup(codeword)[3])
         
-        codeword = self.policyFactory.getCodeword(["1","7","11"])
+        codeword = self.policyFactory.getCodewordPolicyFactory(["1","7","11"])
         self.assertEqual(self.listFirewall.lookup(["1","7","11"]), self.hashTable.lookup(codeword)[3])
         
         
-        codeword = self.policyFactory.getCodeword(["255","255","255"])
+        codeword = self.policyFactory.getCodewordPolicyFactory(["255","255","255"])
         self.assertEqual(self.listFirewall.lookup(["255","255","255"]), self.hashTable.lookup(codeword)[3])
         
         
     def test_randomPackets(self):
         ruleList = []
         random.seed(311415)
-        for _ in range(0,10):
+        for _ in range(0,100):
             rule = ["","","",""]
             for i in range(0,3):
                 chance = random.randint(0,100)
@@ -87,31 +93,104 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         for rule in self.policyFactory.previousRuleTuple:
             self.hashTable.insert(rule[1], rule[0])
         
-        
+        packetList = []
         for i in range(0,1000):
             packet = ["","",""]
             for j in range(0,3):
                 packet[j] = str(random.randint(0,20))
             
-            codeword = self.policyFactory.getCodeword(packet)
+            codeword = self.policyFactory.getCodewordPolicyFactory(packet)
 
             self.policyFactory.writeCodewords()
             
             if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
                 logging.debug("codeword: "+str(codeword))
                 logging.debug("packetnum: "+str(i)+" packet: "+str(packet))
-                logging.debug("hashTableValue: "+str(self.hashTable.lookup(codeword)[3]))
+                logging.debug("hashTableValue: "+str(self.hashTable.lookup(codeword)))
                 self.policyFactory.writeCodewords()
                 file = open("list_firewall.txt", "w")
                 file.write(self.listFirewall.getRules())
                 
                 
                 file = open("rule_list_for_random_test.txt", "w")
-                
                 prettyRuleList = ""
                 for rule in ruleList:
                     prettyRuleList += str(rule) + "\n"
                 file.write(prettyRuleList)
-            
+                file = open("packet_list_for_random_test.txt", "w")
+                prettyPacketList = ""
+                for packet in packetList:
+                    prettyPacketList += str(packet) + "\n"
+                file.write(prettyPacketList)
+            logging.debug("Looking packet up: "+str(packet) + str(self.listFirewall.lookup(packet)))
+            logging.debug("Looking the hash up: "+str(self.hashTable.lookup(codeword)))
+            packetList.append(packet)
             self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3])
         
+    def test_sample_of_errorcase0(self):
+        ruleList = [['0-4', '1-4', '*', 'beta'],
+                   ['16', '4', '2-3', 'alpha'],
+                   ['18', '2', '1-4', 'alpha'],
+                   ['*', '*', '2-3', 'beta'],
+                   ['0-4', '2-3', '*', 'alpha'],
+                   ['13', '16', '*', 'beta'],
+                   ['*', '16', '2-3', 'beta'],
+                   ['*', '1-3', '5', 'beta'],
+                   ['5', '*', '1-4', 'beta'],
+                   ['1-4', '17', '1-4', 'alpha']]
+        for rule in ruleList:
+            self.policyFactory.insertRange(rule)
+            self.listFirewall.insertRange(rule)
+        self.policyFactory.insertRange(["*","*","*","delta"])
+        self.listFirewall.insertRange(["*","*","*","delta"])
+        
+        for rule in self.policyFactory.previousRuleTuple:
+            self.hashTable.insert(rule[1], rule[0])
+            
+        random.seed(311415)
+        packetList = []
+        for i in range(0,1000):
+            packet = ["","",""]
+            for j in range(0,3):
+                packet[j] = str(random.randint(0,20))
+            
+            codeword = self.policyFactory.getCodewordPolicyFactory(packet)
+
+            self.policyFactory.writeCodewords()
+            
+            if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
+                logging.debug("codeword: "+str(codeword)+" for packet "+str(packet))
+                logging.debug("packetnum: "+str(i)+" packet: "+str(packet))
+                logging.debug("hashTableValue: "+str(self.hashTable.lookup(codeword)))
+                self.policyFactory.writeCodewords()
+                file = open("list_firewall.txt", "w")
+                file.write(self.listFirewall.getRules())
+                logging.debug("Tree0's codeword "+str(self.tree0.getCodeword(packet[0])))
+                logging.debug("Tree1's codeword "+str(self.tree1.getCodeword(packet[1])))
+                logging.debug("Tree2's codeword "+str(self.tree2.getCodeword(packet[2])))
+                
+                
+                codeword = self.policyFactory.getCodewordPolicyFactory(packet)
+                
+                
+                logging.debug("different decisions : "+str(self.listFirewall.lookup(packet))+", " +str(self.hashTable.lookup(codeword)[3]))
+                
+                file = open("rule_list_for_random_test.txt", "w")
+                prettyRuleList = ""
+                for rule in ruleList:
+                    prettyRuleList += str(rule) + "\n"
+                file.write(prettyRuleList)
+                file = open("packet_list_for_random_test.txt", "w")
+                prettyPacketList = ""
+                for packet in packetList:
+                    prettyPacketList += str(packet) + "\n"
+                file.write(prettyPacketList)
+
+
+            
+            
+            packetList.append(packet)
+            self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3])
+        # packet = ["1","2","4"]
+        # codeword = self.policyFactory.getCodewordPolicyFactory(packet)
+        # self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3])

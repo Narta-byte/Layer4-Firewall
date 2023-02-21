@@ -1,0 +1,2 @@
+In the senecario where there is no rule for the first index, 
+but there is for the second index, and there is a wildcard rule for the third

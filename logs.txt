@@ -960,3 +960,10 @@
 27-02-2023:14:36:53 DEBUG    [listFirewall.py:31] inputPacket: ['2', '1', '7']
 27-02-2023:14:36:53 DEBUG    [listFirewall.py:14] Matched rule: ['2', '1', '*', 'beta'] Matched with ['2', '1', '7']
 27-02-2023:14:36:53 DEBUG    [cuckooHashTable.py:23] No match for codeword: 010001000100011011100110
+28-02-2023:09:17:51 DEBUG    [cuckooHashTable.py:23] No match for codeword: ['8', '2', '3']
+28-02-2023:09:17:51 DEBUG    [test_error_case.py:28] hashtable lookup['*', '*', '*', 'gamma']
+28-02-2023:09:17:51 DEBUG    [test_error_case.py:29] ['*', '*', '3', 'alpha'] 011111000000001101101010
+['0', '2', '3', 'alpha'] 100101110011100001101010
+['0', '2', '*', 'beta'] 100101110011100010011111
+['*', '*', '*', 'gamma'] 011111000000001110011111
+

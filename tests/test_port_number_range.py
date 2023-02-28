@@ -16,8 +16,8 @@ class TestPortNumberRange(unittest.TestCase):
         self.init3Trees()
         rule0 = ["*","1","1","alpha"]
         rule1 = ["1","1","*","beta"]
-        self.policyFactory.insertRule(rule0)
-        self.policyFactory.insertRule(rule1)
+        self.policyFactory.insertRange(rule0)
+        self.policyFactory.insertRange(rule1)
         self.policyFactory.writeCodewords()
         
         expectedOutput =open("tests/expectedOutput/test_3Trees_overlap.txt","r")

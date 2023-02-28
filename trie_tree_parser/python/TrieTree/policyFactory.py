@@ -50,7 +50,7 @@ class PolicyFactory:
         for sublist in result:
             self.insertRule(sublist)
             #time.sleep(1)
-
+   
     def insertRule(self,rule):
         # if the rule already exists, skip the iteration
         if self.ruleAlreadyExists(rule):
@@ -66,13 +66,23 @@ class PolicyFactory:
         ruleIntersection = []
         
         for oldRuleTuble in self.previousRuleTuple:
-            ruleIntersection = self.intersection(oldRuleTuble, rule)
-            if ruleIntersection is None:
-                continue
-            intersectionCodeword = self.insertRuleIntoTree(ruleIntersection,self.treeList)
+            intersections = self.intersection(oldRuleTuble, rule)
+            
+            if intersections is None or intersections == []:
+                    continue
+            ruleIntersection.append(intersections)
+            
+            logging.debug("ruleIntersection: "+str(ruleIntersection))
+            for intersectingRule in ruleIntersection:
+                if intersectingRule is None:
+                    continue
+                logging.debug("intersectingRule: "+str(intersectingRule))
+                intersectionCodeword = self.insertRuleIntoTree(intersectingRule,self.treeList)
             
         if ruleIntersection is not None:
-            self.previousRuleTuple.append([ruleIntersection,intersectionCodeword])
+            for intersectingRule in ruleIntersection:
+                self.previousRuleTuple.append([intersectingRule,intersectionCodeword])
+            # self.previousRuleTuple.append([ruleIntersection,intersectionCodeword])
        
         self.previousRuleTuple.append([rule, ruleCodeword])
         
@@ -81,6 +91,18 @@ class PolicyFactory:
     def intersection(self,rule0Tuple,rule1):
         ruleIntersection = ["placeholder0", "placeholder1", "placeholder2", "placeholder3"]
 
+        # * * 3 a| <- r1
+        # 0 2 3 a <- old version
+        # * 2 3 a
+        # 0 * 3 a
+        # * * 3 a
+        # 0 2 * a <- dangerous since its equal to r2, can maybe just be discarded
+        # * 2 * a
+        # 0 * * a
+        # * * * a <- dangerous defualt rule 
+        
+        # 0 2 * b| <- r2
+        
 
         for i in range(len(rule1)-1):
             
@@ -97,10 +119,10 @@ class PolicyFactory:
                 ruleIntersection[i] = rule0Tuple[0][i]
 
             else:
-                return None
-                
+                return []
+        
         if self.ruleAlreadyExists(ruleIntersection) or rule1[0:len(rule1)-1] == ruleIntersection[0:len(rule1)-1]:
-            return None
+            return []
         return ruleIntersection
     
     def generateCodeword(self, length):

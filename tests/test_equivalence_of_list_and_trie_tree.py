@@ -57,7 +57,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         self.assertEqual(self.listFirewall.lookup(["255","255","255"]), self.hashTable.lookup(codeword)[3])
         
         
-    def test_randomPackets(self): # TEST BRANCH CREATION
+    def test_randomPackets(self): # TEST BRANCH CREATION... Now?adwawd
         words = []
         ruleList = []
         random.seed(311415)

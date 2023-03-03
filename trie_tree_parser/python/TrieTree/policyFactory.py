@@ -1,3 +1,4 @@
+
 import random
 import logging
 import warnings
@@ -50,7 +51,7 @@ class PolicyFactory:
         for sublist in result:
             self.insertRule(sublist)
             #time.sleep(1)
-   
+
     def insertRule(self,rule):
         # if the rule already exists, skip the iteration
         if self.ruleAlreadyExists(rule):
@@ -66,23 +67,13 @@ class PolicyFactory:
         ruleIntersection = []
         
         for oldRuleTuble in self.previousRuleTuple:
-            intersections = self.intersection(oldRuleTuble, rule)
-            
-            if intersections is None or intersections == []:
-                    continue
-            ruleIntersection.append(intersections)
-            
-            logging.debug("ruleIntersection: "+str(ruleIntersection))
-            for intersectingRule in ruleIntersection:
-                if intersectingRule is None:
-                    continue
-                logging.debug("intersectingRule: "+str(intersectingRule))
-                intersectionCodeword = self.insertRuleIntoTree(intersectingRule,self.treeList)
+            ruleIntersection = self.intersection(oldRuleTuble, rule)
+            if ruleIntersection is None:
+                continue
+            intersectionCodeword = self.insertRuleIntoTree(ruleIntersection,self.treeList)
             
         if ruleIntersection is not None:
-            for intersectingRule in ruleIntersection:
-                self.previousRuleTuple.append([intersectingRule,intersectionCodeword])
-            # self.previousRuleTuple.append([ruleIntersection,intersectionCodeword])
+            self.previousRuleTuple.append([ruleIntersection,intersectionCodeword])
        
         self.previousRuleTuple.append([rule, ruleCodeword])
         
@@ -91,18 +82,6 @@ class PolicyFactory:
     def intersection(self,rule0Tuple,rule1):
         ruleIntersection = ["placeholder0", "placeholder1", "placeholder2", "placeholder3"]
 
-        # * * 3 a| <- r1
-        # 0 2 3 a <- old version
-        # * 2 3 a
-        # 0 * 3 a
-        # * * 3 a
-        # 0 2 * a <- dangerous since its equal to r2, can maybe just be discarded
-        # * 2 * a
-        # 0 * * a
-        # * * * a <- dangerous defualt rule 
-        
-        # 0 2 * b| <- r2
-        
 
         for i in range(len(rule1)-1):
             
@@ -119,10 +98,10 @@ class PolicyFactory:
                 ruleIntersection[i] = rule0Tuple[0][i]
 
             else:
-                return []
-        
+                return None
+                
         if self.ruleAlreadyExists(ruleIntersection) or rule1[0:len(rule1)-1] == ruleIntersection[0:len(rule1)-1]:
-            return []
+            return None
         return ruleIntersection
     
     def generateCodeword(self, length):
@@ -135,7 +114,7 @@ class PolicyFactory:
         
         file = open("codewords.txt","w") 
         for rule in self.previousRuleTuple:
-            file.write(str(rule[0]) + " " + rule[1] + "\n")
+            file.write(str(rule[0]) + " : " + rule[1] + "\n")
 
         file.close() 
     
@@ -154,9 +133,6 @@ class PolicyFactory:
     def getCodewordPolicyFactory(self, packet):
         i = 0
         packetCodeword = ""
-        
-        
-
         for tree in self.treeList:
             exists, subCodeword = tree.getCodeword(packet[i])
             if not exists:
@@ -167,6 +143,236 @@ class PolicyFactory:
             
             packetCodeword += subCodeword
             i += 1
-            
+
         return packetCodeword
     
+    def ruleAlreadyExistsPacket(self, rule):
+    # if the rules fields are equal skip the iteration and let the old rule have precedence
+        for oldRuleTuple in self.previousRuleTuple:
+            if oldRuleTuple[0][0:len(rule)] == rule[0:len(rule)]:
+                logging.debug("Original: " + str(oldRuleTuple[0][0:len(rule)]) + " == " + str(rule[0:len(rule)]))
+                return True
+        return False
+
+
+    def ruleAlreadyExists00Star(self, rule): #Equal rules at  0 0 *
+        return self.ruleAlreadyExistsPacket([rule[0], rule[1], '*'])
+
+
+    def ruleAlreadyExists0Star0(self, rule): # Rules with 0 * 0
+        return self.ruleAlreadyExistsPacket([rule[0], '*', rule[2]])
+
+
+    def ruleAlreadyExists0StarStar(self, rule): #Equal rules at 0 * *
+        return self.ruleAlreadyExistsPacket([rule[0], '*', '*'])
+
+
+    def ruleAlreadyExistsStar00(self, rule): #Equal rules at * 0 0
+        return self.ruleAlreadyExistsPacket(['*', rule[1], rule[2]])
+
+
+    def ruleAlreadyExistsStar0Star(self, rule): #Equal rules at * 0 *
+        return self.ruleAlreadyExistsPacket(['*', rule[1], '*'])
+
+
+    def ruleAlreadyExistsStarStar0(self, rule): #Equal rules at * * 0
+        return self.ruleAlreadyExistsPacket(['*', '*', rule[2]])
+
+
+    def ELSEDEFAULT(self, rule):
+        return self.ruleAlreadyExistsPacket(['*', '*', '*'])
+
+
+    def getCodewordtest(self, packet):
+        codeWordList = []
+        subCodeword = []
+        packetCodeword = ""
+        logging.debug("Packet: " + str(packet))
+
+        for i, packet_value in enumerate(packet):
+            exists, sub_codeword = self.treeList[i].getCodeword(packet_value)
+            subCodeword.append(sub_codeword)
+            logging.debug(f"packet[{i}] = {packet_value} Exists{i}: {exists} subcodew{i}: {sub_codeword}")
+
+        if self.ruleAlreadyExistsPacket(packet):
+            packetCodeword += subCodeword[0]
+            packetCodeword += subCodeword[1]
+            packetCodeword += subCodeword[2]
+
+            codeWordList.append(packetCodeword)
+            packetCodeword = ""
+                #return packetCodeword
+
+        if self.ruleAlreadyExistsStar0Star(packet): #5 Over 6
+            packetCodeword += self.treeList[0].getCodeword("*")[1]
+            packetCodeword += subCodeword[1]
+            packetCodeword += self.treeList[2].getCodeword("*")[1]
+
+            logging.debug("PacketCodeword *0*: " + str(packetCodeword))
+            codeWordList.append(packetCodeword)
+            packetCodeword = ""
+            #return packetCodeword
+
+        if self.ruleAlreadyExists0Star0(packet): # 2 0*0   conflict with 6
+            packetCodeword += subCodeword[0]
+            packetCodeword += self.treeList[1].getCodeword("*")[1]
+            packetCodeword += subCodeword[2]
+
+            logging.debug("PacketCodeword 0 * 0: " + str(packetCodeword))
+            codeWordList.append(packetCodeword)
+            logging.debug("Listen: " + str(codeWordList))
+            packetCodeword = ""
+            #return packetCodeword
+
+        if self.ruleAlreadyExistsStarStar0(packet): # 6 confilct with 2
+            packetCodeword += self.treeList[0].getCodeword("*")[1]
+            packetCodeword += self.treeList[1].getCodeword("*")[1]
+            packetCodeword += subCodeword[2]
+
+            logging.debug("PacketCodeword so far: " + str(packetCodeword))
+            codeWordList.append(packetCodeword)
+            packetCodeword = ""
+            #return packetCodeword
+            
+
+        if self.ruleAlreadyExists00Star(packet):
+            packetCodeword += subCodeword[0]
+            packetCodeword += subCodeword[1]
+            packetCodeword += self.treeList[2].getCodeword("*")[1]
+
+            logging.debug("PacketCodeword 00*: " + str(packetCodeword))
+            codeWordList.append(packetCodeword)
+            packetCodeword = ""
+                #return packetCodeword
+
+        
+        if self.ruleAlreadyExists0StarStar(packet):
+            packetCodeword += subCodeword[0]
+            packetCodeword += self.treeList[1].getCodeword("*")[1]
+            packetCodeword += self.treeList[2].getCodeword("*")[1]
+
+            logging.debug("PacketCodeword for 0**: " + str(packetCodeword))
+            codeWordList.append(packetCodeword)
+            packetCodeword = ""
+            #return packetCodeword 
+
+        if self.ruleAlreadyExistsStar00(packet):  #6
+            packetCodeword += self.treeList[0].getCodeword("*")[1]
+            packetCodeword += subCodeword[1]
+            packetCodeword += subCodeword[2]
+            logging.debug("PacketCodeword for *00: " + str(packetCodeword))
+            codeWordList.append(packetCodeword)
+            packetCodeword = ""
+            #return packetCodeword
+
+        if self.ELSEDEFAULT(packet):
+            ishere, subCodeword00= self.treeList[0].getCodeword("*")
+            if not ishere:
+                raise Exception("Error there is no wildcard route for tree0")
+            packetCodeword += subCodeword00
+            ishere, subCodeword11= self.treeList[1].getCodeword("*")
+            if not ishere:
+                raise Exception("Error there is no wildcard route for tree1")
+            packetCodeword += subCodeword11
+            ishere, subCodeword22= self.treeList[2].getCodeword("*")
+            if not ishere:
+                raise Exception("Error there is no wildcard route for tree2")
+            packetCodeword += subCodeword22
+            codeWordList.append(packetCodeword)
+            logging.debug("Default: " + str(packetCodeword))
+            packetCodeword = ""
+
+
+        logging.debug(packetCodeword)
+        #codeWordList.append(packetCodeword)
+        logging.debug("Listen: " + str(codeWordList))
+
+        return codeWordList
+
+
+
+    def getCodewordtest2(self, packet): # More readable?
+        codeWordList = []
+        subCodeword = []
+        packetCodeword = ""
+        logging.debug("Packet: " + str(packet))
+
+        for i, packet_value in enumerate(packet):
+            exists, sub_codeword = self.treeList[i].getCodeword(packet_value)
+            subCodeword.append(sub_codeword)
+            logging.debug(f"packet[{i}] = {packet_value} Exists{i}: {exists} subcodew{i}: {sub_codeword}")
+
+        codeword_configs = [
+            (self.ruleAlreadyExistsPacket(packet), [subCodeword[0], subCodeword[1], subCodeword[2]]),
+            (self.ruleAlreadyExistsStar0Star(packet), [self.treeList[0].getCodeword("*")[1], subCodeword[1], self.treeList[2].getCodeword("*")[1]]),
+            (self.ruleAlreadyExists0Star0(packet), [subCodeword[0], self.treeList[1].getCodeword("*")[1], subCodeword[2]]),
+            (self.ruleAlreadyExistsStarStar0(packet), [self.treeList[0].getCodeword("*")[1], self.treeList[1].getCodeword("*")[1], subCodeword[2]]),
+            (self.ruleAlreadyExists00Star(packet), [subCodeword[0], subCodeword[1], self.treeList[2].getCodeword("*")[1]]),
+            (self.ruleAlreadyExists0StarStar(packet), [subCodeword[0], self.treeList[1].getCodeword("*")[1], self.treeList[2].getCodeword("*")[1]]),
+            (self.ruleAlreadyExistsStar00(packet), [self.treeList[0].getCodeword("*")[1], subCodeword[1], subCodeword[2]]),
+        ]
+
+        for condition, codeword_parts in codeword_configs:
+            if condition:
+                packetCodeword += ''.join(codeword_parts)
+                codeWordList.append(packetCodeword)
+                packetCodeword = ""
+                #break
+
+        if not codeWordList:
+            ishere, subCodeword00= self.treeList[0].getCodeword("*")
+            if not ishere:
+                raise Exception("Error there is no wildcard route for tree0")
+            packetCodeword += subCodeword00
+            ishere, subCodeword11= self.treeList[1].getCodeword("*")
+            if not ishere:
+                raise Exception("Error there is no wildcard route for tree1")
+            packetCodeword += subCodeword11
+            ishere, subCodeword22= self.treeList[2].getCodeword("*")
+            if not ishere:
+                raise Exception("Error there is no wildcard route for tree2")
+            packetCodeword += subCodeword22
+            codeWordList.append(packetCodeword)
+            logging.debug("Default: " + str(packetCodeword))
+
+        logging.debug("Listen: " + str(codeWordList))
+        return codeWordList
+
+"""        ###     BEST VERSION BUT DOES NOT WORK :(   ###
+    def getCodewordtest3(self, packet): 
+        codeWordList = []
+        subCodeword = []
+        packetCodeword = ""
+        logging.debug("Packet: " + str(packet))
+        rules = {
+            'ruleAlreadyExistsPacket': [0, 1, 2],
+            'ruleAlreadyExistsStar0Star': ['*', 1, '*'],
+            'ruleAlreadyExists0Star0': [0, '*', 2],
+            'ruleAlreadyExistsStarStar0': ['*', '*', 2],
+            'ruleAlreadyExists00Star': [0, 1, '*'],
+            'ruleAlreadyExists0StarStar': [0, '*', '*'],
+            'ruleAlreadyExistsStar00': ['*', 1, 2],
+            'ELSEDEFAULT': ['*', '*', '*']
+        }
+
+        for i, packet_value in enumerate(packet):
+            exists, sub_codeword = self.treeList[i].getCodeword(packet_value)
+            subCodeword.append(sub_codeword)
+            logging.debug(f"packet[{i}] = {packet_value} Exists{i}: {exists} subcodew{i}: {sub_codeword}")
+
+        for rule, values in rules.items():
+            if getattr(self, rule)(packet):
+                for value in values:
+                    if value == '*':
+                        packetCodeword += self.treeList[values.index(value)].getCodeword("*")[1]
+                    else:
+                        packetCodeword += subCodeword[value]
+                codeWordList.append(packetCodeword)
+                logging.debug(f"PacketCodeword {rule}: {str(packetCodeword)}")
+                packetCodeword = ""
+                break
+
+        logging.debug(packetCodeword)
+        logging.debug("Listen: " + str(codeWordList))
+        return codeWordList
+ """

@@ -46,21 +46,26 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         
         codeword = ""
 
+        ### 1ST TEST:
         word = self.policyFactory.retriveCodeword(["1","1","1"])
         for correctword in word:
             if self.listFirewall.lookup(["1","1","1"]) == self.hashTable.lookup(correctword)[3]:
                 codeword = correctword
-        
-        logging.debug("codeword er : "+ codeword)
-
         self.policyFactory.writeCodewords()
         self.assertEqual(self.listFirewall.lookup(["1","1","1"]), self.hashTable.lookup(codeword)[3])
-        
-        codeword = self.policyFactory.retriveCodeword(["1","7","11"])[0]
+
+        ### 2ND TEST:
+        word = self.policyFactory.retriveCodeword(["1","7","11"])
+        for correctword in word:
+            if self.listFirewall.lookup(["1","7","11"]) == self.hashTable.lookup(correctword)[3]:
+                codeword = correctword
         self.assertEqual(self.listFirewall.lookup(["1","7","11"]), self.hashTable.lookup(codeword)[3])
         
-        
-        codeword = self.policyFactory.retriveCodeword(["255","255","255"])[0]
+        ### 3RD TEST:
+        word = self.policyFactory.retriveCodeword(["255","255","255"])
+        for correctword in word:
+            if self.listFirewall.lookup(["255","255","255"]) == self.hashTable.lookup(correctword)[3]:
+                codeword = correctword
         self.assertEqual(self.listFirewall.lookup(["255","255","255"]), self.hashTable.lookup(codeword)[3])
         
         

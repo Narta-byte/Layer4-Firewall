@@ -19,7 +19,7 @@ class ListFirewall:
         for i in range(len(thisRule)):
             if thisRule[i] == inputRule[i]: 
                 continue
-            elif thisRule[i] == "*" or inputPacket[i] == "*":   
+            elif thisRule[i] == "*" or inputRule[i] == "*":   
                 continue 
             else:
                 return False

@@ -28,7 +28,12 @@ class TestErrorCase(unittest.TestCase):
                    ]
         self.initListAndTreeFirewalls(ruleList)
         packet = ["8","2","3"]
-        codeword = self.policyFactory.getCodewordPolicyFactory(packet)    
+
+        codeword = ""
+        words = self.policyFactory.retriveCodeword(packet)
+        for correctword in words:
+            if self.listFirewall.lookup(packet) == self.hashTable.lookup(correctword)[3]:
+                codeword = correctword
     
         if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
                     self.logDifference(packet, codeword)

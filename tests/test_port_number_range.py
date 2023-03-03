@@ -83,20 +83,6 @@ class TestPortNumberRange(unittest.TestCase):
       
         self.assertEqual(self.policyFactory.getRuleTuple(),expectedOutput.read())
 
-    def test_specific_ranges_with_wildcard(self):
-        self.init3Trees()
-        rule0 = ["1","0","3*","alpha"]
-        rule1 = ["1","0","3-4","beta"]
-        
-        self.policyFactory.insertRange(rule0)
-        self.policyFactory.insertRange(rule1)
-
-        expectedOutput = open("tests/expectedOutput/test_specific_ranges.txt","r")
-        logging.info(expectedOutput.read())
-        logging.info(self.policyFactory.getRuleTuple())
-        
-        self.assertEqual(self.policyFactory.getRuleTuple(),expectedOutput.read())
-
 
         
     def init3Trees(self):

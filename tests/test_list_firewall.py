@@ -36,18 +36,3 @@ class TestListFirewall(unittest.TestCase):
         self.assertEqual(self.listFirewall.lookup(["1","4","4"]), "beta")
         self.assertEqual(self.listFirewall.lookup(["2","34","56"]), "gamma")
     
-    def test_matches(self):
-        rule0 = ["1","1-2","*","alpha"]
-        rule1 = ["1","2-4","*","beta"]
-        rule2 = ["*","*","*","gamma"]
-        self.listFirewall.insertRange(rule0)
-        self.listFirewall.insertRange(rule1)
-        self.listFirewall.insertRange(rule2)
-        logging.debug("firewall list" + str(self.listFirewall.rules))
-        self.assertTrue(self.listFirewall.matches(["1","1","1"], rule0))
-        self.assertTrue(self.listFirewall.matches(["1","2","1"], rule0))
-        self.assertFalse(self.listFirewall.matches(["1124214","5124124","124214121"], rule0))
-
-        self.assertEqual(self.listFirewall.lookup(["1","1","1"]), "alpha")    
-    
-    

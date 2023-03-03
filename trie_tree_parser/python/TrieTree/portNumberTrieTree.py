@@ -14,17 +14,18 @@ class PortNumberTrieNode(trieTree.TrieNode):
         self.aggrateRule = ""
         self.aggragateChildren = {}
         self.codeword = ""
+        self.precedence = 0
 class PortNumberTrieTree(trieTree.TrieTree):
     def __init__(self,ch = ''):
         self.root = PortNumberTrieNode(ch)
         self.root.color = "#123456"
+        self.treePrecedence = 0
         logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
         datefmt='%d-%m-%Y:%H:%M:%S',
         level=logging.DEBUG,
         filename='logs.txt')
-    
 
-    def insert(self, key, strRule,codeword):
+    def insert(self, key, strRule, codeword, precedence):
         if key != "*":
             key = format(int(key), '016b')
         
@@ -62,6 +63,7 @@ class PortNumberTrieTree(trieTree.TrieTree):
                     
                     temp.color = "#694200"
                     temp.codeword = codeword
+                    temp.precedence = precedence
                     
                     
         crawl.isEnd = True
@@ -90,10 +92,10 @@ class PortNumberTrieTree(trieTree.TrieTree):
                 
             else:
            
-                return False, 0
+                return False, 0, -1
         # logging.debug("last : "+str(crawl.codeword))
-        return True, crawl.codeword
-                    
+        return True, crawl.codeword, crawl.precedence
+    
                
                     
                     

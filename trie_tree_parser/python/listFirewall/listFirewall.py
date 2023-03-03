@@ -27,8 +27,8 @@ class ListFirewall:
                 continue 
             else:
                 return False
-        logging.debug("thisRule: "+str(thisRule))
-        logging.debug("inputPacket: "+str(inputPacket))
+        #logging.debug("thisRule: "+str(thisRule))
+        #logging.debug("inputPacket: "+str(inputPacket))
         return True
     
     def insertRange(self, rule):

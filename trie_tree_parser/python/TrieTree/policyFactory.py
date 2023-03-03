@@ -304,12 +304,12 @@ class PolicyFactory:
 
         codeword_configs = [
             (self.ruleAlreadyExistsPacket(packet), [subCodeword[0], subCodeword[1], subCodeword[2]]),
-            (self.ruleAlreadyExistsStar0Star(packet), [self.treeList[0].getCodeword("*")[1], subCodeword[1], self.treeList[2].getCodeword("*")[1]]),
-            (self.ruleAlreadyExists0Star0(packet), [subCodeword[0], self.treeList[1].getCodeword("*")[1], subCodeword[2]]),
             (self.ruleAlreadyExistsStarStar0(packet), [self.treeList[0].getCodeword("*")[1], self.treeList[1].getCodeword("*")[1], subCodeword[2]]),
+            (self.ruleAlreadyExists0Star0(packet), [subCodeword[0], self.treeList[1].getCodeword("*")[1], subCodeword[2]]),
             (self.ruleAlreadyExists00Star(packet), [subCodeword[0], subCodeword[1], self.treeList[2].getCodeword("*")[1]]),
             (self.ruleAlreadyExists0StarStar(packet), [subCodeword[0], self.treeList[1].getCodeword("*")[1], self.treeList[2].getCodeword("*")[1]]),
             (self.ruleAlreadyExistsStar00(packet), [self.treeList[0].getCodeword("*")[1], subCodeword[1], subCodeword[2]]),
+            (self.ruleAlreadyExistsStar0Star(packet), [self.treeList[0].getCodeword("*")[1], subCodeword[1], self.treeList[2].getCodeword("*")[1]]),
         ]
 
         for condition, codeword_parts in codeword_configs:

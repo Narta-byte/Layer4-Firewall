@@ -112,7 +112,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
                 packet[j] = str(random.randint(0,20))
             
             logging.info("")
-            logging.info("NEW PACKET: ")
+            logging.info("NEW PACKET:       packetnum: " + str(i))
             
             codeword = ""
             words = self.policyFactory.retriveCodeword(packet)
@@ -125,14 +125,12 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
 
         #Insert debug statements here for testing
                 
-            logging.info("packetnum: "+str(i))
             logging.debug(" Slår packet op: "+str(packet) + str(self.listFirewall.lookup(packet)))
             logging.debug("Slår hashen op: "+str(self.hashTable.lookup(codeword)))
 
             self.policyFactory.writeCodewords()
 
             packetList.append(packet)
-
             
             self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3])
             #time.sleep(0.5)

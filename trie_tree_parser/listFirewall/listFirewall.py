@@ -18,4 +18,11 @@ class ListFirewall:
             return True
         for i in range(len(thisRule)):
             if thisRule[i] == inputRule[i]: 
-                
+                continue
+            elif thisRule[i] == "*" or inputPacket[i] == "*":   
+                continue 
+            else:
+                return False
+            logging.debug("thisRule: "+str(thisRule))
+            logging.debug("inputPacket: "+str(inputPacket))
+        return True

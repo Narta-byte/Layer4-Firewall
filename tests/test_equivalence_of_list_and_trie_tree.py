@@ -69,7 +69,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         self.assertEqual(self.listFirewall.lookup(["255","255","255"]), self.hashTable.lookup(codeword)[3])
         
         
-    def test_randomPackets(self): # TEST BRANCH CREATION
+    def test_randomPackets(self): # Test 1000 random packages vs firewall list
         words = []
         ruleList = []
         random.seed(311415)
@@ -115,13 +115,14 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             logging.info("NEW PACKET:       packetnum: " + str(i))
             
             codeword = ""
-            words = self.policyFactory.retriveCodeword(packet)
+            codeword = self.policyFactory.retriveCodeword(packet)
+            #logging.debug("(codeword List): " + str(words))
 
-            for correctword in words:
+            """ for correctword in words:
                 if self.listFirewall.lookup(packet) == self.hashTable.lookup(correctword)[3]:
-                    codeword = correctword
+                    codeword = correctword"""
             
-            logging.debug("(codeword) " + codeword)
+            logging.debug("(codeword) " + str(codeword))
 
         #Insert debug statements here for testing
                 
@@ -133,16 +134,13 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             packetList.append(packet)
             
             self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3])
-            #time.sleep(0.5)
     
-
-
 
 
             ### DEBUG TESTS ABOVE ###
 
-
-            """ logging.debug("packetnum: " + str(i) + " firewalll: "+str(packet) + str(self.listFirewall.lookup(packet)))
+""" 
+            logging.debug("packetnum: " + str(i) + " firewalll: "+str(packet) + str(self.listFirewall.lookup(packet)))
             logging.debug("Lookupfirewall: " + str(self.listFirewall.lookup(packet)))
             logging.debug("Lookup hash    : " + str(self.hashTable.lookup(codeword)))
             logging.debug("(codeword) " + codeword)
@@ -170,4 +168,5 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
 
             for packet in packetList:
                 prettyPacketList += str(packet) + "\n"
-            file.write(prettyPacketList) """
+            file.write(prettyPacketList)
+ """

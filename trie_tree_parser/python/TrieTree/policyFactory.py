@@ -9,10 +9,11 @@ class PolicyFactory:
         self.ruleCodeWord = ""
         self.codewordLength = 8
     def insertRuleIntoTree(self, rule, tree):
-        i = 0
+        # i = 0
         ruleCodeword = ""
-        for tree in self.treeList:
+        for i, tree in enumerate(self.treeList):
             exists, codeword, precedence = tree.getCodeword(rule[i])
+            
             if not exists:
                 precedence = tree.treePrecedence
                 tree.treePrecedence += 1
@@ -20,7 +21,7 @@ class PolicyFactory:
             
             ruleCodeword += codeword
             tree.insert(rule[i], rule[len(rule)-1], codeword, precedence)
-            i += 1
+            # i += 1
         return ruleCodeword
     
     def ruleAlreadyExists(self,rule):
@@ -119,6 +120,8 @@ class PolicyFactory:
         random.seed(seed)
         
 
+
+
     def retriveCodeword(self, packet): # More readable?
         codeWordList = []
         codeword = []
@@ -127,8 +130,16 @@ class PolicyFactory:
 
         for i, packet_value in enumerate(packet):
             exists, codewordSegment, precedence = self.treeList[i].getCodeword(packet_value)
-            codeword.append(codewordSegment)
-            logging.debug(f"packet[{i}] = {packet_value} Exists{i}: {exists} subcodew{i}: {codewordSegment} precedence{i}: {precedence}")
+            logging.debug(f"packet[{i}] = {packet_value} Exists{i}: {exists} subcode{i}: {codewordSegment} precedence{i}: {precedence}")
+            
+            if exists:
+                codeword.append((codewordSegment, precedence))
+            else: 
+                exists, codewordSegment, precedence = self.treeList[i].getCodeword("*")
+                if not exists:
+                    raise Exception("Error there is no wildcard route for tree " + str(i))
+                codeword.append((codewordSegment, precedence))
+                
 
         
         possibleCodewords = []
@@ -144,35 +155,65 @@ class PolicyFactory:
                     if self.ruleAlreadyExistsPacket(tempPacket):
                         possibleCodewords.append(tempCodeword)
         logging.debug("Possible codewords: " + str(possibleCodewords))
-
+        oldPrecedence = [99999999999999999999, 99999999999999999, 999999999999999]    #INF ?
+        
+        # [[(1,2),(3,4),(5,6)], [(1,2),(3,4),(5,6)], [(1,2),(3,4),(5,6)]]
+        answerCodeword = ["temp", "temp", "temp"]
         for possibleCodeword in possibleCodewords:
-            packetCodeword += ''.join(possibleCodeword)
-            codeWordList.append(packetCodeword)
-            packetCodeword = ""
+            logging.debug("Possible codeword: " + str(possibleCodeword))
+            #logging.debug("Element[i][1] = " + str(element[i][1]))
+            for i, element in enumerate(possibleCodeword):
+                logging.debug("Element[1] = " + str(element[1]))
+                if element[1] < oldPrecedence[i]:
+                    oldPrecedence[i] = element[1]
+                    answerCodeword[i] = element[0]
+                    
+        
+        
+        for part in answerCodeword:
+            packetCodeword += part
+        logging.debug("Answer codeword: " + packetCodeword)
+        return packetCodeword
 
-        if not codeWordList:
-            for i in range(3):
-                exists, codewordSegment, precedence = self.treeList[i].getCodeword("*")
-                if not exists:
-                    raise Exception("Error there is no wildcard route for tree0")
-                packetCodeword+= codewordSegment
-            codeWordList.append(packetCodeword)
 
-        logging.debug("Listen: " + str(codeWordList))
-        return codeWordList
+        # for possibleCodeword in possibleCodewords:
+        #     # packetCodeword += ''.join( possibleCodeword[0][0] )
+        #     packetCodeword += ''.join([i[0] for i in possibleCodeword] )
+        #     codeWordList.append(packetCodeword)
+        #     packetCodeword = ""
+
+        # if not codeWordList:
+        #     for i in range(3):
+        #         exists, codewordSegment, precedence = self.treeList[i].getCodeword("*")
+        #         if not exists:
+        #             raise Exception("Error there is no wildcard route for tree0")
+        #         packetCodeword+= codewordSegment
+        #     codeWordList.append(packetCodeword)
+
+        # logging.debug("Listen: " + str(codeWordList))
+        # return codeWordList
 
     def ruleAlreadyExistsPacket(self, rule): #Does the inc. packet exist in previoustuple
     # if the rules fields are equal skip the iteration and let the old rule have precedence
         for oldRuleTuple in self.previousRuleTuple:
             if oldRuleTuple[0][0:len(rule)] == rule[0:len(rule)]:
-                logging.debug("Matching in codewords with packet:" + str(oldRuleTuple[0][0:len(rule)])) #+ " == " + str(rule[0:len(rule)]) + " ?"
+                logging.debug("Matching in codewords with packet:" + str(oldRuleTuple[0][0:len(rule)]))
                 return True
         return False
         
     def AppendTemp(self, packet, codeword, x, tempCodeword, tempPacket, cnt):
+        logging.debug("codeword: " + str(codeword) + " x: " + str(x) + " cnt: " + str(cnt))
+        logging.debug("codeword[cnt]: " + str(codeword[cnt]))
         if bool(x):
-            tempCodeword.append(codeword[cnt])
+            precedence = codeword[cnt][1]
+            tempCodeword.append((codeword[cnt][0], precedence))
             tempPacket.append(packet[cnt])
         else:
-            tempCodeword.append(self.treeList[cnt].getCodeword("*")[1])
+            junk, codeword, precedence = self.treeList[cnt].getCodeword("*")
+            tempCodeword.append((codeword, precedence))
             tempPacket.append("*")
+ 
+       
+# >>> a = [(1, u'abc'), (2, u'def')]
+# >>> [i[0] for i in a]
+# [1, 2]

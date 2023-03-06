@@ -17,12 +17,19 @@ class PolicyFactory:
             
             if not exists:
                 precedence = tree.treePrecedence
+                if rule[i] == '*':
+                    precedence += 32
+                    #tree.precedence += 16
+                #logging.debug("Inde i not exists: codeword: " + str((rule[i])))
+                #if codeword == '*':
+                 #   tree.getPrecedence += 16
                 tree.treePrecedence += 1
                 codeword = self.generateCodeword(self.codewordLength)
             
             ruleCodeword += codeword
             tree.insert(rule[i], rule[len(rule)-1], codeword, precedence)
             # i += 1
+            #logging.debug("Rule: " + str(rule) + " prece " + str(precedence))
         return ruleCodeword
     
     def ruleAlreadyExists(self,rule):
@@ -109,6 +116,7 @@ class PolicyFactory:
         for rule in self.previousRuleTuple:
             # file.write(str(rule[0]) + " : " + rule[1] + "\n")
             file.write(str(rule[0]) + " : " + rule[1] +  "\n")
+            file.write(str(rule[0]) + " : " + rule[1] + "\n")
         file.close() 
     
     def getRuleTuple(self):
@@ -140,8 +148,6 @@ class PolicyFactory:
                 if not exists:
                     raise Exception("Error there is no wildcard route for tree " + str(i))
                 codeword.append((codewordSegment, precedence))
-                
-
         
         possibleCodewords = []
         for x in range(2):
@@ -152,65 +158,41 @@ class PolicyFactory:
                     self.AppendTemp(packet, codeword, x, tempCodeword, tempPacket, 0)
                     self.AppendTemp(packet, codeword, y, tempCodeword, tempPacket, 1)
                     self.AppendTemp(packet, codeword, z, tempCodeword, tempPacket, 2)
-                        
+                    
                     if self.ruleAlreadyExistsPacket(tempPacket):
                         possibleCodewords.append(tempCodeword)
         logging.debug("Possible codewords: " + str(possibleCodewords))
         
-        combinations = []
-        for i in range(2):
-            for j in range(2):
-                for k in range(2):
-                    combinations.append([possibleCodewords[i], possibleCodewords[j], possibleCodewords[k]])
-        logging.debug("Combinations: " + str(combinations))
-
-
-        answerlist = []
-        for combination in combinations:
-            answer = ""
-            logging.debug("Combination: " + str(combination))
-            for element in combination:
-                answer+= element[0]
-                
-            answerlist.append(answer)
-        logging.debug("Answerlist: " + str(answerlist))    
-            
-            
-        oldPrecedence = [99999999999999999999, 99999999999999999, 999999999999999]    #INF ?
-        answerCodeword = ["temp", "temp", "temp"]
+        answerList = []
         for possibleCodeword in possibleCodewords:
+            answer = ""
+            for i in range(3):
+                answer += possibleCodeword[i][0]
+            answerList.append(answer)
+        logging.debug("Answer list: " + str(answerList))
+        return answerList
+        
+        """       totalPrecedence = []
+        for possibleCodeword in possibleCodewords:
+            tempPrecedence = 0
             logging.debug("Possible codeword: " + str(possibleCodeword))
-            #logging.debug("Element[i][1] = " + str(element[i][1]))
             for i, element in enumerate(possibleCodeword):
                 logging.debug("Element[1] = " + str(element[1]))
-                if element[1] < oldPrecedence[i]:
-                    oldPrecedence[i] = element[1]
-                    answerCodeword[i] = element[0]
-                    
+                tempPrecedence += element[1]
+                if i == 2:
+                    totalPrecedence.append(tempPrecedence)
+
+        logging.debug(possibleCodewords[totalPrecedence.index(min(totalPrecedence))])
+        logging.debug(totalPrecedence)
         
         
-        for part in answerCodeword:
-            packetCodeword += part
+        min_index = totalPrecedence.index(min(totalPrecedence))
+        for i in range(len(possibleCodewords[min_index])):
+            packetCodeword += possibleCodewords[min_index][i][0]
+
+        
         logging.debug("Answer codeword: " + packetCodeword)
-        return packetCodeword
-
-
-        # for possibleCodeword in possibleCodewords:
-        #     # packetCodeword += ''.join( possibleCodeword[0][0] )
-        #     packetCodeword += ''.join([i[0] for i in possibleCodeword] )
-        #     codeWordList.append(packetCodeword)
-        #     packetCodeword = ""
-
-        # if not codeWordList:
-        #     for i in range(3):
-        #         exists, codewordSegment, precedence = self.treeList[i].getCodeword("*")
-        #         if not exists:
-        #             raise Exception("Error there is no wildcard route for tree0")
-        #         packetCodeword+= codewordSegment
-        #     codeWordList.append(packetCodeword)
-
-        # logging.debug("Listen: " + str(codeWordList))
-        # return codeWordList
+        return packetCodeword """
 
     def ruleAlreadyExistsPacket(self, rule): #Does the inc. packet exist in previoustuple
     # if the rules fields are equal skip the iteration and let the old rule have precedence

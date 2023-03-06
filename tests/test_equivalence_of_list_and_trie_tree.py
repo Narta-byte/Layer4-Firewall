@@ -48,25 +48,25 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
 
         ### 1ST TEST:
         word = self.policyFactory.retriveCodeword(["1","1","1"])
-        for correctword in word:
-            if self.listFirewall.lookup(["1","1","1"]) == self.hashTable.lookup(correctword)[3]:
-                codeword = correctword
+#        for correctword in word:
+ #           if self.listFirewall.lookup(["1","1","1"]) == self.hashTable.lookup(correctword)[3]:
+  #              codeword = correctword
         self.policyFactory.writeCodewords()
-        self.assertEqual(self.listFirewall.lookup(["1","1","1"]), self.hashTable.lookup(codeword)[3])
+        self.assertEqual(self.listFirewall.lookup(["1","1","1"]), self.hashTable.lookup(word)[3])
 
         ### 2ND TEST:
         word = self.policyFactory.retriveCodeword(["1","7","11"])
-        for correctword in word:
-            if self.listFirewall.lookup(["1","7","11"]) == self.hashTable.lookup(correctword)[3]:
-                codeword = correctword
-        self.assertEqual(self.listFirewall.lookup(["1","7","11"]), self.hashTable.lookup(codeword)[3])
+        #for correctword in word:
+         #   if self.listFirewall.lookup(["1","7","11"]) == self.hashTable.lookup(correctword)[3]:
+          #      codeword = correctword
+        self.assertEqual(self.listFirewall.lookup(["1","7","11"]), self.hashTable.lookup(word)[3])
         
         ### 3RD TEST:
         word = self.policyFactory.retriveCodeword(["255","255","255"])
-        for correctword in word:
-            if self.listFirewall.lookup(["255","255","255"]) == self.hashTable.lookup(correctword)[3]:
-                codeword = correctword
-        self.assertEqual(self.listFirewall.lookup(["255","255","255"]), self.hashTable.lookup(codeword)[3])
+#        for correctword in word:
+ #           if self.listFirewall.lookup(["255","255","255"]) == self.hashTable.lookup(correctword)[3]:
+  #              codeword = correctword
+        self.assertEqual(self.listFirewall.lookup(["255","255","255"]), self.hashTable.lookup(word)[3])
         
     def test_dumbalgorihm(self):
         rule0 = ["1-5", "6-10", "10-12", "alpha"] 
@@ -84,6 +84,8 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
     def test_randomPackets(self): # Test 1000 random packages vs firewall list
         words = []
         ruleList = []
+        ruleList.append(['0', '*', '*', 'beta'])
+        #self.policyFactory.insertRule(['0', '*', '*', 'beta'])
         random.seed(311415)
         for _ in range(0,100):
             rule = ["","","",""]
@@ -114,8 +116,8 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         self.policyFactory.insertRange(["*","*","*","delta"])
         self.listFirewall.insertRange(["*","*","*","delta"])
         
-        for rule in self.policyFactory.previousRuleTuple:
-            self.hashTable.insert(rule[1], rule[0])
+        for rank, rule in enumerate(self.policyFactory.previousRuleTuple):
+            self.hashTable.insert(rule[1], (rule[0], rank))
         
         packetList = []
         for i in range(0,1000):
@@ -127,7 +129,19 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             logging.info("NEW PACKET:       packetnum: " + str(i))
             
             codeword = ""
-            codeword = self.policyFactory.retriveCodeword(packet)
+            anwserList = self.policyFactory.retriveCodeword(packet)
+            bestAnswer = ""
+            oldRank = 10000000000000000
+            for answer in anwserList:
+                thisAnswer = self.hashTable.lookup(answer)
+                logging.debug("answer thisAnswer: " + str(thisAnswer))
+                if thisAnswer[0] != self.hashTable.defualtRule:
+                    if thisAnswer[1] < oldRank:
+                        logging.debug("current best answer: " + str(thisAnswer))  
+                        bestAnswer = answer
+                        oldRank = thisAnswer[1]
+            codeword = bestAnswer
+            logging.debug("answer table lookup: " + str(self.hashTable.lookup(bestAnswer)))
             #logging.debug("(codeword List): " + str(words))
 
             """ for correctword in words:
@@ -144,8 +158,8 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             self.policyFactory.writeCodewords()
 
             packetList.append(packet)
-            
-            self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3])
+            logging.debug("packetnum: " + str(i) + " firewalll: "+str(packet) + str(self.listFirewall.lookup(packet)))
+            self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[0][3])
     
 
 

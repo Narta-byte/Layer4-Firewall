@@ -8,7 +8,7 @@ class PolicyFactory:
         self.treeList = treeList
         self.previousRuleTuple = []
         self.ruleCodeWord = ""
-        self.codewordLength = 8
+        self.codewordLength = 16
     def insertRuleIntoTree(self, rule, tree):
         # i = 0
         ruleCodeword = ""

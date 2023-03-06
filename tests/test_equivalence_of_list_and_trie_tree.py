@@ -38,48 +38,70 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         self.policyFactory.insertRange(rule0)
         self.policyFactory.insertRange(rule1)
 
-        for rule in self.policyFactory.previousRuleTuple:
-            self.hashTable.insert(rule[1], rule[0])
+        for rank, rule in enumerate(self.policyFactory.previousRuleTuple):
+            self.hashTable.insert(rule[1], (rule[0], rank))
             
         self.listFirewall.insertRange(rule0)
         self.listFirewall.insert(rule1)
         
+        #1ST TEST
         codeword = ""
+        anwserList = self.policyFactory.retriveCodeword(["1","1","1"])
+        bestAnswer = ""
+        oldRank = 10000000000000000
+        for answer in anwserList:
+            thisAnswer = self.hashTable.lookup(answer)
+            logging.debug("answer thisAnswer: " + str(thisAnswer))
+            if thisAnswer[0] != self.hashTable.defualtRule:
+                logging.debug("codeword!: " + str(thisAnswer))
+                if int(thisAnswer[1]) < oldRank:
+                    logging.debug("current best answer: " + str(thisAnswer))  
+                    bestAnswer = answer
+                    oldRank = thisAnswer[1]
+        codeword = bestAnswer
 
-        ### 1ST TEST:
-        word = self.policyFactory.retriveCodeword(["1","1","1"])
-#        for correctword in word:
- #           if self.listFirewall.lookup(["1","1","1"]) == self.hashTable.lookup(correctword)[3]:
-  #              codeword = correctword
+        logging.debug("codeword!: " + str(codeword))
+
         self.policyFactory.writeCodewords()
-        self.assertEqual(self.listFirewall.lookup(["1","1","1"]), self.hashTable.lookup(word)[3])
+        self.assertEqual(self.listFirewall.lookup(["1","1","1"]), self.hashTable.lookup(codeword)[0][3])
 
-        ### 2ND TEST:
-        word = self.policyFactory.retriveCodeword(["1","7","11"])
-        #for correctword in word:
-         #   if self.listFirewall.lookup(["1","7","11"]) == self.hashTable.lookup(correctword)[3]:
-          #      codeword = correctword
-        self.assertEqual(self.listFirewall.lookup(["1","7","11"]), self.hashTable.lookup(word)[3])
+        #2ND TEST
+        #word = self.policyFactory.retriveCodeword(["1","7","11"])
+        codeword = ""
+        anwserList = self.policyFactory.retriveCodeword(["1","7","11"])
+        bestAnswer = ""
+        oldRank = 10000000000000000
+        for answer in anwserList:
+            thisAnswer = self.hashTable.lookup(answer)
+            logging.debug("answer thisAnswer: " + str(thisAnswer))
+            if thisAnswer[0] != self.hashTable.defualtRule:
+                if thisAnswer[1] < oldRank:
+                    logging.debug("current best answer: " + str(thisAnswer))  
+                    bestAnswer = answer
+                    oldRank = thisAnswer[1]
+        codeword = bestAnswer
+        self.assertEqual(self.listFirewall.lookup(["1","7","11"]), self.hashTable.lookup(codeword)[0][3])
         
-        ### 3RD TEST:
-        word = self.policyFactory.retriveCodeword(["255","255","255"])
-#        for correctword in word:
- #           if self.listFirewall.lookup(["255","255","255"]) == self.hashTable.lookup(correctword)[3]:
-  #              codeword = correctword
-        self.assertEqual(self.listFirewall.lookup(["255","255","255"]), self.hashTable.lookup(word)[3])
-        
-    def test_dumbalgorihm(self):
-        rule0 = ["1-5", "6-10", "10-12", "alpha"] 
-        rule1 = ["*","*","*","beta"]
-        self.policyFactory.insertRange(rule0)
-        self.policyFactory.insertRange(rule1)
+        #3RD TEST
+        #word = self.policyFactory.retriveCodeword(["255","255","255"])
 
-        for rule in self.policyFactory.previousRuleTuple:
-            self.hashTable.insert(rule[1], rule[0])
-            
-        self.listFirewall.insertRange(rule0)
-        self.listFirewall.insert(rule1)
+        #word = self.policyFactory.retriveCodeword(["255","255","255"])
+        codeword = ""
+        anwserList = self.policyFactory.retriveCodeword(["255","255","255"])
+        bestAnswer = ""
+        oldRank = 10000000000000000
+        for answer in anwserList:
+            thisAnswer = self.hashTable.lookup(answer)
+            logging.debug("answer thisAnswer: " + str(thisAnswer))
+            if thisAnswer[0] != self.hashTable.defualtRule:
+                if thisAnswer[1] < oldRank:
+                    logging.debug("current best answer: " + str(thisAnswer))  
+                    bestAnswer = answer
+                    oldRank = thisAnswer[1]
+        codeword = bestAnswer
         
+
+        self.assertEqual(self.listFirewall.lookup(["255","255","255"]), self.hashTable.lookup(codeword)[0][3])
         
     def test_randomPackets(self): # Test 1000 random packages vs firewall list
         words = []
@@ -91,16 +113,15 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             rule = ["","","",""]
             for i in range(0,3):
                 chance = random.randint(0,100)
-                if chance <= 33:
-                    rule[i] = str(random.randint(0,20))
-                elif chance > 33 and chance < 66:
+                if chance <= 50:
+                    rule[i] = str(random.randint(0,255))
+                elif chance > 50 and chance < 55:
                     if rule[0] == "*" and rule[1] == "*":
-                        rule[i] = str(random.randint(0,20))
+                        rule[i] = str(random.randint(0,255))
                     else:
                         rule[i] = "*"
-                elif chance >= 66:
-                    rule[i] = str(random.randint(0,2)) + "-" + str(random.randint(3,4))
-            
+                elif chance >= 55:
+                    rule[i] = str(random.randint(1,2)) + "-" + str(random.randint(3,4))
             chance = random.randint(0,100)
             if chance <= 33:
                 rule[3] = "alpha"
@@ -116,6 +137,10 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         self.policyFactory.insertRange(["*","*","*","delta"])
         self.listFirewall.insertRange(["*","*","*","delta"])
         
+        file = open("list_firewall.txt", "w")
+        file.write(self.listFirewall.getRules())
+        file.close()
+        
         for rank, rule in enumerate(self.policyFactory.previousRuleTuple):
             self.hashTable.insert(rule[1], (rule[0], rank))
         
@@ -123,7 +148,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         for i in range(0,1000):
             packet = ["","",""]
             for j in range(0,3):
-                packet[j] = str(random.randint(0,20))
+                packet[j] = str(random.randint(0,255))
             
             logging.info("")
             logging.info("NEW PACKET:       packetnum: " + str(i))

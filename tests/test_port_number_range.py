@@ -93,3 +93,4 @@ class TestPortNumberRange(unittest.TestCase):
        
        self.policyFactory = policyFactory.PolicyFactory(treeList)
        self.policyFactory.setSeed(311415)
+       self.policyFactory.codewordLength = 8

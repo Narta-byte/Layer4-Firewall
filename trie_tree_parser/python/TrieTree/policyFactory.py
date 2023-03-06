@@ -1,6 +1,7 @@
 
 import random
 import logging
+import itertools
 
 class PolicyFactory:
     def __init__(self,treeList):
@@ -155,9 +156,27 @@ class PolicyFactory:
                     if self.ruleAlreadyExistsPacket(tempPacket):
                         possibleCodewords.append(tempCodeword)
         logging.debug("Possible codewords: " + str(possibleCodewords))
-        oldPrecedence = [99999999999999999999, 99999999999999999, 999999999999999]    #INF ?
         
-        # [[(1,2),(3,4),(5,6)], [(1,2),(3,4),(5,6)], [(1,2),(3,4),(5,6)]]
+        combinations = []
+        for i in range(2):
+            for j in range(2):
+                for k in range(2):
+                    combinations.append([possibleCodewords[i], possibleCodewords[j], possibleCodewords[k]])
+        logging.debug("Combinations: " + str(combinations))
+
+
+        answerlist = []
+        for combination in combinations:
+            answer = ""
+            logging.debug("Combination: " + str(combination))
+            for element in combination:
+                answer+= element[0]
+                
+            answerlist.append(answer)
+        logging.debug("Answerlist: " + str(answerlist))    
+            
+            
+        oldPrecedence = [99999999999999999999, 99999999999999999, 999999999999999]    #INF ?
         answerCodeword = ["temp", "temp", "temp"]
         for possibleCodeword in possibleCodewords:
             logging.debug("Possible codeword: " + str(possibleCodeword))
@@ -202,8 +221,8 @@ class PolicyFactory:
         return False
         
     def AppendTemp(self, packet, codeword, x, tempCodeword, tempPacket, cnt):
-        logging.debug("codeword: " + str(codeword) + " x: " + str(x) + " cnt: " + str(cnt))
-        logging.debug("codeword[cnt]: " + str(codeword[cnt]))
+        #logging.debug("codeword: " + str(codeword) + " x: " + str(x) + " cnt: " + str(cnt))
+        #logging.debug("codeword[cnt]: " + str(codeword[cnt]))
         if bool(x):
             precedence = codeword[cnt][1]
             tempCodeword.append((codeword[cnt][0], precedence))

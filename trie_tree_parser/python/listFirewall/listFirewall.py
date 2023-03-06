@@ -11,7 +11,7 @@ class ListFirewall:
     def lookup(self, inputPacket):
         for thisRule in self.rules:
             if self.matches(thisRule, inputPacket):
-                logging.debug("Matched rule: "+str(thisRule)+" Matched with " + str(inputPacket))
+                logging.debug("Packet matched w rule: "+str(thisRule)+" (Packet:) " + str(inputPacket))
                 return thisRule[len(thisRule)-1]
         return "No Match"
     
@@ -23,7 +23,7 @@ class ListFirewall:
         for i in range(len(thisRule)-1):
             if thisRule[i] == inputPacket[i]: 
                 continue
-            elif thisRule[i] == "*" or inputPacket[i] == "*":   
+            elif thisRule[i] == "*" or inputPacket[i] == "*":
                 continue 
             else:
                 return False

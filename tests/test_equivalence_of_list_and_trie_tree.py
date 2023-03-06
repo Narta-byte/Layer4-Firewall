@@ -68,6 +68,18 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
                 codeword = correctword
         self.assertEqual(self.listFirewall.lookup(["255","255","255"]), self.hashTable.lookup(codeword)[3])
         
+    def test_dumbalgorihm(self):
+        rule0 = ["1-5", "6-10", "10-12", "alpha"] 
+        rule1 = ["*","*","*","beta"]
+        self.policyFactory.insertRange(rule0)
+        self.policyFactory.insertRange(rule1)
+
+        for rule in self.policyFactory.previousRuleTuple:
+            self.hashTable.insert(rule[1], rule[0])
+            
+        self.listFirewall.insertRange(rule0)
+        self.listFirewall.insert(rule1)
+        
         
     def test_randomPackets(self): # Test 1000 random packages vs firewall list
         words = []

@@ -1,20 +1,35 @@
-03-03-2023:16:25:15 DEBUG    [test_equivalence_of_list_and_trie_tree.py:42] codeword er : 
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:126] Packet: ['1', '1', '1']
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:131] packet[0] = 1 Exists0: True subcodew0: 01111100 precedence0: 0
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:131] packet[1] = 1 Exists1: False subcodew1: 0 precedence1: -1
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:131] packet[2] = 1 Exists2: False subcodew2: 0 precedence2: -1
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:168] Matching in codewords with packet:['*', '*', '*']
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:146] Possible codewords: [['01000011', '01010000', '01011110']]
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:161] Listen: ['010000110101000001011110']
-03-03-2023:16:25:15 DEBUG    [listFirewall.py:14] Matched rule: ['*', '*', '*', 'beta'] Matched with ['1', '1', '1']
-03-03-2023:16:25:15 DEBUG    [test_equivalence_of_list_and_trie_tree.py:55] codeword er : 010000110101000001011110
-03-03-2023:16:25:15 DEBUG    [listFirewall.py:14] Matched rule: ['*', '*', '*', 'beta'] Matched with ['1', '1', '1']
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:126] Packet: ['1', '7', '11']
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:131] packet[0] = 1 Exists0: True subcodew0: 01111100 precedence0: 0
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:131] packet[1] = 7 Exists1: True subcodew1: 11100110 precedence1: 1
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:131] packet[2] = 11 Exists2: True subcodew2: 00100000 precedence2: 1
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:168] Matching in codewords with packet:['*', '*', '*']
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:168] Matching in codewords with packet:['1', '7', '11']
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:146] Possible codewords: [['01000011', '01010000', '01011110'], ['01111100', '11100110', '00100000']]
-03-03-2023:16:25:15 DEBUG    [policyFactory.py:161] Listen: ['010000110101000001011110', '011111001110011000100000']
-03-03-2023:16:25:15 DEBUG    [listFirewall.py:14] Matched rule: ['1', '7', '11', 'alpha'] Matched with ['1', '7', '11']
+06-03-2023:16:47:55 DEBUG    [policyBuilder.py:120] Packet: ['1', '1', '1']
+06-03-2023:16:47:55 DEBUG    [policyBuilder.py:124] packet[0] = 1 Exists0: True subcode0: 0111110000000011 
+06-03-2023:16:47:55 DEBUG    [policyBuilder.py:124] packet[1] = 1 Exists1: False subcode1: 0 
+06-03-2023:16:47:55 DEBUG    [policyBuilder.py:124] packet[2] = 1 Exists2: False subcode2: 0 
+06-03-2023:16:47:55 DEBUG    [policyBuilder.py:161] Matching in codewords with packet:['*', '*', '*']
+06-03-2023:16:47:55 DEBUG    [policyBuilder.py:146] Possible codewords: [['1011101000100010', '0111111001110011', '1100101101100101']]
+06-03-2023:16:47:55 DEBUG    [policyBuilder.py:154] Answer list: ['101110100010001001111110011100111100101101100101']
+06-03-2023:16:47:55 DEBUG    [test_equivalence_of_list_and_trie_tree.py:54] answer thisAnswer: (['*', '*', '*', 'beta'], 75)
+06-03-2023:16:47:55 DEBUG    [test_equivalence_of_list_and_trie_tree.py:56] codeword!: (['*', '*', '*', 'beta'], 75)
+06-03-2023:16:47:55 DEBUG    [test_equivalence_of_list_and_trie_tree.py:58] current best answer: (['*', '*', '*', 'beta'], 75)
+06-03-2023:16:47:55 DEBUG    [test_equivalence_of_list_and_trie_tree.py:63] codeword!: 101110100010001001111110011100111100101101100101
+06-03-2023:16:47:56 DEBUG    [listFirewall.py:14] Packet matched w rule: ['*', '*', '*', 'beta'] (Packet:) ['1', '1', '1']
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:120] Packet: ['1', '7', '11']
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:124] packet[0] = 1 Exists0: True subcode0: 0111110000000011 
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:124] packet[1] = 7 Exists1: True subcode1: 1100000000000011 
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:124] packet[2] = 11 Exists2: True subcode2: 1101010111111101 
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:161] Matching in codewords with packet:['*', '*', '*']
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:161] Matching in codewords with packet:['1', '7', '11']
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:146] Possible codewords: [['1011101000100010', '0111111001110011', '1100101101100101'], ['0111110000000011', '1100000000000011', '1101010111111101']]
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:154] Answer list: ['101110100010001001111110011100111100101101100101', '011111000000001111000000000000111101010111111101']
+06-03-2023:16:47:56 DEBUG    [test_equivalence_of_list_and_trie_tree.py:75] answer thisAnswer: (['*', '*', '*', 'beta'], 75)
+06-03-2023:16:47:56 DEBUG    [test_equivalence_of_list_and_trie_tree.py:78] current best answer: (['*', '*', '*', 'beta'], 75)
+06-03-2023:16:47:56 DEBUG    [test_equivalence_of_list_and_trie_tree.py:75] answer thisAnswer: (['1', '7', '11', 'alpha'], 30)
+06-03-2023:16:47:56 DEBUG    [test_equivalence_of_list_and_trie_tree.py:78] current best answer: (['1', '7', '11', 'alpha'], 30)
+06-03-2023:16:47:56 DEBUG    [listFirewall.py:14] Packet matched w rule: ['1', '7', '11', 'alpha'] (Packet:) ['1', '7', '11']
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:120] Packet: ['255', '255', '255']
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:124] packet[0] = 255 Exists0: False subcode0: 0 
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:124] packet[1] = 255 Exists1: False subcode1: 0 
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:124] packet[2] = 255 Exists2: False subcode2: 0 
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:161] Matching in codewords with packet:['*', '*', '*']
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:146] Possible codewords: [['1011101000100010', '0111111001110011', '1100101101100101']]
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:154] Answer list: ['101110100010001001111110011100111100101101100101']
+06-03-2023:16:47:56 DEBUG    [test_equivalence_of_list_and_trie_tree.py:91] answer thisAnswer: (['*', '*', '*', 'beta'], 75)
+06-03-2023:16:47:56 DEBUG    [test_equivalence_of_list_and_trie_tree.py:94] current best answer: (['*', '*', '*', 'beta'], 75)
+06-03-2023:16:47:56 DEBUG    [listFirewall.py:14] Packet matched w rule: ['*', '*', '*', 'beta'] (Packet:) ['255', '255', '255']

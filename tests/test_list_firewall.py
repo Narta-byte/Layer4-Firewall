@@ -1,6 +1,6 @@
 import random
 import unittest
-import trie_tree_parser.python.listFirewall.listFirewall as listFirewall
+import Parallel_tree_algorithm.python.listFirewall.listFirewall as listFirewall
 import logging
 
 

@@ -1,8 +1,8 @@
 #%%
 import unittest
 # import trie_tree_parser.python.ruleParsers.ruleParser as ruleParser
-import trie_tree_parser.python.TrieTree.ruleParser.ruleParser as ruleParser
-import trie_tree_parser.python.TrieTree.ruleParser.rule as ruleObject
+import Parallel_tree_algorithm.python.TrieTree.ruleParser.ruleParser as ruleParser
+import Parallel_tree_algorithm.python.TrieTree.ruleParser.rule as ruleObject
 
 class TestParser(unittest.TestCase):
     def setUp(self):

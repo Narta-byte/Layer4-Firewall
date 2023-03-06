@@ -1,8 +1,8 @@
 import unittest
-import trie_tree_parser.python.TrieTree.portNumberTrieTree as portnumbertrie
-import trie_tree_parser.python.TrieTree.policyFactory as policyFactory
-import trie_tree_parser.python.listFirewall.listFirewall as listFirewall
-import trie_tree_parser.python.hashTable.cuckooHashTable as cuckooHashTable
+import Parallel_tree_algorithm.python.TrieTree.PolicyTrieTree as portnumbertrie
+import Parallel_tree_algorithm.python.TrieTree.policyBuilder as policyBuilder
+import Parallel_tree_algorithm.python.listFirewall.listFirewall as listFirewall
+import Parallel_tree_algorithm.python.hashTable.cuckooHashTable as cuckooHashTable
 
 import random
 import logging
@@ -15,7 +15,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         self.tree2 = portnumbertrie.PortNumberTrieTree()
         treeList = [self.tree0,self.tree1,self.tree2]
 
-        self.policyFactory = policyFactory.PolicyFactory(treeList)
+        self.policyFactory = policyBuilder.PolicyBuilder(treeList)
         self.policyFactory.setSeed(311415)
         
         self.hashTable = cuckooHashTable.CuckooHashTable()
@@ -29,7 +29,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         
         logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
         datefmt='%d-%m-%Y:%H:%M:%S',
-        level=logging.DEBUG,
+        level=logging.INFO,
         filename='logs.txt')
 
     def test_samePacketsInBoth(self):
@@ -66,7 +66,6 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         self.assertEqual(self.listFirewall.lookup(["1","1","1"]), self.hashTable.lookup(codeword)[0][3])
 
         #2ND TEST
-        #word = self.policyFactory.retriveCodeword(["1","7","11"])
         codeword = ""
         anwserList = self.policyFactory.retriveCodeword(["1","7","11"])
         bestAnswer = ""
@@ -83,9 +82,6 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         self.assertEqual(self.listFirewall.lookup(["1","7","11"]), self.hashTable.lookup(codeword)[0][3])
         
         #3RD TEST
-        #word = self.policyFactory.retriveCodeword(["255","255","255"])
-
-        #word = self.policyFactory.retriveCodeword(["255","255","255"])
         codeword = ""
         anwserList = self.policyFactory.retriveCodeword(["255","255","255"])
         bestAnswer = ""
@@ -104,10 +100,8 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         self.assertEqual(self.listFirewall.lookup(["255","255","255"]), self.hashTable.lookup(codeword)[0][3])
         
     def test_randomPackets(self): # Test 1000 random packages vs firewall list
-        words = []
         ruleList = []
         ruleList.append(['0', '*', '*', 'beta'])
-        #self.policyFactory.insertRule(['0', '*', '*', 'beta'])
         random.seed(311415)
         for _ in range(0,100):
             rule = ["","","",""]
@@ -162,62 +156,22 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
                 logging.debug("answer thisAnswer: " + str(thisAnswer))
                 if thisAnswer[0] != self.hashTable.defualtRule:
                     if thisAnswer[1] < oldRank:
-                        logging.debug("current best answer: " + str(thisAnswer))  
+                        logging.debug("current best answer: " + str(thisAnswer))
                         bestAnswer = answer
                         oldRank = thisAnswer[1]
             codeword = bestAnswer
             logging.debug("answer table lookup: " + str(self.hashTable.lookup(bestAnswer)))
-            #logging.debug("(codeword List): " + str(words))
-
-            """ for correctword in words:
-                if self.listFirewall.lookup(packet) == self.hashTable.lookup(correctword)[3]:
-                    codeword = correctword"""
             
             logging.debug("(codeword) " + str(codeword))
 
-        #Insert debug statements here for testing
+        # Debug statements for testing
                 
-            logging.debug(" Slår packet op: "+str(packet) + str(self.listFirewall.lookup(packet)))
-            logging.debug("Slår hashen op: "+str(self.hashTable.lookup(codeword)))
+            logging.debug("lookingup packet op: "+str(packet) + str(self.listFirewall.lookup(packet)))
+            logging.debug("lookingup hashen op: "+str(self.hashTable.lookup(codeword)))
 
             self.policyFactory.writeCodewords()
 
             packetList.append(packet)
-            logging.debug("packetnum: " + str(i) + " firewalll: "+str(packet) + str(self.listFirewall.lookup(packet)))
+            logging.debug("packetnumber: " + str(i) + " firewalll: "+str(packet) + str(self.listFirewall.lookup(packet)))
             self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[0][3])
     
-
-
-            ### DEBUG TESTS ABOVE ###
-
-""" 
-            logging.debug("packetnum: " + str(i) + " firewalll: "+str(packet) + str(self.listFirewall.lookup(packet)))
-            logging.debug("Lookupfirewall: " + str(self.listFirewall.lookup(packet)))
-            logging.debug("Lookup hash    : " + str(self.hashTable.lookup(codeword)))
-            logging.debug("(codeword) " + codeword)
-            if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
-                logging.debug("fej....")
-                logging.debug("codeword: "+str(codeword))
-                logging.debug("packetnum: "+str(i)+" packet: "+str(packet) + str(self.listFirewall.lookup(packet)))
-                logging.debug("hashTableValue0: "+str(self.hashTable.lookup(codeword)))
-                logging.debug(" Slår packet op: "+str(packet) + str(self.listFirewall.lookup(packet)))
-                logging.debug("Slår hashen op: "+str(self.hashTable.lookup(codeword)))
-                self.policyFactory.writeCodewords()
-                
-            file = open("list_firewall.txt", "w")
-            file.write(self.listFirewall.getRules())
-            
-            file = open("rule_list_for_random_test.txt", "w")
-            prettyRuleList = ""
-            for rule in ruleList:
-                prettyRuleList += str(rule) + "\n"
-
-            file.write(prettyRuleList)
-            file = open("packet_list_for_random_test.txt", "w")
-            prettyPacketList = ""
-                
-
-            for packet in packetList:
-                prettyPacketList += str(packet) + "\n"
-            file.write(prettyPacketList)
- """

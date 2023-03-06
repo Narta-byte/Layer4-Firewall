@@ -1,9 +1,9 @@
 import unittest
-import trie_tree_parser.python.TrieTree.portNumberTrieTree as portnumbertrie
-import trie_tree_parser.python.TrieTree.policyFactory as policyFactory
+import Parallel_tree_algorithm.python.TrieTree.PolicyTrieTree as portnumbertrie
+import Parallel_tree_algorithm.python.TrieTree.policyBuilder as policyBuilder
 import logging
-import trie_tree_parser.python.hashTable.cuckooHashTable as cuckooHashTable
-import trie_tree_parser.python.listFirewall.listFirewall as listFirewall
+import Parallel_tree_algorithm.python.hashTable.cuckooHashTable as cuckooHashTable
+import Parallel_tree_algorithm.python.listFirewall.listFirewall as listFirewall
 
 
 class TestErrorCase(unittest.TestCase):
@@ -72,5 +72,5 @@ class TestErrorCase(unittest.TestCase):
        self.tree2 = portnumbertrie.PortNumberTrieTree()
        treeList = [self.tree0,self.tree1,self.tree2]
        
-       self.policyFactory = policyFactory.PolicyFactory(treeList)
+       self.policyFactory = policyBuilder.PolicyBuilder(treeList)
        self.policyFactory.setSeed(311415)

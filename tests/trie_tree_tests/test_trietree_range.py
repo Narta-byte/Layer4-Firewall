@@ -53,10 +53,13 @@ class TestPortNumberRange(unittest.TestCase):
         
     def test_simple_rule(self):
         self.init3Trees()
-        rule0 = ["1","1","*","alpha"]
-        rule1 = ["1","1","1","beta"]
-        self.policyBuilder.insertRule(rule0)
-        self.policyBuilder.insertRule(rule1)
+        """ rule0 = ["1","1","*","alpha"]
+        rule1 = ["1","1","1","beta"] """
+        rule0 = ["1","2-3","1","alpha"]
+        rule1 = ["1","3-4","1","beta"]
+
+        self.policyBuilder.insertRange(rule0)
+        self.policyBuilder.insertRange(rule1)
         self.policyBuilder.writeCodewords()
         
         #self.policyFactory.getRuleTuple()

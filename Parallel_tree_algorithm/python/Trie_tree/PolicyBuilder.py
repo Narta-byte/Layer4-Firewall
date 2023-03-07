@@ -17,7 +17,7 @@ class PolicyBuilder:
                 codeword = self.generateCodeword(self.codewordLength)
             
             ruleCodeword += codeword
-            tree.insert(rule[i], rule[len(rule)-1], codeword)
+            tree.insert(rule[i], codeword)
         return ruleCodeword
     
     def ruleAlreadyExists(self,rule):

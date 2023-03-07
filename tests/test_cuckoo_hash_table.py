@@ -1,5 +1,5 @@
 import unittest
-import Parallel_tree_algorithm.python.Trie_tree.PolicyTrieTree as portnumbertrie
+import Parallel_tree_algorithm.python.Trie_tree.PolicyTrieTree as policyTrieTree
 import Parallel_tree_algorithm.python.Trie_tree.PolicyBuilder as PolicyBuilder
 import Parallel_tree_algorithm.python.Hash_table.CuckooHashTable as CuckooHashTable
 import logging
@@ -7,9 +7,9 @@ import logging
 
 class TestCuckooHashTable(unittest.TestCase):
     def setUp(self):
-        self.tree0 = portnumbertrie.PolicyTrieTree()
-        self.tree1 = portnumbertrie.PolicyTrieTree()
-        self.tree2 = portnumbertrie.PolicyTrieTree()
+        self.tree0 = policyTrieTree.PolicyTrieTree()
+        self.tree1 = policyTrieTree.PolicyTrieTree()
+        self.tree2 = policyTrieTree.PolicyTrieTree()
         treeList = [self.tree0,self.tree1,self.tree2]
 
         self.policyFactory = PolicyBuilder.PolicyBuilder(treeList)

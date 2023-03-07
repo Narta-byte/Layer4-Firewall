@@ -4,18 +4,19 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 
-class RadixTreeNode():
-    def __init__(self, is_word=False, keys=None, value = None):
+class RadixNode():
+    def __init__(self, codeword = "", is_word=False, keys=None, value = None):
         self.is_word = is_word
         self.children = keys if keys else {}
         self.value = value
         self.color = "#AAAAAA"
+        self.codeword = codeword
         
-class Trie():
+class RadixTree():
     def __init__(self):
-        self.root=RadixTreeNode()
+        self.root=RadixNode()
 
-    def insert(self, word):
+    def insert(self, word, codeword):
         node = self.root
         while True:
             for key, child in node.children.items():
@@ -29,14 +30,14 @@ class Trie():
                         word = rest
                         break
                 if prefix:
-                    new_node = RadixTreeNode(is_word=not rest, keys={split: child}, value = prefix)
+                    new_node = RadixNode(codeword, is_word=not rest, keys={split: child}, value = word)
                     node.children[prefix] = new_node
                     del node.children[key]
                     node = new_node
                     word = rest
                     break
             else:
-                node.children[word] = RadixTreeNode(is_word=True, value = word)
+                node.children[word] = RadixNode(codeword, is_word=True, value = word)
                 return
 
     def search(self, word):
@@ -45,13 +46,13 @@ class Trie():
             for key, child in node.children.items():
                 prefix, split, rest = self.match(key, word)
                 if not split and not rest:
-                    return child.is_word
+                    return child.is_word, child.codeword
                 if not split:
                     node = child
                     word = rest
                     break
             else:
-                return False
+                return False, 0
 
     def match(self, key, word):
         i = 0
@@ -91,12 +92,12 @@ class Trie():
     
     
 if __name__ == "__main__":
-    tree = Trie()
-    tree.insert("apple")
-    tree.insert("app")
-    tree.insert("apple pie")
-    tree.insert("banana")
-    tree.insert("orange")
+    tree = RadixTree()
+    tree.insert("app","b")
+    tree.insert("apple","a")
+    tree.insert("apple pie", "C")
+    tree.insert("banana", "adsf")
+    tree.insert("orange", "A")
     # print(tree.search("apple")) # True
     # print(tree.search("pear")) # False
     # print(tree.starts_with("ba")) # True
@@ -109,6 +110,8 @@ if __name__ == "__main__":
     tree.drawGraph(html=True)
     
     print(tree.search("apple"))
+    print(tree.search("app"))
+    print(tree.search("hoæsdaig"))
     # assert tree.search("apple") == "apple"
     # assert tree.search("apartment") == "apartment"
     # assert tree.search("appendix") == "appendix"

@@ -22,7 +22,7 @@ class PolicyTrieTree(trieTree.TrieTree):
         level=logging.DEBUG,
         filename='logs.txt')
 
-    def insert(self, key, strRule, codeword):
+    def insert(self, key, codeword):
         if key != "*":
             key = format(int(key), '016b')
         
@@ -41,15 +41,6 @@ class PolicyTrieTree(trieTree.TrieTree):
                     
                 else:
                     temp =PolicyTrieNode(ch)
-                    if strRule == "PERMIT":
-                        temp.color = "#1111BB"
-                        temp.aggrateRule = "PERMIT"
-                        # temp.value = str(ch) + " VALUE = " + str(int(key,2))
-                        
-                    else: 
-                        temp.color = "#BB1111"
-                        temp.aggrateRule = "DENY"
-                        # temp.value = str(ch) + " VALUE = " + str(int(key,2))
                     
                     self.root.aggragateChildren[key] = temp
                     

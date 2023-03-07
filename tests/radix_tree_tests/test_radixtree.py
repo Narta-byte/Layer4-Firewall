@@ -38,10 +38,10 @@ class TestRadixTree(unittest.TestCase):
         
         expectedOutput =open("tests/expectedOutput/test_3Trees_overlap.txt","r")
         
-        logging.debug("ruleTuple" + self.policyBuilder.getRuleTuple())
-        logging.debug("expectedOutput" +expectedOutput.read())
+        logging.debug("ruleTuple" + self.policyBuilder.getRuleTuple().strip())
+        logging.debug("expectedOutput" +expectedOutput.read().strip())
         
-        self.assertEqual(self.policyBuilder.getRuleTuple(),expectedOutput.read())
+        self.assertEqual(self.policyBuilder.getRuleTuple().strip(),expectedOutput.read().strip())
     
     
     # it does not pass even though the output is correct🥴

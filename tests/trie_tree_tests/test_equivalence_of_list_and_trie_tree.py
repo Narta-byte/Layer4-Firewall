@@ -108,10 +108,10 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             for i in range(0,3):
                 chance = random.randint(0,100)
                 if chance <= 50:
-                    rule[i] = str(random.randint(0,255))
-                elif chance > 50 and chance < 55:
+                    rule[i] = str(random.randint(0,20))
+                elif chance > 33 and chance < 66:
                     if rule[0] == "*" and rule[1] == "*":
-                        rule[i] = str(random.randint(0,255))
+                        rule[i] = str(random.randint(0,20))
                     else:
                         rule[i] = "*"
                 elif chance >= 55:
@@ -142,7 +142,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         for i in range(0,1000):
             packet = ["","",""]
             for j in range(0,3):
-                packet[j] = str(random.randint(0,255))
+                packet[j] = str(random.randint(0,20))
             
             logging.info("")
             logging.info("NEW PACKET:       packetnum: " + str(i))

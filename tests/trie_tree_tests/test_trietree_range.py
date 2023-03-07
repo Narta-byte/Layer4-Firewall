@@ -1,12 +1,12 @@
 import unittest
-import Parallel_tree_algorithm.python.TrieTree.PolicyTrieTree as portnumbertrie
-import Parallel_tree_algorithm.python.TrieTree.policyBuilder as policyBuilder
+import Parallel_tree_algorithm.python.Trie_tree.PolicyTrieTree as portnumbertrie
+import Parallel_tree_algorithm.python.Trie_tree.PolicyBuilder as PolicyBuilder
 import logging
-import Parallel_tree_algorithm.python.hashTable.cuckooHashTable as cuckooHashTable
+import Parallel_tree_algorithm.python.Hash_table.CuckooHashTable as CuckooHashTable
 
 class TestPortNumberRange(unittest.TestCase):
     def setUp(self):
-        self.tree = portnumbertrie.PortNumberTrieTree()
+        self.tree = portnumbertrie.PolicyTrieTree()
         logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
         datefmt='%d-%m-%Y:%H:%M:%S',
         level=logging.DEBUG,
@@ -86,11 +86,11 @@ class TestPortNumberRange(unittest.TestCase):
 
         
     def init3Trees(self):
-       self.tree0 = portnumbertrie.PortNumberTrieTree()
-       self.tree1 = portnumbertrie.PortNumberTrieTree()
-       self.tree2 = portnumbertrie.PortNumberTrieTree()
+       self.tree0 = portnumbertrie.PolicyTrieTree()
+       self.tree1 = portnumbertrie.PolicyTrieTree()
+       self.tree2 = portnumbertrie.PolicyTrieTree()
        treeList = [self.tree0,self.tree1,self.tree2]
        
-       self.policyFactory = policyBuilder.PolicyBuilder(treeList)
+       self.policyFactory = PolicyBuilder.PolicyBuilder(treeList)
        self.policyFactory.setSeed(311415)
        self.policyFactory.codewordLength = 8

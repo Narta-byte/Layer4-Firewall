@@ -1,8 +1,8 @@
 import unittest
-import Parallel_tree_algorithm.python.TrieTree.PolicyTrieTree as portnumbertrie
-import Parallel_tree_algorithm.python.TrieTree.policyBuilder as policyBuilder
-import Parallel_tree_algorithm.python.listFirewall.listFirewall as listFirewall
-import Parallel_tree_algorithm.python.hashTable.cuckooHashTable as cuckooHashTable
+import Parallel_tree_algorithm.python.Trie_tree.PolicyTrieTree as portnumbertrie
+import Parallel_tree_algorithm.python.Trie_tree.PolicyBuilder as PolicyBuilder
+import Parallel_tree_algorithm.python.List_Firewall.listFirewall as listFirewall
+import Parallel_tree_algorithm.python.Hash_table.CuckooHashTable as CuckooHashTable
 
 import random
 import logging
@@ -10,15 +10,15 @@ import logging
 
 class TestEquivalenceOfListAndTrietree(unittest.TestCase):
     def setUp(self):
-        self.tree0 = portnumbertrie.PortNumberTrieTree()
-        self.tree1 = portnumbertrie.PortNumberTrieTree()
-        self.tree2 = portnumbertrie.PortNumberTrieTree()
+        self.tree0 = portnumbertrie.PolicyTrieTree()
+        self.tree1 = portnumbertrie.PolicyTrieTree()
+        self.tree2 = portnumbertrie.PolicyTrieTree()
         treeList = [self.tree0,self.tree1,self.tree2]
 
-        self.policyFactory = policyBuilder.PolicyBuilder(treeList)
+        self.policyFactory = PolicyBuilder.PolicyBuilder(treeList)
         self.policyFactory.setSeed(311415)
         
-        self.hashTable = cuckooHashTable.CuckooHashTable()
+        self.hashTable = CuckooHashTable.CuckooHashTable()
         
         self.listFirewall = listFirewall.ListFirewall()
         

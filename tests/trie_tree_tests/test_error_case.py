@@ -1,9 +1,9 @@
 import unittest
-import Parallel_tree_algorithm.python.TrieTree.PolicyTrieTree as portnumbertrie
-import Parallel_tree_algorithm.python.TrieTree.policyBuilder as policyBuilder
+import Parallel_tree_algorithm.python.Trie_tree.PolicyTrieTree as portnumbertrie
+import Parallel_tree_algorithm.python.Trie_tree.PolicyBuilder as PolicyBuilder
 import logging
-import Parallel_tree_algorithm.python.hashTable.cuckooHashTable as cuckooHashTable
-import Parallel_tree_algorithm.python.listFirewall.listFirewall as listFirewall
+import Parallel_tree_algorithm.python.Hash_table.CuckooHashTable as CuckooHashTable
+import Parallel_tree_algorithm.python.List_Firewall.listFirewall as listFirewall
 
 
 class TestErrorCase(unittest.TestCase):
@@ -60,17 +60,17 @@ class TestErrorCase(unittest.TestCase):
             self.policyFactory.insertRange(rule)
             self.listFirewall.insertRange(rule)    
             
-        self.hashTable = cuckooHashTable.CuckooHashTable()
+        self.hashTable = CuckooHashTable.CuckooHashTable()
         for rule in self.policyFactory.previousRuleTuple:
             self.hashTable.insert(rule[1],rule[0])
 
         self.policyFactory.writeCodewords()
 
     def init3Trees(self):
-       self.tree0 = portnumbertrie.PortNumberTrieTree()
-       self.tree1 = portnumbertrie.PortNumberTrieTree()
-       self.tree2 = portnumbertrie.PortNumberTrieTree()
+       self.tree0 = portnumbertrie.PolicyTrieTree()
+       self.tree1 = portnumbertrie.PolicyTrieTree()
+       self.tree2 = portnumbertrie.PolicyTrieTree()
        treeList = [self.tree0,self.tree1,self.tree2]
        
-       self.policyFactory = policyBuilder.PolicyBuilder(treeList)
+       self.policyFactory = PolicyBuilder.PolicyBuilder(treeList)
        self.policyFactory.setSeed(311415)

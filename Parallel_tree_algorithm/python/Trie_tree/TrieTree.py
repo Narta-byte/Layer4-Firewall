@@ -53,15 +53,15 @@ class TrieTree:
         
         if html == True:
             self.n = Network("1000px","1000px", directed=True)
-            self.aggregrateBfs()
+            self.bfs()
             self.n.show("trie_tree.html",False)
         else: 
             self.n = nx.DiGraph()
             nx.draw(self.n, with_labels=True, font_weight='bold')
-            self.aggregrateBfs()
+            self.bfs()
             plt.show()
             
-    def aggregrateBfs(self):
+    def bfs(self):
         visited = []
         queue = [self.root]
         parrentQueue = [1]

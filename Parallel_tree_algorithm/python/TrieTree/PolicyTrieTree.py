@@ -1,4 +1,4 @@
-import Parallel_tree_algorithm.python.TrieTree.TrieTree as trieTree
+import Parallel_tree_algorithm.python.Trie_tree.TrieTree as trieTree
 from pyvis.network import Network
 import networkx as nx
 import matplotlib.pyplot as plt

@@ -1,6 +1,6 @@
 # %%
 if __name__ != '__main__':
-    import trie_tree_parser.python.TrieTree.ruleParser.rule as rule
+    import Parallel_tree_algorithm.python.TrieTree.ruleParser.rule as rule
 
 class RuleParser:
     def __init__(self):

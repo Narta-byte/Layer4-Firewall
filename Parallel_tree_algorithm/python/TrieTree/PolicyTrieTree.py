@@ -1,5 +1,4 @@
-import trie_tree_parser.python.TrieTree.TrieTree as trieTree
-import trie_tree_parser.python.TrieTree.ruleNode as ruleNode
+import Parallel_tree_algorithm.python.TrieTree.TrieTree as trieTree
 from pyvis.network import Network
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -22,9 +21,8 @@ class PortNumberTrieTree(trieTree.TrieTree):
         datefmt='%d-%m-%Y:%H:%M:%S',
         level=logging.DEBUG,
         filename='logs.txt')
-    
 
-    def insert(self, key, strRule,codeword):
+    def insert(self, key, strRule, codeword):
         if key != "*":
             key = format(int(key), '016b')
         
@@ -58,7 +56,6 @@ class PortNumberTrieTree(trieTree.TrieTree):
                     self.root.aggragateChildren[key] = temp
                     self.root.totalRules += 1
                     child[ch] = temp
-                    # temp.children["codeword"] = ruleNode.RuleNode(codeword)
                     
                     temp.color = "#694200"
                     temp.codeword = codeword
@@ -93,7 +90,7 @@ class PortNumberTrieTree(trieTree.TrieTree):
                 return False, 0
         # logging.debug("last : "+str(crawl.codeword))
         return True, crawl.codeword
-                    
+    
                
                     
                     

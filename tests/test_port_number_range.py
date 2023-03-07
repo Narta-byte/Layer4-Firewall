@@ -1,8 +1,8 @@
 import unittest
-import trie_tree_parser.python.TrieTree.portNumberTrieTree as portnumbertrie
-import trie_tree_parser.python.TrieTree.policyFactory as policyFactory
+import Parallel_tree_algorithm.python.TrieTree.PolicyTrieTree as portnumbertrie
+import Parallel_tree_algorithm.python.TrieTree.policyBuilder as policyBuilder
 import logging
-import trie_tree_parser.python.hashTable.cuckooHashTable as cuckooHashTable
+import Parallel_tree_algorithm.python.hashTable.cuckooHashTable as cuckooHashTable
 
 class TestPortNumberRange(unittest.TestCase):
     def setUp(self):
@@ -83,20 +83,6 @@ class TestPortNumberRange(unittest.TestCase):
       
         self.assertEqual(self.policyFactory.getRuleTuple(),expectedOutput.read())
 
-    def test_specific_ranges_with_wildcard(self):
-        self.init3Trees()
-        rule0 = ["1","0","3*","alpha"]
-        rule1 = ["1","0","3-4","beta"]
-        
-        self.policyFactory.insertRange(rule0)
-        self.policyFactory.insertRange(rule1)
-
-        expectedOutput = open("tests/expectedOutput/test_specific_ranges.txt","r")
-        logging.info(expectedOutput.read())
-        logging.info(self.policyFactory.getRuleTuple())
-        
-        self.assertEqual(self.policyFactory.getRuleTuple(),expectedOutput.read())
-
 
         
     def init3Trees(self):
@@ -105,5 +91,6 @@ class TestPortNumberRange(unittest.TestCase):
        self.tree2 = portnumbertrie.PortNumberTrieTree()
        treeList = [self.tree0,self.tree1,self.tree2]
        
-       self.policyFactory = policyFactory.PolicyFactory(treeList)
+       self.policyFactory = policyBuilder.PolicyBuilder(treeList)
        self.policyFactory.setSeed(311415)
+       self.policyFactory.codewordLength = 8

@@ -1,7 +1,7 @@
 import unittest
-import trie_tree_parser.python.TrieTree.policyFactory as policyFactory
-import trie_tree_parser.python.TrieTree.ruleParser.ruleParser as ruleParser
-import trie_tree_parser.python.TrieTree.ruleParser.rule as ruleObject
+import Parallel_tree_algorithm.python.TrieTree.policyBuilder as policyBuilder
+import Parallel_tree_algorithm.python.TrieTree.ruleParser.ruleParser as ruleParser
+import Parallel_tree_algorithm.python.TrieTree.ruleParser.rule as ruleObject
 
 class TesPolicy(unittest.TestCase):
     def setUp(self):

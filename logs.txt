@@ -1,113 +1,35 @@
-28-02-2023:10:09:48 DEBUG    [listFirewall.py:30] thisRule: ['*', '*', '*', 'beta']
-28-02-2023:10:09:48 DEBUG    [listFirewall.py:31] inputPacket: ['1', '1', '1']
-28-02-2023:10:09:48 DEBUG    [listFirewall.py:14] Matched rule: ['*', '*', '*', 'beta'] Matched with ['1', '1', '1']
-28-02-2023:10:09:48 DEBUG    [cuckooHashTable.py:23] No match for codeword: 011111000101000001011110
-28-02-2023:10:09:48 DEBUG    [listFirewall.py:14] Matched rule: ['1', '7', '11', 'alpha'] Matched with ['1', '7', '11']
-28-02-2023:10:09:48 DEBUG    [listFirewall.py:30] thisRule: ['*', '*', '*', 'beta']
-28-02-2023:10:09:48 DEBUG    [listFirewall.py:31] inputPacket: ['255', '255', '255']
-28-02-2023:10:09:48 DEBUG    [listFirewall.py:14] Matched rule: ['*', '*', '*', 'beta'] Matched with ['255', '255', '255']
-28-02-2023:10:19:51 DEBUG    [policyFactory.py:14] inserting rule: ['*', '1', '1', 'alpha']
-28-02-2023:10:19:51 DEBUG    [policyFactory.py:14] inserting rule: ['1', '1', '*', 'beta']
-28-02-2023:10:19:51 DEBUG    [policyFactory.py:14] inserting rule: 1
-28-02-2023:10:20:19 DEBUG    [policyFactory.py:14] inserting rule: ['*', '1', '1', 'alpha']
-28-02-2023:10:20:19 DEBUG    [policyFactory.py:14] inserting rule: ['1', '1', '*', 'beta']
-28-02-2023:10:20:19 DEBUG    [policyFactory.py:14] inserting rule: ['1', '1', '1', 'alpha']
-28-02-2023:10:20:19 DEBUG    [policyFactory.py:14] inserting rule: ['1', '1', '1', 'alpha']
-28-02-2023:10:20:19 DEBUG    [policyFactory.py:14] inserting rule: ['1', '1', '1', 'alpha']
-28-02-2023:10:20:19 DEBUG    [policyFactory.py:14] inserting rule: ['1', '1', '1', 'alpha']
-28-02-2023:10:21:04 DEBUG    [policyFactory.py:70] ruleIntersection: ['1', '1', '1', 'alpha']
-28-02-2023:10:21:34 DEBUG    [policyFactory.py:73] ruleIntersection: ['1', '1', '1', 'alpha']
-28-02-2023:10:21:34 DEBUG    [policyFactory.py:75] intersectingRule: 1
-28-02-2023:10:21:34 DEBUG    [policyFactory.py:75] intersectingRule: 1
-28-02-2023:10:21:34 DEBUG    [policyFactory.py:75] intersectingRule: 1
-28-02-2023:10:21:34 DEBUG    [policyFactory.py:75] intersectingRule: alpha
-28-02-2023:10:22:27 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:22:27 DEBUG    [policyFactory.py:75] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:22:49 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:22:49 DEBUG    [policyFactory.py:75] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:23:32 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:23:32 DEBUG    [policyFactory.py:75] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:23:38 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:23:38 DEBUG    [policyFactory.py:75] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:23:38 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:23:38 DEBUG    [policyFactory.py:75] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:23:38 DEBUG    [policyFactory.py:73] ruleIntersection: [None]
-28-02-2023:10:23:38 DEBUG    [policyFactory.py:75] intersectingRule: None
-28-02-2023:10:23:38 DEBUG    [policyFactory.py:73] ruleIntersection: [None]
-28-02-2023:10:23:38 DEBUG    [policyFactory.py:75] intersectingRule: None
-28-02-2023:10:23:38 DEBUG    [policyFactory.py:73] ruleIntersection: [None]
-28-02-2023:10:23:38 DEBUG    [policyFactory.py:75] intersectingRule: None
-28-02-2023:10:23:49 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:23:49 DEBUG    [policyFactory.py:75] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:23:49 DEBUG    [policyFactory.py:73] ruleIntersection: [None]
-28-02-2023:10:23:49 DEBUG    [policyFactory.py:75] intersectingRule: None
-28-02-2023:10:24:09 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:24:09 DEBUG    [policyFactory.py:77] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:24:09 DEBUG    [policyFactory.py:73] ruleIntersection: [None]
-28-02-2023:10:24:09 DEBUG    [policyFactory.py:77] intersectingRule: None
-28-02-2023:10:25:12 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:25:12 DEBUG    [policyFactory.py:76] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:25:12 DEBUG    [policyFactory.py:73] ruleIntersection: [None]
-28-02-2023:10:25:12 DEBUG    [policyFactory.py:76] intersectingRule: None
-28-02-2023:10:25:47 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:25:47 DEBUG    [policyFactory.py:76] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:25:47 DEBUG    [policyFactory.py:73] ruleIntersection: [None]
-28-02-2023:10:25:47 DEBUG    [policyFactory.py:76] intersectingRule: None
-28-02-2023:10:27:14 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:27:14 DEBUG    [policyFactory.py:76] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:27:14 DEBUG    [policyFactory.py:73] ruleIntersection: [None]
-28-02-2023:10:27:14 DEBUG    [policyFactory.py:76] intersectingRule: None
-28-02-2023:10:28:16 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:28:16 DEBUG    [policyFactory.py:77] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:28:16 DEBUG    [policyFactory.py:73] ruleIntersection: [None]
-28-02-2023:10:28:16 DEBUG    [policyFactory.py:73] ruleIntersection: [None, None]
-28-02-2023:10:28:16 DEBUG    [policyFactory.py:73] ruleIntersection: [None, None, None]
-28-02-2023:10:32:01 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:32:01 DEBUG    [policyFactory.py:77] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:32:01 DEBUG    [policyFactory.py:73] ruleIntersection: [None]
-28-02-2023:10:33:15 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:33:15 DEBUG    [policyFactory.py:77] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:33:20 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:33:20 DEBUG    [policyFactory.py:77] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:33:20 DEBUG    [policyFactory.py:73] ruleIntersection: [None]
-28-02-2023:10:33:20 DEBUG    [policyFactory.py:73] ruleIntersection: [None, None]
-28-02-2023:10:33:20 DEBUG    [policyFactory.py:73] ruleIntersection: [None, None, None]
-28-02-2023:10:33:30 DEBUG    [policyFactory.py:73] ruleIntersection: [None]
-28-02-2023:10:38:01 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:38:01 DEBUG    [policyFactory.py:77] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:39:32 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:39:32 DEBUG    [policyFactory.py:77] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:39:32 DEBUG    [policyFactory.py:73] ruleIntersection: [None]
-28-02-2023:10:39:32 DEBUG    [policyFactory.py:73] ruleIntersection: [None, None]
-28-02-2023:10:39:32 DEBUG    [policyFactory.py:73] ruleIntersection: [None, None, None]
-28-02-2023:10:39:47 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:39:47 DEBUG    [policyFactory.py:77] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:39:47 DEBUG    [policyFactory.py:73] ruleIntersection: [['69', '69', '69', 'ASDF']]
-28-02-2023:10:39:47 DEBUG    [policyFactory.py:77] intersectingRule: ['69', '69', '69', 'ASDF']
-28-02-2023:10:39:47 DEBUG    [policyFactory.py:73] ruleIntersection: [['69', '69', '69', 'ASDF'], ['69', '69', '69', 'ASDF']]
-28-02-2023:10:39:47 DEBUG    [policyFactory.py:77] intersectingRule: ['69', '69', '69', 'ASDF']
-28-02-2023:10:39:47 DEBUG    [policyFactory.py:77] intersectingRule: ['69', '69', '69', 'ASDF']
-28-02-2023:10:39:47 DEBUG    [policyFactory.py:73] ruleIntersection: [['69', '69', '69', 'ASDF'], ['69', '69', '69', 'ASDF'], ['69', '69', '69', 'ASDF']]
-28-02-2023:10:39:47 DEBUG    [policyFactory.py:77] intersectingRule: ['69', '69', '69', 'ASDF']
-28-02-2023:10:39:47 DEBUG    [policyFactory.py:77] intersectingRule: ['69', '69', '69', 'ASDF']
-28-02-2023:10:39:47 DEBUG    [policyFactory.py:77] intersectingRule: ['69', '69', '69', 'ASDF']
-28-02-2023:10:40:36 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:40:36 DEBUG    [policyFactory.py:77] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:40:36 DEBUG    [policyFactory.py:73] ruleIntersection: [[]]
-28-02-2023:10:40:36 DEBUG    [policyFactory.py:77] intersectingRule: []
-28-02-2023:10:40:42 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:40:42 DEBUG    [policyFactory.py:77] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:40:52 DEBUG    [policyFactory.py:73] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:40:52 DEBUG    [policyFactory.py:77] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:40:52 DEBUG    [policyFactory.py:73] ruleIntersection: [[]]
-28-02-2023:10:40:52 DEBUG    [policyFactory.py:77] intersectingRule: []
-28-02-2023:10:42:01 DEBUG    [policyFactory.py:75] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:42:01 DEBUG    [policyFactory.py:79] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:42:09 DEBUG    [policyFactory.py:75] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:42:09 DEBUG    [policyFactory.py:79] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:42:25 DEBUG    [policyFactory.py:75] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:42:25 DEBUG    [policyFactory.py:79] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:42:44 DEBUG    [policyFactory.py:75] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:42:44 DEBUG    [policyFactory.py:79] intersectingRule: ['1', '1', '1', 'alpha']
-28-02-2023:10:42:44 DEBUG    [policyFactory.py:75] ruleIntersection: [['1', '1', '1', 'alpha']]
-28-02-2023:10:42:44 DEBUG    [policyFactory.py:79] intersectingRule: ['1', '1', '1', 'alpha']
+06-03-2023:16:47:55 DEBUG    [policyBuilder.py:120] Packet: ['1', '1', '1']
+06-03-2023:16:47:55 DEBUG    [policyBuilder.py:124] packet[0] = 1 Exists0: True subcode0: 0111110000000011 
+06-03-2023:16:47:55 DEBUG    [policyBuilder.py:124] packet[1] = 1 Exists1: False subcode1: 0 
+06-03-2023:16:47:55 DEBUG    [policyBuilder.py:124] packet[2] = 1 Exists2: False subcode2: 0 
+06-03-2023:16:47:55 DEBUG    [policyBuilder.py:161] Matching in codewords with packet:['*', '*', '*']
+06-03-2023:16:47:55 DEBUG    [policyBuilder.py:146] Possible codewords: [['1011101000100010', '0111111001110011', '1100101101100101']]
+06-03-2023:16:47:55 DEBUG    [policyBuilder.py:154] Answer list: ['101110100010001001111110011100111100101101100101']
+06-03-2023:16:47:55 DEBUG    [test_equivalence_of_list_and_trie_tree.py:54] answer thisAnswer: (['*', '*', '*', 'beta'], 75)
+06-03-2023:16:47:55 DEBUG    [test_equivalence_of_list_and_trie_tree.py:56] codeword!: (['*', '*', '*', 'beta'], 75)
+06-03-2023:16:47:55 DEBUG    [test_equivalence_of_list_and_trie_tree.py:58] current best answer: (['*', '*', '*', 'beta'], 75)
+06-03-2023:16:47:55 DEBUG    [test_equivalence_of_list_and_trie_tree.py:63] codeword!: 101110100010001001111110011100111100101101100101
+06-03-2023:16:47:56 DEBUG    [listFirewall.py:14] Packet matched w rule: ['*', '*', '*', 'beta'] (Packet:) ['1', '1', '1']
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:120] Packet: ['1', '7', '11']
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:124] packet[0] = 1 Exists0: True subcode0: 0111110000000011 
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:124] packet[1] = 7 Exists1: True subcode1: 1100000000000011 
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:124] packet[2] = 11 Exists2: True subcode2: 1101010111111101 
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:161] Matching in codewords with packet:['*', '*', '*']
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:161] Matching in codewords with packet:['1', '7', '11']
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:146] Possible codewords: [['1011101000100010', '0111111001110011', '1100101101100101'], ['0111110000000011', '1100000000000011', '1101010111111101']]
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:154] Answer list: ['101110100010001001111110011100111100101101100101', '011111000000001111000000000000111101010111111101']
+06-03-2023:16:47:56 DEBUG    [test_equivalence_of_list_and_trie_tree.py:75] answer thisAnswer: (['*', '*', '*', 'beta'], 75)
+06-03-2023:16:47:56 DEBUG    [test_equivalence_of_list_and_trie_tree.py:78] current best answer: (['*', '*', '*', 'beta'], 75)
+06-03-2023:16:47:56 DEBUG    [test_equivalence_of_list_and_trie_tree.py:75] answer thisAnswer: (['1', '7', '11', 'alpha'], 30)
+06-03-2023:16:47:56 DEBUG    [test_equivalence_of_list_and_trie_tree.py:78] current best answer: (['1', '7', '11', 'alpha'], 30)
+06-03-2023:16:47:56 DEBUG    [listFirewall.py:14] Packet matched w rule: ['1', '7', '11', 'alpha'] (Packet:) ['1', '7', '11']
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:120] Packet: ['255', '255', '255']
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:124] packet[0] = 255 Exists0: False subcode0: 0 
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:124] packet[1] = 255 Exists1: False subcode1: 0 
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:124] packet[2] = 255 Exists2: False subcode2: 0 
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:161] Matching in codewords with packet:['*', '*', '*']
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:146] Possible codewords: [['1011101000100010', '0111111001110011', '1100101101100101']]
+06-03-2023:16:47:56 DEBUG    [policyBuilder.py:154] Answer list: ['101110100010001001111110011100111100101101100101']
+06-03-2023:16:47:56 DEBUG    [test_equivalence_of_list_and_trie_tree.py:91] answer thisAnswer: (['*', '*', '*', 'beta'], 75)
+06-03-2023:16:47:56 DEBUG    [test_equivalence_of_list_and_trie_tree.py:94] current best answer: (['*', '*', '*', 'beta'], 75)
+06-03-2023:16:47:56 DEBUG    [listFirewall.py:14] Packet matched w rule: ['*', '*', '*', 'beta'] (Packet:) ['255', '255', '255']

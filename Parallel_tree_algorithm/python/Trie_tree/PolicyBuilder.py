@@ -126,7 +126,8 @@ class PolicyBuilder:
         return codeword
     
     def writeCodewords(self):   #Writing to "codewords.txt"
-        file = open("codewords.txt", "w") 
+        #file = open("codewords.txt", "w") 
+        file = open("Parallel_tree_algorithm/python/Trie_tree/codewords.txt", "w")
         for rule in self.previousRuleTuple:
             file.write(str(rule[0]) + " : " + rule[1] +  "\n")
         file.close() 

@@ -60,17 +60,19 @@ class PolicyBuilder:
             self.previousRuleTuple.append([rule, ruleCodeword])
             return
         
-        intersectionCodeword = self.generateCodeword(self.codewordLength*len(self.treeList))
-        ruleIntersection = []
+       
+        for idx, oldRuleTuble in enumerate(self.previousRuleTuple):
+            intersectionCodeword = self.generateCodeword(self.codewordLength*len(self.treeList))
+            ruleIntersection = []
         
-        for oldRuleTuble in self.previousRuleTuple:
             ruleIntersection = self.intersection(oldRuleTuble, rule)
             if ruleIntersection is None:
                 continue
             intersectionCodeword = self.insertRuleIntoTree(ruleIntersection,self.treeList)
             
-        if ruleIntersection is not None:
-            self.previousRuleTuple.append([ruleIntersection,intersectionCodeword])
+            if ruleIntersection is not None:
+                self.previousRuleTuple.insert(idx-1, [ruleIntersection, intersectionCodeword])
+
        
         self.previousRuleTuple.append([rule, ruleCodeword])
        
@@ -94,8 +96,8 @@ class PolicyBuilder:
                 
         if self.ruleAlreadyExists(ruleIntersection) or rule1[0:len(rule1)-1] == ruleIntersection[0:len(rule1)-1]:
             return None
-        if self.ruleIsSubset(ruleIntersection):
-            return
+        #if self.ruleIsSubset(ruleIntersection):
+         #   return
         return ruleIntersection
     def generateCodeword(self, length):
         codeword = ""
@@ -118,7 +120,7 @@ class PolicyBuilder:
         file = open("codewords.txt", "w") 
         for rule in self.previousRuleTuple:
             file.write(str(rule[0]) + " : " + rule[1] +  "\n")
-        file.close() 
+        file.close()
     
     def getRuleTuple(self):
         output = ""
@@ -171,7 +173,7 @@ class PolicyBuilder:
         logging.debug("Answer: length more than one " + str(len(answerList) > 1))
         logging.debug("Answer: the length " + str(len(answerList)))
         
-        return answerList
+        return answerList[-1]
 
     def ruleAlreadyExistsPacket(self, rule): #Does the inc. packet exist in previoustuple
     # if the rules fields are equal skip the iteration and let the old rule have precedence

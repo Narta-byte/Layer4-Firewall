@@ -117,12 +117,14 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
                 elif chance >= 66:
                     rule[i] = str(random.randint(1,2)) + "-" + str(random.randint(3,4))
             chance = random.randint(0,100)
-            if chance <= 33:
+            if chance < 25:
                 rule[3] = "alpha"
-            elif chance > 33 and chance < 66:
+            elif chance >= 25 and chance <= 50:
                 rule[3] = "beta"
-            elif chance >= 66:
+            elif chance > 50 and chance < 75:
                 rule[3] = "gamma"
+            elif chance >= 75:
+                rule[3] = "hotel"
             ruleList.append(rule)
         
         for rule in ruleList:
@@ -149,7 +151,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             logging.info("NEW PACKET:       packetnum: " + str(i))
             
             codeword = ""
-            anwserList = self.policyFactory.retriveCodeword(packet)
+            """ anwserList = self.policyFactory.retriveCodeword(packet)
             bestAnswer = ""
             oldRank = 10000000000000000
             for answer in anwserList:
@@ -160,8 +162,9 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
                         #logging.debug("current best answer: " + str(thisAnswer))
                         bestAnswer = answer
                         oldRank = thisAnswer[1]
-            codeword = bestAnswer
-            logging.debug("answer table lookup: " + str(self.hashTable.lookup(bestAnswer)))
+            codeword = bestAnswer """
+            codeword = self.policyFactory.retriveCodeword(packet)
+            #logging.debug("answer table lookup: " + str(self.hashTable.lookup(bestAnswer)))
             
             logging.debug("(codeword) " + str(codeword))
 

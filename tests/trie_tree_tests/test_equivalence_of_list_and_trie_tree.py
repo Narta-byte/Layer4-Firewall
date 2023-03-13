@@ -101,20 +101,20 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         
     def test_randomPackets(self): # Test 1000 random packages vs firewall list
         ruleList = []
-        ruleList.append(['0', '*', '*', 'beta'])
+        # ruleList.append(['0', '*', '*', 'beta'])
         random.seed(311415)
         for _ in range(0,100):
             rule = ["","","",""]
             for i in range(0,3):
                 chance = random.randint(0,100)
-                if chance <= 50:
+                if chance <= 33:
                     rule[i] = str(random.randint(0,20))
                 elif chance > 33 and chance < 66:
                     if rule[0] == "*" and rule[1] == "*":
                         rule[i] = str(random.randint(0,20))
                     else:
                         rule[i] = "*"
-                elif chance >= 55:
+                elif chance >= 66:
                     rule[i] = str(random.randint(1,2)) + "-" + str(random.randint(3,4))
             chance = random.randint(0,100)
             if chance <= 33:
@@ -126,6 +126,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             ruleList.append(rule)
         
         for rule in ruleList:
+            logging.debug("regel: " +  str(rule))
             self.policyFactory.insertRange(rule)
             self.listFirewall.insertRange(rule)
         self.policyFactory.insertRange(["*","*","*","delta"])
@@ -156,7 +157,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
                 logging.debug("answer thisAnswer: " + str(thisAnswer))
                 if thisAnswer[0] != self.hashTable.defualtRule:
                     if thisAnswer[1] < oldRank:
-                        logging.debug("current best answer: " + str(thisAnswer))
+                        #logging.debug("current best answer: " + str(thisAnswer))
                         bestAnswer = answer
                         oldRank = thisAnswer[1]
             codeword = bestAnswer
@@ -174,4 +175,3 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             packetList.append(packet)
             logging.debug("packetnumber: " + str(i) + " firewalll: "+str(packet) + str(self.listFirewall.lookup(packet)))
             self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[0][3])
-    

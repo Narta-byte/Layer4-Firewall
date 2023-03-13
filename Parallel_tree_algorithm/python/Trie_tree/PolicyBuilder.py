@@ -1,3 +1,4 @@
+# %%
 import random
 import logging
 
@@ -50,6 +51,8 @@ class PolicyBuilder:
         # if the rule already exists, skip the iteration
         if self.ruleAlreadyExists(rule):
             return
+        if self.ruleIsSubset(rule):
+            return
         ruleCodeword = self.insertRuleIntoTree(rule, self.treeList)
         
         # if there are no previous rules, add the new rule to the list
@@ -73,32 +76,6 @@ class PolicyBuilder:
        
     def intersection(self,rule0Tuple,rule1):
         ruleIntersection = ["placeholder0", "placeholder1", "placeholder2", "placeholder3"]
-        
-        combinations = []
-        for x in range(2):
-            for y in range(2):
-                for z in range(2):
-                    tempCombination = ["temp", "temp", "temp", "tempRule"]
-                    tempCombination[3] = rule0Tuple[0][3]
-                    if bool(x):
-                        tempCombination[0] = rule0Tuple[0][0]
-                    else:
-                        tempCombination[0] = rule1[0]
-                    if bool(y):
-                        tempCombination[1] = rule0Tuple[0][1]
-                    else:
-                        tempCombination[1] = rule1[1]
-                    if bool(z):
-                        tempCombination[2] = rule0Tuple[0][2]
-                    else:
-                        tempCombination[2] = rule1[2]
-                    combinations.append(tempCombination)
-                    
-        newComb = list(set(tuple(x) for x in combinations)) # Get only unique values in combinations
-        for combination in newComb:
-            logging.debug(combination)
-
-               
         for i in range(len(rule1)-1):
             if i == 0 : # add the protocol for the old rule to the intersection rule
                 ruleIntersection[3] = rule0Tuple[0][3] 
@@ -117,17 +94,28 @@ class PolicyBuilder:
                 
         if self.ruleAlreadyExists(ruleIntersection) or rule1[0:len(rule1)-1] == ruleIntersection[0:len(rule1)-1]:
             return None
+        if self.ruleIsSubset(ruleIntersection):
+            return
         return ruleIntersection
-    
     def generateCodeword(self, length):
         codeword = ""
         for _ in range(length):
             codeword += str(random.randint(0,1))
         return codeword
     
+    def ruleIsSubset(self,rule):
+        for previousRule in self.previousRuleTuple:
+            if previousRule[0][0:len(rule)-1] == rule[0:len(rule)-1]:
+                return True
+            if (previousRule[0][0] == '*' or previousRule[0][0] == rule[0]) and \
+               (previousRule[0][1] == '*' or previousRule[0][1] == rule[1]) and \
+               (previousRule[0][2] == '*' or previousRule[0][2] == rule[2]):
+                return True
+        return False
+
+ 
     def writeCodewords(self):   #Writing to "codewords.txt"
-        #file = open("codewords.txt", "w") 
-        file = open("Parallel_tree_algorithm/python/Trie_tree/codewords.txt", "w")
+        file = open("codewords.txt", "w") 
         for rule in self.previousRuleTuple:
             file.write(str(rule[0]) + " : " + rule[1] +  "\n")
         file.close() 
@@ -178,7 +166,11 @@ class PolicyBuilder:
             for i in range(3):
                 answer += possibleCodeword[i]
             answerList.append(answer)
+        
         logging.debug("Answer list: " + str(answerList))
+        logging.debug("Answer: length more than one " + str(len(answerList) > 1))
+        logging.debug("Answer: the length " + str(len(answerList)))
+        
         return answerList
 
     def ruleAlreadyExistsPacket(self, rule): #Does the inc. packet exist in previoustuple
@@ -197,3 +189,9 @@ class PolicyBuilder:
             junk, codeword = self.treeList[cnt].getCodeword("*")
             tempCodeword.append((codeword))
             tempPacket.append("*")
+
+pb = PolicyBuilder([])
+pb.insertRule(["*","*","3","alpha"])
+pb.insertRule(["0","2","*","beta"])
+# pb.intersection((["*","*","3","alpha"],123),["0","2","*","beta"])
+#%%

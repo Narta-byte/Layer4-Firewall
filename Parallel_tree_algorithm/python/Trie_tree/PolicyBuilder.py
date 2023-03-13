@@ -96,8 +96,8 @@ class PolicyBuilder:
                 
         if self.ruleAlreadyExists(ruleIntersection) or rule1[0:len(rule1)-1] == ruleIntersection[0:len(rule1)-1]:
             return None
-        #if self.ruleIsSubset(ruleIntersection):
-         #   return
+        # if self.ruleIsSubset(ruleIntersection):
+        #    return
         return ruleIntersection
     def generateCodeword(self, length):
         codeword = ""
@@ -149,6 +149,8 @@ class PolicyBuilder:
                 codeword.append(codewordSegment)
         
         possibleCodewords = []
+        debugPosCodewords = []
+        cursedTruthTable = []
         for x in range(2):
             for y in range(2):
                 for z in range(2):
@@ -160,6 +162,32 @@ class PolicyBuilder:
                     
                     if self.ruleAlreadyExistsPacket(tempPacket):
                         possibleCodewords.append(tempCodeword)
+                        cursedTruthTable.append([x,y,z])
+                        
+                    debugPosCodewords.append(tempCodeword)
+                    
+        
+        debugAnswer = ""
+        debugAnswerList = []
+        for bug in debugPosCodewords:
+            debugAnswer = ""
+            for i in range(3):
+                debugAnswer += bug[i]
+            debugAnswerList.append(debugAnswer)
+            
+        
+        posAns = []
+        tempny = []
+        self.AppendTemp(packet, codeword, 1, posAns, tempny, 0)
+        self.AppendTemp(packet, codeword, 1, posAns, tempny, 1)
+        self.AppendTemp(packet, codeword, 1, posAns, tempny, 2)
+        theAnswer = ""
+        if self.ruleAlreadyExistsPacket(tempny):
+            #theAnswer = ""
+            for seg in posAns:
+                theAnswer+=seg
+                #logging.debug("theAnw: " + str(theAnswer))
+        
         logging.debug("Possible codewords: " + str(possibleCodewords))
         
         answerList = []
@@ -168,10 +196,12 @@ class PolicyBuilder:
             for i in range(3):
                 answer += possibleCodeword[i]
             answerList.append(answer)
-        
+        logging.debug("debugPosCodewords: " + str(debugAnswerList))
         logging.debug("Answer list: " + str(answerList))
+        logging.debug("cursed truth table: " + str(cursedTruthTable[-1]))
         logging.debug("Answer: length more than one " + str(len(answerList) > 1))
         logging.debug("Answer: the length " + str(len(answerList)))
+        logging.debug("theAnw is equal to anwserLists answer: " + str(theAnswer == answerList[-1]))
         
         return answerList[-1]
 

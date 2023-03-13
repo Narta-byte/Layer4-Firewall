@@ -77,19 +77,10 @@ class TestPortNumberRange(unittest.TestCase):
         rule1 = ["0","2","*","beta"]
         rule2 = ["*","2","3","delta"]
         rule3 = ["*","*","*","gamma"] """
-        rule0 = ['*', '2', '3', 'gamma']
-        rule3 = ['*', '2', '*', 'gamma']
-        rule5 = ['*', '*', '3', 'gamma']
-        rule4 = ['8', '*', '*', 'alpha']
-        rule1 = ["10", "1-4", "1", "beta"]
-        rule6 = ["2", "3", "1", "beta"]
-        rule7 = ["2", "*", "1", "beta"]
-        rule8 = ["*", "*", "10", "beta"]
-        rule9 = ["*", "2", "10", "beta"]
         
         rulelist = [#['1-4', '2-4', '*', 'beta'], ['16', '4', '1-3', 'alpha'],# ['1-3', '2-4', '10', 'beta'],
                     #['1-4', '1-4', '1-4', 'alpha'], 
-                    ['13', '16', '*', 'beta'], ['*', '16', '2', 'beta'],
+                    ['13-15', '16', '*', 'beta']#, ['*', '16', '4', 'beta'],
          #           ['2-3', '5', '*', 'alpha'], ['9', '2-4', '*', 'gamma'], ['*', '*', '17', 'gamma'],
         #            ['*', '*', '7', 'beta'], ['*', '2-3', '1-4', 'gamma'], ['2-3', '*', '1', 'beta'],
        #             ['2-4', '1-4', '2-4', 'alpha'], ['1-3', '1-3', '1-3', 'beta'], ['1-3', '*', '*', 'gamma'],
@@ -103,18 +94,8 @@ class TestPortNumberRange(unittest.TestCase):
                     #['2-4', '1-3', '2-4', 'gamma'], ['*', '2', '6', 'gamma'], ['*', '*', '10', 'alpha']
                     ]
 
-        """ self.policyBuilder.insertRange(rule0)
-        self.policyBuilder.insertRange(rule3)
-        self.policyBuilder.insertRange(rule5)
-        self.policyBuilder.insertRange(rule4)
-        self.policyBuilder.insertRange(rule1)
-        self.policyBuilder.insertRange(rule6)
-        self.policyBuilder.insertRange(rule7)
-        self.policyBuilder.insertRange(rule8)
-        self.policyBuilder.insertRange(rule9) """
-
         for rules in rulelist:
-            self.policyBuilder.insertRange(rules)
+            self.policyBuilder.insertRule(rules)
 
         self.policyBuilder.writeCodewords()
         

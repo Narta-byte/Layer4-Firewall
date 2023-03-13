@@ -2,18 +2,17 @@
 import random
 import logging
 
-
 class PolicyBuilder:
     def __init__(self,treeList):
         self.treeList = treeList
         self.previousRuleTuple = []
         self.ruleCodeWord = ""
         self.codewordLength = 16
+    
     def insertRuleIntoTree(self, rule, tree):
         ruleCodeword = ""
         for i, tree in enumerate(self.treeList):
             exists, codeword = tree.getCodeword(rule[i])
-            
             if not exists:
                 codeword = self.generateCodeword(self.codewordLength)
             
@@ -45,7 +44,6 @@ class PolicyBuilder:
 
         for sublist in result:
             self.insertRule(sublist)
-            #time.sleep(1)
 
     def insertRule(self,rule):
         # if the rule already exists, skip the iteration
@@ -60,7 +58,6 @@ class PolicyBuilder:
             self.previousRuleTuple.append([rule, ruleCodeword])
             return
         
-       
         for idx, oldRuleTuble in enumerate(self.previousRuleTuple):
             intersectionCodeword = self.generateCodeword(self.codewordLength*len(self.treeList))
             ruleIntersection = []
@@ -72,7 +69,6 @@ class PolicyBuilder:
             
             if ruleIntersection is not None:
                 self.previousRuleTuple.insert(idx-1, [ruleIntersection, intersectionCodeword])
-
        
         self.previousRuleTuple.append([rule, ruleCodeword])
        
@@ -96,8 +92,6 @@ class PolicyBuilder:
                 
         if self.ruleAlreadyExists(ruleIntersection) or rule1[0:len(rule1)-1] == ruleIntersection[0:len(rule1)-1]:
             return None
-        # if self.ruleIsSubset(ruleIntersection):
-        #    return
         return ruleIntersection
     def generateCodeword(self, length):
         codeword = ""
@@ -107,27 +101,24 @@ class PolicyBuilder:
     
     def ruleIsSubset(self,rule):
         for previousRule in self.previousRuleTuple:
-            if previousRule[0][0:len(rule)-1] == rule[0:len(rule)-1]:
-                return True
             if (previousRule[0][0] == '*' or previousRule[0][0] == rule[0]) and \
                (previousRule[0][1] == '*' or previousRule[0][1] == rule[1]) and \
                (previousRule[0][2] == '*' or previousRule[0][2] == rule[2]):
                 return True
         return False
 
- 
     def writeCodewords(self):   #Writing to "codewords.txt"
         file = open("codewords.txt", "w") 
         for rule in self.previousRuleTuple:
             file.write(str(rule[0]) + " : " + rule[1] +  "\n")
         file.close()
-    
+
     def getRuleTuple(self):
         output = ""
         for rule in self.previousRuleTuple:
             output += (str(rule[0]) + " " + rule[1] + "\n")
         return output
-    
+
     def setSeed(self, seed):
         random.seed(seed)
         
@@ -165,30 +156,12 @@ class PolicyBuilder:
                         cursedTruthTable.append([x,y,z])
                         
                     debugPosCodewords.append(tempCodeword)
-                    
         
         debugAnswer = ""
         debugAnswerList = []
-        for bug in debugPosCodewords:
-            debugAnswer = ""
-            for i in range(3):
-                debugAnswer += bug[i]
-            debugAnswerList.append(debugAnswer)
-            
+        debugAnswerList = [''.join(bug) for bug in debugPosCodewords]
         
-        posAns = []
-        tempny = []
-        self.AppendTemp(packet, codeword, 1, posAns, tempny, 0)
-        self.AppendTemp(packet, codeword, 1, posAns, tempny, 1)
-        self.AppendTemp(packet, codeword, 1, posAns, tempny, 2)
-        theAnswer = ""
-        if self.ruleAlreadyExistsPacket(tempny):
-            #theAnswer = ""
-            for seg in posAns:
-                theAnswer+=seg
-                #logging.debug("theAnw: " + str(theAnswer))
-        
-        logging.debug("Possible codewords: " + str(possibleCodewords))
+        debugAnswerList = list(set(debugAnswerList)) #Remove duplicates in array
         
         answerList = []
         for possibleCodeword in possibleCodewords:
@@ -199,9 +172,7 @@ class PolicyBuilder:
         logging.debug("debugPosCodewords: " + str(debugAnswerList))
         logging.debug("Answer list: " + str(answerList))
         logging.debug("cursed truth table: " + str(cursedTruthTable[-1]))
-        logging.debug("Answer: length more than one " + str(len(answerList) > 1))
         logging.debug("Answer: the length " + str(len(answerList)))
-        logging.debug("theAnw is equal to anwserLists answer: " + str(theAnswer == answerList[-1]))
         
         return answerList[-1]
 
@@ -214,16 +185,13 @@ class PolicyBuilder:
         return False
         
     def AppendTemp(self, packet, codeword, x, tempCodeword, tempPacket, cnt):
-        if bool(x):
+        if x:
             tempCodeword.append((codeword[cnt]))
             tempPacket.append(packet[cnt])
         else:
-            junk, codeword = self.treeList[cnt].getCodeword("*")
+            _, codeword = self.treeList[cnt].getCodeword("*")
             tempCodeword.append((codeword))
             tempPacket.append("*")
 
-pb = PolicyBuilder([])
-pb.insertRule(["*","*","3","alpha"])
-pb.insertRule(["0","2","*","beta"])
 # pb.intersection((["*","*","3","alpha"],123),["0","2","*","beta"])
 #%%

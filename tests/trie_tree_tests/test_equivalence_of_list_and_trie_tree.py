@@ -101,7 +101,6 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         
     def test_randomPackets(self): # Test 1000 random packages vs firewall list
         ruleList = []
-        # ruleList.append(['0', '*', '*', 'beta'])
         random.seed(311415)
         for _ in range(0,100):
             rule = ["","","",""]
@@ -150,25 +149,8 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             logging.info("")
             logging.info("NEW PACKET:       packetnum: " + str(i))
             
-            codeword = ""
-            """ anwserList = self.policyFactory.retriveCodeword(packet)
-            bestAnswer = ""
-            oldRank = 10000000000000000
-            for answer in anwserList:
-                thisAnswer = self.hashTable.lookup(answer)
-                logging.debug("answer thisAnswer: " + str(thisAnswer))
-                if thisAnswer[0] != self.hashTable.defualtRule:
-                    if thisAnswer[1] < oldRank:
-                        #logging.debug("current best answer: " + str(thisAnswer))
-                        bestAnswer = answer
-                        oldRank = thisAnswer[1]
-            codeword = bestAnswer """
-            codeword = self.policyFactory.retriveCodeword(packet)
-            #logging.debug("answer table lookup: " + str(self.hashTable.lookup(bestAnswer)))
-            
+            codeword = self.policyFactory.retriveCodeword(packet)            
             logging.debug("(codeword) " + str(codeword))
-
-        # Debug statements for testing
                 
             logging.debug("lookingup packet op: "+str(packet) + str(self.listFirewall.lookup(packet)))
             logging.debug("lookingup hashen op: "+str(self.hashTable.lookup(codeword)))

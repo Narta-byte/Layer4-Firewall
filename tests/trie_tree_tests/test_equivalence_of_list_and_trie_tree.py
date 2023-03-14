@@ -127,4 +127,6 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
 
             packetList.append(packet)
             logging.debug("packetnumber: " + str(i) + " firewalll: "+str(packet) + str(self.listFirewall.lookup(packet)))
+
+            
             self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[0][3])

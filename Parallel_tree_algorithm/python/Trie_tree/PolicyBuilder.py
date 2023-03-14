@@ -189,9 +189,7 @@ class PolicyBuilder:
                 codeword.append(codewordSegment)
         
         possibleCodewords = []
-        debugPosCodewords = []
-        cursedTruthTable = []
-        
+
         tempCodeword = []
         tempPacket = []
         self.AppendTemp(packet, codeword, 1, tempCodeword, tempPacket, 0)

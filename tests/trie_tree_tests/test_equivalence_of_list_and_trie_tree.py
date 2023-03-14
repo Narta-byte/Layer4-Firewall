@@ -74,9 +74,9 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             for i in range(0,3):
                 chance = random.randint(0,100)
                 if chance <= 50:
-                    rule[i] = str(random.randint(0,5))
+                    rule[i] = str(random.randint(0,20))
                 elif chance > 50:
-                    rule[i] = str(random.randint(0,2)) + "-" + str(random.randint(3,4))
+                    rule[i] = str(random.randint(0,6)) + "-" + str(random.randint(8,12))
             chance = random.randint(0,100)
             if chance < 25:
                 rule[3] = "alpha"
@@ -92,22 +92,24 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             logging.debug("regel: " +  str(rule))
             self.policyFactory.insertRange(rule)
             self.listFirewall.insertRange(rule)
-        self.policyFactory.insertRange(["0-5","0-5","0-5","delta"])
-        self.hashTable.defualtRule = ["0-5","0-5","0-5","delta"]
-        self.listFirewall.insertRange(["0-5","0-5","0-5","delta"])
+        self.policyFactory.insertRange(["0-20","0-20","0-20","delta"])
+        self.hashTable.defualtRule = ["0-20","0-20","0-20","delta"]
+        self.listFirewall.insertRange(["0-20","0-20","0-20","delta"])
         
         file = open("list_firewall.txt", "w")
         file.write(self.listFirewall.getRules())
         file.close()
-        
+        self.tree0.drawGraph(html=True)
+        self.tree1.drawGraph(html=True)
+        self.tree2.drawGraph(html=True)
         for rank, rule in enumerate(self.policyFactory.previousRuleTuple):
             self.hashTable.insert(rule[1], (rule[0], rank))
         
         packetList = []
-        for i in range(0,1000):
+        for i in range(0,700):
             packet = ["","",""]
             for j in range(0,3):
-                packet[j] = str(random.randint(0,5))
+                packet[j] = str(random.randint(0,20))
             
             logging.info("")
             logging.info("NEW PACKET:       packetnum: " + str(i))

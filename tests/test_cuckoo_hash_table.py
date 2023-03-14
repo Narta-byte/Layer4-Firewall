@@ -20,8 +20,8 @@ class TestCuckooHashTable(unittest.TestCase):
     def test_insert_codeword_into_table(self):
         rule0 = ["*","1","1","alpha"]
         rule1 = ["1","1","*","beta"]
-        self.policyFactory.insertRule(rule0)
-        self.policyFactory.insertRule(rule1)
+        self.policyFactory.insertRuleHelper(rule0)
+        self.policyFactory.insertRuleHelper(rule1)
 
         for rule in self.policyFactory.previousRuleTuple:
             self.hashTable.insert(rule[1], rule[0])
@@ -35,9 +35,9 @@ class TestCuckooHashTable(unittest.TestCase):
         rule0 = ["1-10","10-20","1","alpha"]
         rule1 = ["1-10","9-22","1","beta"]
         rule2 = ["5-15","9-27","1","gamma"]
-        self.policyFactory.insertRange(rule0)
-        self.policyFactory.insertRange(rule1)
-        self.policyFactory.insertRange(rule2)
+        self.policyFactory.insertRule(rule0)
+        self.policyFactory.insertRule(rule1)
+        self.policyFactory.insertRule(rule2)
         self.policyFactory.writeCodewords()
         # self.tree0.drawGraph(html=True)
         # self.tree1.drawGraph(html=True)

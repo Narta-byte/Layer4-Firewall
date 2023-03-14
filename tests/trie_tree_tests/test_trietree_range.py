@@ -16,8 +16,8 @@ class TestPortNumberRange(unittest.TestCase):
         self.init3Trees()
         rule0 = ["*","1","1","alpha"]
         rule1 = ["1","1","*","beta"]
-        self.policyBuilder.insertRange(rule0)
-        self.policyBuilder.insertRange(rule1)
+        self.policyBuilder.insertRule(rule0)
+        self.policyBuilder.insertRule(rule1)
         self.policyBuilder.writeCodewords()
         
         expectedOutput =open("tests/expectedOutput/test_3Trees_overlap.txt","r")
@@ -28,9 +28,9 @@ class TestPortNumberRange(unittest.TestCase):
         rule0 = ["*","1","1","alpha"]
         rule1 = ["1","1","*","beta"]
         defualtRule = ["*","*","*","delta"]
-        self.policyBuilder.insertRule(rule0)
-        self.policyBuilder.insertRule(rule1)
-        self.policyBuilder.insertRule(defualtRule)
+        self.policyBuilder.insertRuleHelper(rule0)
+        self.policyBuilder.insertRuleHelper(rule1)
+        self.policyBuilder.insertRuleHelper(defualtRule)
         self.policyBuilder.writeCodewords()
         
         self.policyBuilder.getRuleTuple()
@@ -42,8 +42,8 @@ class TestPortNumberRange(unittest.TestCase):
         self.init3Trees()
         rule0 = ["1","1","*","alpha"]
         rule1 = ["1","1","*","beta"]
-        self.policyBuilder.insertRule(rule0)
-        self.policyBuilder.insertRule(rule1)
+        self.policyBuilder.insertRuleHelper(rule0)
+        self.policyBuilder.insertRuleHelper(rule1)
         self.policyBuilder.writeCodewords()
         
         expectedOutput =open("tests/expectedOutput/test_sameRule_twice.txt","r")
@@ -56,8 +56,8 @@ class TestPortNumberRange(unittest.TestCase):
         rule0 = ["1","1","*","alpha"]
         rule1 = ["1","1","1","beta"]
 
-        self.policyBuilder.insertRange(rule0)
-        self.policyBuilder.insertRange(rule1)
+        self.policyBuilder.insertRule(rule0)
+        self.policyBuilder.insertRule(rule1)
         self.policyBuilder.writeCodewords()
         
         #self.policyFactory.getRuleTuple()
@@ -95,7 +95,7 @@ class TestPortNumberRange(unittest.TestCase):
                     ]
 
         for rules in rulelist:
-            self.policyBuilder.insertRule(rules)
+            self.policyBuilder.insertRuleHelper(rules)
 
         self.policyBuilder.writeCodewords()
         

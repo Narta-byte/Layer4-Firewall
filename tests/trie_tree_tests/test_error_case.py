@@ -57,7 +57,7 @@ class TestErrorCase(unittest.TestCase):
 
     def initListAndTreeFirewalls(self, ruleList):
         for rule in ruleList:
-            self.policyFactory.insertRange(rule)
+            self.policyFactory.insertRule(rule)
             self.listFirewall.insertRange(rule)    
             
         self.hashTable = CuckooHashTable.CuckooHashTable()

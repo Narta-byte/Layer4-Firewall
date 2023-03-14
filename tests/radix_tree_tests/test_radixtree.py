@@ -28,8 +28,8 @@ class TestRadixTree(unittest.TestCase):
     def test_3Trees_overlap(self):
         rule0 = ["*","1","1","alpha"]
         rule1 = ["1","1","*","beta"]
-        self.policyBuilder.insertRange(rule0)
-        self.policyBuilder.insertRange(rule1)
+        self.policyBuilder.insertRule(rule0)
+        self.policyBuilder.insertRule(rule1)
         self.policyBuilder.writeCodewords()
         
         # self.tree0.drawGraph(html=True)
@@ -49,9 +49,9 @@ class TestRadixTree(unittest.TestCase):
         rule0 = ["*","1","1","alpha"]
         rule1 = ["1","1","*","beta"]
         defualtRule = ["*","*","*","delta"]
-        self.policyBuilder.insertRule(rule0)
-        self.policyBuilder.insertRule(rule1)
-        self.policyBuilder.insertRule(defualtRule)
+        self.policyBuilder.insertRuleHelper(rule0)
+        self.policyBuilder.insertRuleHelper(rule1)
+        self.policyBuilder.insertRuleHelper(defualtRule)
         self.policyBuilder.writeCodewords()
     
         self.policyBuilder.getRuleTuple()
@@ -65,8 +65,8 @@ class TestRadixTree(unittest.TestCase):
     def test_sameRule_twice(self):
        rule0 = ["1","1","*","alpha"]
        rule1 = ["1","1","*","beta"]
-       self.policyBuilder.insertRule(rule0)
-       self.policyBuilder.insertRule(rule1)
+       self.policyBuilder.insertRuleHelper(rule0)
+       self.policyBuilder.insertRuleHelper(rule1)
        self.policyBuilder.writeCodewords()
        
        expectedOutput =open("tests/expectedOutput/test_sameRule_twice.txt","r")
@@ -76,8 +76,8 @@ class TestRadixTree(unittest.TestCase):
     def test_simple_rule(self):
         rule0 = ["1","1","*","alpha"]
         rule1 = ["1","1","1","beta"]
-        self.policyBuilder.insertRule(rule0)
-        self.policyBuilder.insertRule(rule1)
+        self.policyBuilder.insertRuleHelper(rule0)
+        self.policyBuilder.insertRuleHelper(rule1)
         self.policyBuilder.writeCodewords()
 
         expectedOutput =open("tests/expectedOutput/test_simple_rule.txt","r")
@@ -88,8 +88,8 @@ class TestRadixTree(unittest.TestCase):
         rule0 = ["1","2-3","4-5","alpha"]
         rule1 = ["1","*","4-6","beta"]
         
-        self.policyBuilder.insertRange(rule0)
-        self.policyBuilder.insertRange(rule1)
+        self.policyBuilder.insertRule(rule0)
+        self.policyBuilder.insertRule(rule1)
 
         self.policyBuilder.writeCodewords()
         

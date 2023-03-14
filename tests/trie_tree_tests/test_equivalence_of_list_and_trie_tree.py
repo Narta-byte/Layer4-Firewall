@@ -35,8 +35,8 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
     def test_samePacketsInBoth(self):
         rule0 = ["1-5", "6-10", "10-12", "alpha"] 
         rule1 = ["*","*","*","beta"]
-        self.policyFactory.insertRange(rule0)
-        self.policyFactory.insertRange(rule1)
+        self.policyFactory.insertRule(rule0)
+        self.policyFactory.insertRule(rule1)
 
         for rank, rule in enumerate(self.policyFactory.previousRuleTuple):
             self.hashTable.insert(rule[1], (rule[0], rank))
@@ -90,9 +90,9 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         
         for rule in ruleList:
             logging.debug("regel: " +  str(rule))
-            self.policyFactory.insertRange(rule)
+            self.policyFactory.insertRule(rule)
             self.listFirewall.insertRange(rule)
-        self.policyFactory.insertRange(["0-10","0-10","0-10","delta"])
+        self.policyFactory.insertRule(["0-10","0-10","0-10","delta"])
         self.hashTable.defualtRule = ["0-10","0-10","0-10","delta"]
         self.listFirewall.insertRange(["0-10","0-10","0-10","delta"])
         

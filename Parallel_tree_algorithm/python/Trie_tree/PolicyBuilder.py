@@ -28,7 +28,8 @@ class PolicyBuilder:
                 return True
         return False
 
-    def insertRange(self,rule):
+    
+    def insertRule(self,rule): 
         result = [[]]
         for field in rule:
             if "-" in field:
@@ -44,9 +45,9 @@ class PolicyBuilder:
                     result[i].append(field)
 
         for sublist in result:
-            self.insertRule(sublist)
+            self.insertRuleHelper(sublist)
 
-    def insertRule(self,rule):
+    def insertRuleHelper(self,rule):
         # if the rule already exists, skip the iteration
         if self.ruleAlreadyExists(rule):
             return
@@ -122,45 +123,7 @@ class PolicyBuilder:
             prettyFile.write(str(rule) + " : " + rule[1] +  "\n")
         prettyFile.close()
 
-    def writePrettyCodewords(self):   #Writing to "codewords.txt"
-        for _ in range(0,100):
-            rule = ["","","",""]
-            for i in range(0,3):
-                chance = random.randint(0,100)
-                if chance <= 33:
-                    rule[i] = str(random.randint(0,20))
-                elif chance > 33 and chance < 66:
-                    if rule[0] == "*" and rule[1] == "*":
-                        rule[i] = str(random.randint(0,20))
-                    else:
-                        rule[i] = "*"
-                elif chance >= 66:
-                    rule[i] = str(random.randint(1,2)) + "-" + str(random.randint(3,4))
-            chance = random.randint(0,100)
-            if chance < 25:
-                rule[3] = "alpha"
-            elif chance >= 25 and chance <= 50:
-                rule[3] = "beta"
-            elif chance > 50 and chance < 75:
-                rule[3] = "gamma"
-            elif chance >= 75:
-                rule[3] = "hotel"
-            ruleList.append(rule)
         
-        file = open("ruleAndInsertion.txt", "w")
-        i = 0
-        for rule in ruleList:
-            logging.debug("regel: " +  str(rule))
-            self.policyFactory.insertRange(rule)
-            file.write(str(rule) + "\n" + str(self.previousRuleTuple[0][-1]))
-        
-        
-
-        file = open("prettyCodewords.txt", "w")
-        for rule in self.previousRuleTuple:
-            file.write(str(rule[0]) + " : " + rule[1] +  "\n")
-        file.close()
-
     def getRuleTuple(self):
         output = ""
         for rule in self.previousRuleTuple:
@@ -189,7 +152,9 @@ class PolicyBuilder:
                 codeword.append(codewordSegment)
         
         possibleCodewords = []
-
+        debugPosCodewords = []
+        cursedTruthTable = []
+        
         tempCodeword = []
         tempPacket = []
         self.AppendTemp(packet, codeword, 1, tempCodeword, tempPacket, 0)
@@ -226,8 +191,6 @@ class PolicyBuilder:
             _, codeword = self.treeList[cnt].getCodeword("*")
             tempCodeword.append((codeword))
             tempPacket.append("*")
-
-            
 
 # pb.intersection((["*","*","3","alpha"],123),["0","2","*","beta"])
 #%%

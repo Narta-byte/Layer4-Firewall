@@ -46,19 +46,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         
         #1ST TEST
         codeword = ""
-        anwserList = self.policyFactory.retriveCodeword(["1","1","1"])
-        bestAnswer = ""
-        oldRank = 10000000000000000
-        for answer in anwserList:
-            thisAnswer = self.hashTable.lookup(answer)
-            logging.debug("answer thisAnswer: " + str(thisAnswer))
-            if thisAnswer[0] != self.hashTable.defualtRule:
-                logging.debug("codeword!: " + str(thisAnswer))
-                if int(thisAnswer[1]) < oldRank:
-                    logging.debug("current best answer: " + str(thisAnswer))  
-                    bestAnswer = answer
-                    oldRank = thisAnswer[1]
-        codeword = bestAnswer
+        codeword = self.policyFactory.retriveCodeword(["1","1","1"])
 
         logging.debug("codeword!: " + str(codeword))
 
@@ -67,35 +55,14 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
 
         #2ND TEST
         codeword = ""
-        anwserList = self.policyFactory.retriveCodeword(["1","7","11"])
-        bestAnswer = ""
-        oldRank = 10000000000000000
-        for answer in anwserList:
-            thisAnswer = self.hashTable.lookup(answer)
-            logging.debug("answer thisAnswer: " + str(thisAnswer))
-            if thisAnswer[0] != self.hashTable.defualtRule:
-                if thisAnswer[1] < oldRank:
-                    logging.debug("current best answer: " + str(thisAnswer))  
-                    bestAnswer = answer
-                    oldRank = thisAnswer[1]
-        codeword = bestAnswer
+        codeword = self.policyFactory.retriveCodeword(["1","7","11"])
         self.assertEqual(self.listFirewall.lookup(["1","7","11"]), self.hashTable.lookup(codeword)[0][3])
+        logging.debug("codeword!: " + str(codeword))
         
         #3RD TEST
         codeword = ""
-        anwserList = self.policyFactory.retriveCodeword(["255","255","255"])
-        bestAnswer = ""
-        oldRank = 10000000000000000
-        for answer in anwserList:
-            thisAnswer = self.hashTable.lookup(answer)
-            logging.debug("answer thisAnswer: " + str(thisAnswer))
-            if thisAnswer[0] != self.hashTable.defualtRule:
-                if thisAnswer[1] < oldRank:
-                    logging.debug("current best answer: " + str(thisAnswer))  
-                    bestAnswer = answer
-                    oldRank = thisAnswer[1]
-        codeword = bestAnswer
-        
+        codeword = self.policyFactory.retriveCodeword(["255","255","255"])
+        logging.debug("codeword!: " + str(codeword))
 
         self.assertEqual(self.listFirewall.lookup(["255","255","255"]), self.hashTable.lookup(codeword)[0][3])
         
@@ -127,7 +94,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             ruleList.append(rule)
         
         for rule in ruleList:
-            #logging.debug("regel: " +  str(rule))
+            logging.debug("regel: " +  str(rule))
             self.policyFactory.insertRange(rule)
             self.listFirewall.insertRange(rule)
         self.policyFactory.insertRange(["*","*","*","delta"])
@@ -156,6 +123,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             logging.debug("lookingup hashen op: "+str(self.hashTable.lookup(codeword)))
 
             self.policyFactory.writeCodewords()
+            self.policyFactory.writePrettyString()
 
             packetList.append(packet)
             logging.debug("packetnumber: " + str(i) + " firewalll: "+str(packet) + str(self.listFirewall.lookup(packet)))

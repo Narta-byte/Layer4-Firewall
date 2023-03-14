@@ -8,6 +8,7 @@ class PolicyBuilder:
         self.previousRuleTuple = []
         self.ruleCodeWord = ""
         self.codewordLength = 16
+        self.prettyString = []
     
     def insertRuleIntoTree(self, rule, tree):
         ruleCodeword = ""
@@ -55,7 +56,7 @@ class PolicyBuilder:
         
         # if there are no previous rules, add the new rule to the list
         if self.previousRuleTuple == []:
-            self.previousRuleTuple.append([rule, ruleCodeword])
+            self.previousRuleTuple.append([rule, ruleCodeword, "empty"])
             return
         
         for idx, oldRuleTuble in enumerate(self.previousRuleTuple):
@@ -68,8 +69,10 @@ class PolicyBuilder:
             intersectionCodeword = self.insertRuleIntoTree(ruleIntersection,self.treeList)
             
             if ruleIntersection is not None:
+                self.prettyString.insert(idx-1, "  "+str(ruleIntersection)+" intersects with " +str(rule) + " and " +str(oldRuleTuble[0]))
                 self.previousRuleTuple.insert(idx-1, [ruleIntersection, intersectionCodeword])
-       
+        
+        self.prettyString.append(str(rule)+ " "+str(ruleCodeword))
         self.previousRuleTuple.append([rule, ruleCodeword])
        
     def intersection(self,rule0Tuple,rule1):
@@ -108,7 +111,52 @@ class PolicyBuilder:
         return False
 
     def writeCodewords(self):   #Writing to "codewords.txt"
-        file = open("codewords.txt", "w") 
+        file = open("codewords.txt", "w")
+        for rule in self.previousRuleTuple:
+            file.write(str(rule[0]) + " : " + rule[1] +  "\n")
+        file.close()
+
+    def writePrettyString(self):   #Writing to "codewords.txt"
+        prettyFile = open("prettyStrings.txt", "w")
+        for rule in self.prettyString:
+            prettyFile.write(str(rule) + " : " + rule[1] +  "\n")
+        prettyFile.close()
+
+    def writePrettyCodewords(self):   #Writing to "codewords.txt"
+        for _ in range(0,100):
+            rule = ["","","",""]
+            for i in range(0,3):
+                chance = random.randint(0,100)
+                if chance <= 33:
+                    rule[i] = str(random.randint(0,20))
+                elif chance > 33 and chance < 66:
+                    if rule[0] == "*" and rule[1] == "*":
+                        rule[i] = str(random.randint(0,20))
+                    else:
+                        rule[i] = "*"
+                elif chance >= 66:
+                    rule[i] = str(random.randint(1,2)) + "-" + str(random.randint(3,4))
+            chance = random.randint(0,100)
+            if chance < 25:
+                rule[3] = "alpha"
+            elif chance >= 25 and chance <= 50:
+                rule[3] = "beta"
+            elif chance > 50 and chance < 75:
+                rule[3] = "gamma"
+            elif chance >= 75:
+                rule[3] = "hotel"
+            ruleList.append(rule)
+        
+        file = open("ruleAndInsertion.txt", "w")
+        i = 0
+        for rule in ruleList:
+            logging.debug("regel: " +  str(rule))
+            self.policyFactory.insertRange(rule)
+            file.write(str(rule) + "\n" + str(self.previousRuleTuple[0][-1]))
+        
+        
+
+        file = open("prettyCodewords.txt", "w")
         for rule in self.previousRuleTuple:
             file.write(str(rule[0]) + " : " + rule[1] +  "\n")
         file.close()

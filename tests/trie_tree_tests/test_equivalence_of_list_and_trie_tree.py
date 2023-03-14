@@ -74,9 +74,9 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             for i in range(0,3):
                 chance = random.randint(0,100)
                 if chance <= 50:
-                    rule[i] = str(random.randint(0,20))
+                    rule[i] = str(random.randint(0,10))
                 elif chance > 50:
-                    rule[i] = str(random.randint(0,6)) + "-" + str(random.randint(8,12))
+                    rule[i] = str(random.randint(0,1)) + "-" + str(random.randint(9,10))
             chance = random.randint(0,100)
             if chance < 25:
                 rule[3] = "alpha"
@@ -92,9 +92,9 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             logging.debug("regel: " +  str(rule))
             self.policyFactory.insertRange(rule)
             self.listFirewall.insertRange(rule)
-        self.policyFactory.insertRange(["0-20","0-20","0-20","delta"])
-        self.hashTable.defualtRule = ["0-20","0-20","0-20","delta"]
-        self.listFirewall.insertRange(["0-20","0-20","0-20","delta"])
+        self.policyFactory.insertRange(["0-10","0-10","0-10","delta"])
+        self.hashTable.defualtRule = ["0-10","0-10","0-10","delta"]
+        self.listFirewall.insertRange(["0-10","0-10","0-10","delta"])
         
         file = open("list_firewall.txt", "w")
         file.write(self.listFirewall.getRules())
@@ -109,7 +109,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         for i in range(0,700):
             packet = ["","",""]
             for j in range(0,3):
-                packet[j] = str(random.randint(0,20))
+                packet[j] = str(random.randint(0,10))
             
             logging.info("")
             logging.info("NEW PACKET:       packetnum: " + str(i))
@@ -127,7 +127,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
 
             packetList.append(packet)
             logging.debug("packetnumber: " + str(i) + " firewalll: "+str(packet) + str(self.listFirewall.lookup(packet)))
-
-            
             
             self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[0][3])
+
+

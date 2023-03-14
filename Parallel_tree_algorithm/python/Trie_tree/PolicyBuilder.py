@@ -227,5 +227,7 @@ class PolicyBuilder:
             tempCodeword.append((codeword))
             tempPacket.append("*")
 
+            
+
 # pb.intersection((["*","*","3","alpha"],123),["0","2","*","beta"])
 #%%

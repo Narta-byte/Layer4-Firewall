@@ -182,34 +182,24 @@ class PolicyBuilder:
             if exists:
                 codeword.append(codewordSegment)
             else: 
-                exists, codewordSegment = self.treeList[i].getCodeword("*")
-                if not exists:
-                    raise Exception("Error there is no wildcard route for tree " + str(i))
+                # exists, codewordSegment = self.treeList[i].getCodeword("*")
+                return None
+                # if not exists:
+                    # raise Exception("Error there is no wildcard route for tree " + str(i))
                 codeword.append(codewordSegment)
         
         possibleCodewords = []
         debugPosCodewords = []
         cursedTruthTable = []
-        for x in range(2):
-            for y in range(2):
-                for z in range(2):
-                    tempCodeword = []
-                    tempPacket = []
-                    self.AppendTemp(packet, codeword, x, tempCodeword, tempPacket, 0)
-                    self.AppendTemp(packet, codeword, y, tempCodeword, tempPacket, 1)
-                    self.AppendTemp(packet, codeword, z, tempCodeword, tempPacket, 2)
-                    
-                    if self.ruleAlreadyExistsPacket(tempPacket):
-                        possibleCodewords.append(tempCodeword)
-                        cursedTruthTable.append([x,y,z])
-                        
-                    debugPosCodewords.append(tempCodeword)
         
-        debugAnswer = ""
-        debugAnswerList = []
-        debugAnswerList = [''.join(bug) for bug in debugPosCodewords]
+        tempCodeword = []
+        tempPacket = []
+        self.AppendTemp(packet, codeword, 1, tempCodeword, tempPacket, 0)
+        self.AppendTemp(packet, codeword, 1, tempCodeword, tempPacket, 1)
+        self.AppendTemp(packet, codeword, 1, tempCodeword, tempPacket, 2)
+
+        possibleCodewords.append(tempCodeword)
         
-        debugAnswerList = list(set(debugAnswerList)) #Remove duplicates in array
         
         answerList = []
         for possibleCodeword in possibleCodewords:
@@ -217,9 +207,7 @@ class PolicyBuilder:
             for i in range(3):
                 answer += possibleCodeword[i]
             answerList.append(answer)
-        logging.debug("debugPosCodewords: " + str(debugAnswerList))
         logging.debug("Answer list: " + str(answerList))
-        logging.debug("cursed truth table: " + str(cursedTruthTable[-1]))
         logging.debug("Answer: the length " + str(len(answerList)))
         
         return answerList[-1]

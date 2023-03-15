@@ -9,24 +9,22 @@ class PolicyTrieNode(trieTree.TrieNode):
     def __init__(self, key):
         super().__init__(key)
         self.color = "#11BB11"
-        self.totalRules = 0
         self.aggrateRule = ""
-        self.aggragateChildren = {}
         self.codeword = ""
 class PolicyTrieTree(trieTree.TrieTree):
     def __init__(self,key = ''):
         self.root = PolicyTrieNode(key)
         self.root.color = "#123456"
-        logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-        datefmt='%d-%m-%Y:%H:%M:%S',
-        level=logging.DEBUG,
-        filename='logs.txt')
+        self.treeDepth = 16
 
     def insert(self, key, codeword):
-        if key != "*":
+        if not "*" in key:
             key = format(int(key), '016b')
-        
-        length = len(key)
+            length = len(key)
+        else:
+            key = key.split("*")[0]
+            length = len(key)
+            logging.debug(f'key: {key} length: {length}')
         crawl = self.root
         for level in range(length):
             child = crawl.children
@@ -41,18 +39,12 @@ class PolicyTrieTree(trieTree.TrieTree):
                     
                 else:
                     temp =PolicyTrieNode(tempKey)
-                    
-                    self.root.aggragateChildren[key] = temp
-                    
-                    self.root.aggragateChildren[key] = temp
-                    self.root.totalRules += 1
                     child[tempKey] = temp
                     
-                    temp.color = "#694200"
+                    temp.color = "#2222BB"
                     temp.codeword = codeword
-                    
-                    
         crawl.isEnd = True
+
     def to16Bit(self, port):
         keyList = []
         indiciesRange = port.split("-")
@@ -62,22 +54,29 @@ class PolicyTrieTree(trieTree.TrieTree):
         return keyList
     
     def getCodeword(self, key):
-        if key != "*":
+        if not "*" in key:
             key = format(int(key), '016b')
+            length = len(key)
+        else:
+            key = key.split("*")[0]
+            length = len(key)
+            logging.debug(f'key: {key} length: {length}')
             
-        length = len(key)
+
         crawl = self.root
         child = crawl.children
         tempKey = ""
         for level in range(length):
+            # logging.debug("crawl codeWord: " + str(crawl.codeword))
             child = crawl.children
             tempKey = key[level]
             if tempKey in child:
                 crawl = child[tempKey]
                 
             else:
-           
+                # logging.debug("key not found"+ str(crawl.codeword))
                 return False, 0
+        # logging.debug("key found" + str(crawl.codeword))
         
         return True, crawl.codeword
     

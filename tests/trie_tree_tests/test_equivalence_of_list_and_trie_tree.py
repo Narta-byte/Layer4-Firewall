@@ -89,7 +89,6 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             ruleList.append(rule)
         
         for rule in ruleList:
-            logging.debug("regel: " +  str(rule))
             self.policyBuilder.insertRule(rule)
             self.listFirewall.insertRange(rule)
         self.policyBuilder.insertRule(["0-5","0-5","0-5","delta"])

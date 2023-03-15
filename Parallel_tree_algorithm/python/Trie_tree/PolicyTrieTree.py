@@ -66,18 +66,25 @@ class PolicyTrieTree(trieTree.TrieTree):
         crawl = self.root
         child = crawl.children
         tempKey = ""
+        bestMatch = ""
+        if crawl.codeword != "":
+            bestMatch = crawl.codeword
         for level in range(length):
-            # logging.debug("crawl codeWord: " + str(crawl.codeword))
+            if crawl.codeword != "":
+                bestMatch = crawl.codeword
             child = crawl.children
             tempKey = key[level]
             if tempKey in child:
                 crawl = child[tempKey]
                 
             else:
-                # logging.debug("key not found"+ str(crawl.codeword))
-                return False, 0
-        # logging.debug("key found" + str(crawl.codeword))
-        
+                # logging.debug("key not found"+ str(crawl.codeword)+ " best match: " + str(bestMatch)+ " for key: " + str(key))
+                if bestMatch == "":
+                    return False, 0
+                else:
+                    return True, bestMatch
+        # logging.debug("key found" + str(crawl.codeword) + " best match: " + str(bestMatch) + " for key: " + str(key))
+         
         return True, crawl.codeword
     
             

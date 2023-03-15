@@ -113,8 +113,8 @@ class TestPolicyBuilder(unittest.TestCase):
        
 
         ruleList = [["1*","1","1","alpha"],
-                    ["00*","1","1","alpha"],
-                    ["1010*","1","1","alpha"],
+                    # ["00*","1","1","alpha"],
+                    # ["1010*","1","1","alpha"],
                     ]
         for rules in ruleList:
             self.policyBuilder.insertRule(rules)

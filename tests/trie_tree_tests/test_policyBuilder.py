@@ -4,7 +4,7 @@ import Parallel_tree_algorithm.python.Trie_tree.PolicyBuilder as PolicyBuilder
 import logging
 import Parallel_tree_algorithm.python.Hash_table.CuckooHashTable as CuckooHashTable
 
-class TestPortNumberRange(unittest.TestCase):
+class TestPolicyBuilder(unittest.TestCase):
     def setUp(self):
         self.tree = policyTrieTree.PolicyTrieTree()
         logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
@@ -69,32 +69,13 @@ class TestPortNumberRange(unittest.TestCase):
         
     def test_specific_ranges_with_second_field(self):
         self.init3Trees()
-        #rule0 = ["*","*","2","alpha"]
-        #rule1 = ["*","*","2","beta"]
-        #rule2 = ["*","2-3","3","beta"]
-        
-        """ rule0 = ["*","*","3","alpha"]
-        rule1 = ["0","2","*","beta"]
-        rule2 = ["*","2","3","delta"]
-        rule3 = ["*","*","*","gamma"] """
-        
-        rulelist = [#['1-4', '2-4', '*', 'beta'], ['16', '4', '1-3', 'alpha'],# ['1-3', '2-4', '10', 'beta'],
-                    #['1-4', '1-4', '1-4', 'alpha'], 
-                    ['13-15', '16', '*', 'beta']#, ['*', '16', '4', 'beta'],
-         #           ['2-3', '5', '*', 'alpha'], ['9', '2-4', '*', 'gamma'], ['*', '*', '17', 'gamma'],
-        #            ['*', '*', '7', 'beta'], ['*', '2-3', '1-4', 'gamma'], ['2-3', '*', '1', 'beta'],
-       #             ['2-4', '1-4', '2-4', 'alpha'], ['1-3', '1-3', '1-3', 'beta'], ['1-3', '*', '*', 'gamma'],
-      #              ['10', '*', '11', 'alpha'], ['*', '*', '8', 'gamma'],
-     #               ['0', '6', '*', 'alpha'], ['2-4', '18', '8', 'gamma'], ['16', '0', '7', 'alpha'],
-    #                ['*', '1-4', '9', 'beta'], ['2', '1-3', '2-3', 'alpha'], ['16', '2-3', '*', 'alpha'],
-   #                 ['*', '2-3', '2-3', 'gamma'], ['1-3', '18', '*', 'beta'], ['2-3', '*', '2-3', 'gamma'],
-  #                  ['1-4', '13', '*', 'alpha'], ['2-4', '*', '*', 'beta'], ['1-3', '2-4', '1-3', 'beta'],
- #                   ['2-4', '7', '*', 'gamma'], ['2', '*', '*', 'gamma'], ['2-3', '10', '16', 'gamma'],
-#                    ['*', '9', '2-3', 'beta'], ['*', '1-3', '16', 'alpha'], ['*', '7', '13', 'alpha'],
-                    #['2-4', '1-3', '2-4', 'gamma'], ['*', '2', '6', 'gamma'], ['*', '*', '10', 'alpha']
-                    ]
-
-        for rules in rulelist:
+      
+        ruleList = [["*","*","3","alpha"],
+        ["0","2","*","beta"],
+        ["*","2","3","delta"],
+        ["*","*","*","gamma"] ]
+   
+        for rules in ruleList:
             self.policyBuilder.insertRuleHelper(rules)
 
         self.policyBuilder.writeCodewords()
@@ -105,7 +86,7 @@ class TestPortNumberRange(unittest.TestCase):
         expectedOutput = open("tests/expectedOutput/test_specific_ranges_with_second_field.txt","r")
       
         #self.assertEqual(self.policyBuilder.getRuleTuple(),expectedOutput.read())
-        self.assertEqual(1,1)
+        self.assertEqual(self.policyBuilder.getRuleTuple(),expectedOutput.read())
 
 
         

@@ -6,16 +6,16 @@ import logging
 
 
 class PolicyTrieNode(trieTree.TrieNode):
-    def __init__(self, ch):
-        super().__init__(ch)
+    def __init__(self, key):
+        super().__init__(key)
         self.color = "#11BB11"
         self.totalRules = 0
         self.aggrateRule = ""
         self.aggragateChildren = {}
         self.codeword = ""
 class PolicyTrieTree(trieTree.TrieTree):
-    def __init__(self,ch = ''):
-        self.root = PolicyTrieNode(ch)
+    def __init__(self,key = ''):
+        self.root = PolicyTrieNode(key)
         self.root.color = "#123456"
         logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
         datefmt='%d-%m-%Y:%H:%M:%S',
@@ -30,23 +30,23 @@ class PolicyTrieTree(trieTree.TrieTree):
         crawl = self.root
         for level in range(length):
             child = crawl.children
-            ch = key[level]
-            if ch in child:
-                crawl = child[ch]
+            tempKey = key[level]
+            if tempKey in child:
+                crawl = child[tempKey]
             else:
                 if level != length-1:
-                    temp =PolicyTrieNode(ch)
-                    child[ch] = temp
+                    temp =PolicyTrieNode(tempKey)
+                    child[tempKey] = temp
                     crawl = temp
                     
                 else:
-                    temp =PolicyTrieNode(ch)
+                    temp =PolicyTrieNode(tempKey)
                     
                     self.root.aggragateChildren[key] = temp
                     
                     self.root.aggragateChildren[key] = temp
                     self.root.totalRules += 1
-                    child[ch] = temp
+                    child[tempKey] = temp
                     
                     temp.color = "#694200"
                     temp.codeword = codeword
@@ -64,54 +64,21 @@ class PolicyTrieTree(trieTree.TrieTree):
     def getCodeword(self, key):
         if key != "*":
             key = format(int(key), '016b')
+            
         length = len(key)
         crawl = self.root
         child = crawl.children
-        ch = ""
+        tempKey = ""
         for level in range(length):
             child = crawl.children
-            ch = key[level]
-            if ch in child:
-                crawl = child[ch]
-                # logging.debug("first : "+ child[ch].codeword)
-                # logging.debug("first : "+child[ch].codeword)
+            tempKey = key[level]
+            if tempKey in child:
+                crawl = child[tempKey]
                 
             else:
            
                 return False, 0
-        # logging.debug("last : "+str(crawl.codeword))
+        
         return True, crawl.codeword
     
-               
-                    
-                    
-        
-        
-        
-    
-    
-        
-
-        
-    # def drawAggregatedGraph(self):
-    #     self.n = Network("1000px","1000px", directed=True)
-    #     self.aggregrateBfs()
-    #     self.n.show("trie_tree.html",False)
-    # def aggregrateBfs(self):
-    #     visited = []
-    #     queue = [self.root]
-    #     parrentQueue = [1]
-    #     idx = 1
-    #     while queue:
-    #         node = queue.pop(0)
-    #         parrent = parrentQueue.pop(0)
-    #         visited.append(node)
-    #         self.n.add_node(idx, label = node.value, color = "#FF00FF")
-    #         for child in node.aggragateChildren.values():
-    #             if child not in visited:
-    #                 queue.append(child)
-    #                 idx +=1
-    #                 parrentQueue.append(idx)
-    #                 self.n.add_node(idx, label = child.value, color = child.color) 
-                        
-    #                 self.n.add_edge(parrent, idx)
+            

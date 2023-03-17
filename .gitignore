@@ -77,3 +77,7 @@ _output_files/
 PLLJ_PLLSPE_INFO.txt
 *.html
 *.pyc
+
+
+# Userdefined
+vunit_out

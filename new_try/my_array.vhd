@@ -7,6 +7,7 @@ entity my_array is
     ROWS : integer := 4; -- number of rows in the array
     COLS : integer := 4 -- number of columns in the array
   );
+
   port (
     clk : in std_logic;
     rst : in std_logic;

@@ -16,7 +16,6 @@ entity my_array_tb is
     -- message : string
   );
 end entity my_array_tb;
-
 architecture behavioral of my_array_tb is
 
   constant rows : integer := 4;
@@ -36,6 +35,7 @@ architecture behavioral of my_array_tb is
       rows : integer := 4;
       cols : integer := 4
     );
+
     port (
       rowing : in natural;
       coling : in natural;
@@ -56,6 +56,7 @@ begin
       rows => rows,
       cols => cols
     )
+
     port map(
       data_out_for_test => data_out_for_test,
       rowing => rowing,

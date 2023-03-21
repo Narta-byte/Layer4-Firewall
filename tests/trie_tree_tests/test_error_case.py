@@ -29,18 +29,75 @@ class TestErrorCase(unittest.TestCase):
         self.initListAndTreeFirewalls(ruleList)
         packet = ["8","2","3"]
 
-        codeword = ""
-        words = self.policyFactory.retriveCodeword(packet)
-        for correctword in words:
-            if self.listFirewall.lookup(packet) == self.hashTable.lookup(correctword)[3]:
-                codeword = correctword
-    
-        if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
-                    self.logDifference(packet, codeword)
+        codeword = self.policyFactory.retriveCodeword(packet)
+        
+        logging.debug("codeword: "+str(codeword)+" for packet "+str(packet))
+        #if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
+        self.logDifference(packet, codeword)
 
         logging.debug("different decisions : "+str(self.listFirewall.lookup(packet))+", " +str(self.hashTable.lookup(codeword)[3]))
-    
+
         self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3])
+
+
+    def test_permutations(self):
+            self.init3Trees()
+            self.listFirewall = listFirewall.ListFirewall()
+
+            ruleList = [['0', '5', '3', 'beta'],
+                        ['1', '*', '0', 'alpha'],
+                        ['*', '*', '1', 'alpha'],
+                        ['*', '0', '*', 'beta'],
+                        ['*', '0', '3', 'beta'],
+                        ['*', '5', '2', 'beta'],
+                        ['3', '*', '*', 'alpha'],
+                        ['0', '3', '4', 'alpha'],
+                        ['3', '5', '5', 'beta'],
+                        ['*', '*', '0', 'beta'],
+                        ['5', '5', '0', 'alpha'],
+                        ['0', '2', '*', 'beta'],
+                        ['3', '*', '2', 'alpha'],
+                        ['*', '*', '2', 'alpha'],
+                        ['*', '*', '*', 'alpha'],
+                       ]
+            self.initListAndTreeFirewalls(ruleList)
+            packet = ["5","3","0"]
+
+            codeword = self.policyFactory.retriveCodeword(packet)
+
+            logging.debug("codeword: "+str(codeword)+" for packet "+str(packet))
+            if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
+                self.logDifference(packet, codeword)
+
+            logging.debug("different decisions : "+str(self.listFirewall.lookup(packet))+", " +str(self.hashTable.lookup(codeword)[3]))
+
+            self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3])
+
+        
+
+    def test_superset(self):
+        self.init3Trees()
+        self.listFirewall = listFirewall.ListFirewall()
+        ruleList = [
+        ['*', '5', '2', 'beta'], ['*', '*', '2', 'alpha'], ['*', '3', '0', 'beta'],
+        ['*', '*', '*', 'hotel'],
+        ]
+
+        self.initListAndTreeFirewalls(ruleList)
+        packetList = [#['0', '3', '4'],                         
+        ['1', '3', '2']]
+
+        for packet in packetList:
+            codeword = self.policyFactory.retriveCodeword(packet)
+    
+            logging.debug("codeword: "+str(codeword)+" for packet "+str(packet))
+            if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
+                self.logDifference(packet, codeword)
+            logging.debug("last codeword test: " + str(codeword))
+            logging.debug("different decisions : "+str(self.listFirewall.lookup(packet))+", " +str(self.hashTable.lookup(codeword)[3]))
+            self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3])
+
+
 
     def logDifference(self, packet, codeword):
         logging.debug("hashtable lookup"+str(self.hashTable.lookup(["8","2","3"])))
@@ -57,6 +114,7 @@ class TestErrorCase(unittest.TestCase):
 
     def initListAndTreeFirewalls(self, ruleList):
         for rule in ruleList:
+            logging.debug("New inserted rule: " + str(rule))
             self.policyFactory.insertRule(rule)
             self.listFirewall.insertRange(rule)    
             

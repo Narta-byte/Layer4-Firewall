@@ -27,9 +27,9 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         file.flush()
         file.close()
         
-        logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+        logging.basicConfig(format='%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
         datefmt='%d-%m-%Y:%H:%M:%S',
-        level=logging.INFO,
+        level=logging.DEBUG,
         filename='logs.txt')
 
     def test_samePacketsInBoth(self):
@@ -73,9 +73,11 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             rule = ["","","",""]
             for i in range(0,3):
                 chance = random.randint(0,50)
-                if chance <= 50:
+                if chance <= 33:
                     rule[i] = str(random.randint(0,5))
-                elif chance > 50:
+                elif chance > 33 and chance <= 66:
+                    rule[i] = "*"
+                elif chance > 66:
                     rule[i] = str(random.randint(0,1)) + "-" + str(random.randint(9,5))
             chance = random.randint(0,50)
             if chance < 25:
@@ -87,14 +89,23 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             elif chance >= 75:
                 rule[3] = "hotel"
             ruleList.append(rule)
-        
+
+        file = open("rule_list_for_random_test.txt", "w")
         for rule in ruleList:
+            if rule[:3] == ['*', '*', '*']:
+                logging.debug("Throwing out ***" + str(rule))
+                continue
+            logging.debug("New inserted packet: " + str(rule))
+            file.write(str(rule)+"\n")
             self.policyBuilder.insertRule(rule)
             self.listFirewall.insertRange(rule)
-        self.policyBuilder.insertRule(["0-5","0-5","0-5","delta"])
+        file.close()
+        self.policyBuilder.insertRule(['*', '*', '*', 'delta'])
+        self.listFirewall.insertRange(['*', '*', '*', 'delta'])
+        """         self.policyBuilder.insertRule(["0-5","0-5","0-5","delta"])
         self.hashTable.defualtRule = ["0-5","0-5","0-5","delta"]
         self.listFirewall.insertRange(["0-5","0-5","0-5","delta"])
-        
+        """        
         file = open("list_firewall.txt", "w")
         file.write(self.listFirewall.getRules())
         file.close()
@@ -108,8 +119,8 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             for j in range(0,3):
                 packet[j] = str(random.randint(0,5))
             
-            logging.info("")
-            logging.info("NEW PACKET:       packetnum: " + str(i))
+            logging.debug("")
+            logging.debug("NEW PACKET:       packetnum: " + str(i))
             
             codeword = self.policyBuilder.retriveCodeword(packet)
             if codeword is None:
@@ -120,7 +131,6 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             logging.debug("lookingup hashen op: "+str(self.hashTable.lookup(codeword)))
 
             self.policyBuilder.writeCodewords()
-            self.policyBuilder.writePrettyString()
 
             packetList.append(packet)
             logging.debug("packetnumber: " + str(i) + " firewalll: "+str(packet) + str(self.listFirewall.lookup(packet)))

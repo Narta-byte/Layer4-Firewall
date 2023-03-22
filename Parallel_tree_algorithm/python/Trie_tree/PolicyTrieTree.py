@@ -21,6 +21,10 @@ class PolicyTrieTree(trieTree.TrieTree):
         if not "*" in key:
             key = format(int(key), '016b')
             length = len(key)
+        elif key == "*":
+            self.root.codeword = codeword
+            self.root.color = "#BB1199"
+            return
         else:
             key = key.split("*")[0]
             length = len(key)
@@ -31,6 +35,11 @@ class PolicyTrieTree(trieTree.TrieTree):
             tempKey = key[level]
             if tempKey in child:
                 crawl = child[tempKey]
+                if level == length-1:
+                    logging.debug(f'Adding codeword to existing node key: {key} length: {length} codeword: {codeword} tempKey: {tempKey} level: {level}')
+                    child[tempKey].color = "#2277BB"
+                    child[tempKey].codeword = codeword
+                
             else:
                 if level != length-1:
                     temp =PolicyTrieNode(tempKey)
@@ -40,7 +49,7 @@ class PolicyTrieTree(trieTree.TrieTree):
                 else:
                     temp =PolicyTrieNode(tempKey)
                     child[tempKey] = temp
-                    
+                    logging.debug(f'Making new node key: {key} length: {length} codeword: {codeword} tempKey: {tempKey} level: {level}' )
                     temp.color = "#2222BB"
                     temp.codeword = codeword
         crawl.isEnd = True
@@ -60,7 +69,7 @@ class PolicyTrieTree(trieTree.TrieTree):
         else:
             key = key.split("*")[0]
             length = len(key)
-            logging.debug(f'key: {key} length: {length}')
+            # logging.debug(f'key: {key} length: {length}')
             
 
         crawl = self.root
@@ -78,13 +87,15 @@ class PolicyTrieTree(trieTree.TrieTree):
                 crawl = child[tempKey]
                 
             else:
-                # logging.debug("key not found"+ str(crawl.codeword)+ " best match: " + str(bestMatch)+ " for key: " + str(key))
+                logging.debug("key not found: "+ str(crawl.codeword)+ " best match: " + str(bestMatch)+ " for key: " + str(key))
                 if bestMatch == "":
                     return False, 0
                 else:
-                    return True, bestMatch
-        # logging.debug("key found" + str(crawl.codeword) + " best match: " + str(bestMatch) + " for key: " + str(key))
-         
-        return True, crawl.codeword
+                    return False, bestMatch
+        #logging.debug("key found: " + str(crawl.codeword) + " best match: " + str(bestMatch) + " for key: " + str(key) + " crawl.codeword: " + str(crawl.codeword))
+        if crawl.codeword == "":
+            return False, 0
+        else:
+            return True, crawl.codeword
     
             

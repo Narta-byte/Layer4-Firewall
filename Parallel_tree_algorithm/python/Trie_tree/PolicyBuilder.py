@@ -1,14 +1,14 @@
-# %%
 import random
 import logging
+
 
 class PolicyBuilder:
     def __init__(self,treeList):
         self.treeList = treeList
+        self.ruleLength = len(treeList)+1
         self.previousRuleTuple = []
         self.ruleCodeWord = ""
         self.codewordLength = 16
-        self.prettyString = []
     
     def insertRuleIntoTree(self, rule, tree):
         ruleCodeword = ""
@@ -16,15 +16,16 @@ class PolicyBuilder:
             exists, codeword = tree.getCodeword(rule[i])
             if not exists:
                 codeword = self.generateCodeword(self.codewordLength)
-            
+            logging.debug(f'codeword: {codeword} rule: {rule[i]} exists: {exists} ')
             ruleCodeword += codeword
             tree.insert(rule[i], codeword)
         return ruleCodeword
     
     def ruleAlreadyExists(self,rule):
         # if the rules fields are equal skip the iteration and let the old rule have precedence
+        # logging.debug(f'AlreadyExists oldRuleTuple: {self.previousRuleTuple} rule: {rule}')
         for oldRuleTuple in self.previousRuleTuple:
-            if oldRuleTuple[0][0:len(rule)-1] == rule[0:len(rule)-1]:
+            if oldRuleTuple[0][0:self.ruleLength-1] == rule[0:self.ruleLength-1]:
                 return True
         return False
 
@@ -48,55 +49,114 @@ class PolicyBuilder:
             self.insertRuleHelper(sublist)
 
     def insertRuleHelper(self,rule):
-        # if the rule already exists, skip the iteration
-        if self.ruleAlreadyExists(rule):
-            return
-        if self.ruleIsSubset(rule):
-            return
-        ruleCodeword = self.insertRuleIntoTree(rule, self.treeList)
         
+        if self.ruleAlreadyExists(rule) or self.ruleIsSubset(rule):
+            logging.debug("Threw out the rule just cause: " +str(rule))
+            return
+       
+        ruleCodeword = self.insertRuleIntoTree(rule, self.treeList)
+
         # if there are no previous rules, add the new rule to the list
         if self.previousRuleTuple == []:
-            self.previousRuleTuple.append([rule, ruleCodeword, "empty"])
+            self.previousRuleTuple.append([rule, ruleCodeword])
             return
         
-        for idx, oldRuleTuble in enumerate(self.previousRuleTuple):
-            intersectionCodeword = self.generateCodeword(self.codewordLength*len(self.treeList))
-            ruleIntersection = []
+        for oldRuleTuble in self.previousRuleTuple:
+            rulePermutations = []
         
-            ruleIntersection = self.intersection(oldRuleTuble, rule)
-            if ruleIntersection is None:
+            rulePermutations = self.permutations(oldRuleTuble, rule)
+            if rulePermutations is None:
                 continue
-            intersectionCodeword = self.insertRuleIntoTree(ruleIntersection,self.treeList)
-            
-            if ruleIntersection is not None:
-                self.prettyString.insert(idx-1, "  "+str(ruleIntersection)+" intersects with " +str(rule) + " and " +str(oldRuleTuble[0]))
-                self.previousRuleTuple.insert(idx-1, [ruleIntersection, intersectionCodeword])
-        
-        self.prettyString.append(str(rule)+ " "+str(ruleCodeword))
+            logging.debug('ruleIntersection before filter of rule: ' +str(rule) )
+            #for segment in rulePermutations:
+             #   logging.debug(str(segment))
+
+            rulePermutations = self.filterPermutations(rulePermutations, rule)
+
+            logging.debug('ruleIntersection after filter:')
+            for segment in rulePermutations:
+                logging.debug(str(segment) )
+
+            for outputRule in rulePermutations:
+                intersectionCodeword = ""
+                for i, tree in enumerate(self.treeList):
+                    exsits, tempCodeword = tree.getCodeword(outputRule[i])
+                    if not exsits:
+                        intersectionCodeword += self.generateCodeword(self.codewordLength)
+                    intersectionCodeword += tempCodeword
+                logging.debug("adding rule: " + str(outputRule) + " " + str(intersectionCodeword) + " " + str(ruleCodeword))
+                self.previousRuleTuple.append([outputRule, intersectionCodeword])
+                # self.insertRuleHelper(outputRule)
+                # logging.debug("previousRuleTuple: " + str(self.previousRuleTuple))
         self.previousRuleTuple.append([rule, ruleCodeword])
        
-    def intersection(self,rule0Tuple,rule1):
-        ruleIntersection = ["placeholder0", "placeholder1", "placeholder2", "placeholder3"]
-        for i in range(len(rule1)-1):
-            if i == 0 : # add the protocol for the old rule to the intersection rule
-                ruleIntersection[3] = rule0Tuple[0][3] 
+    def permutations(self,rule0Tuple,rule1):
+        output = []
+        def permutationsHelper(oldRule, newRule, workingList):
+            if len(workingList) == self.ruleLength-1:
                 
-            if rule0Tuple[0][i] == rule1[i]: # if they are equal
-                ruleIntersection[i] = rule1[i]
+                workingList.append(rule0Tuple[0][self.ruleLength-1])
+                #workingList.append(rule0Tuple[0][rule1[3]])
+                #workingList[-1] = rule1[-1]
+                #logging.debug("This is rule1: " + str(rule1))
+                #logging.debug("What is rule? With old rule with new bone: " + str(workingList[-1]))
+                output.append(workingList)
+                return
                 
-            elif rule0Tuple[0][i] == "*" and not rule1 == "*": # rule1 is a subset of rule0
-                ruleIntersection[i] = rule1[i]
-            
-            elif rule1[i] == "*" and not rule0Tuple[0] == "*": # or the other way around
-                ruleIntersection[i] = rule0Tuple[0][i]
+            idx = len(workingList)
+            newWorkingList = workingList.copy()
+            workingList.append(newRule[idx])
+            newWorkingList.append(oldRule[idx])
+            permutationsHelper(oldRule, newRule, workingList)
+            permutationsHelper(oldRule, newRule, newWorkingList)
+         
+        permutationsHelper(rule0Tuple[0], rule1, [])
+        logging.debug(f'output from perms: {output} rule0: {rule0Tuple[0]} rule1: {rule1} ')
+        return output
 
+    def filterPermutations(self,rulePermutations, insertedRule):
+        output = []
+        for permutation in rulePermutations:
+            if self.ruleAlreadyExists(permutation) or output.__contains__(permutation):
+                logging.debug("if1: " +str(permutation))
+                continue
+            elif insertedRule[0:self.ruleLength-1] == permutation[0:self.ruleLength-1]:
+                logging.debug("if2: " +str(permutation))
+                continue
+            elif permutation[0:self.ruleLength-1] == ["*", "*", "*"]: 
+                logging.debug("if4: " +str(permutation))
+                continue
+            
+        #    elif not self.ruleIsSubset(permutation):
+        #        logging.debug("if3: " +str(permutation))
+        #        continue
             else:
-                return None
-                
-        if self.ruleAlreadyExists(ruleIntersection) or rule1[0:len(rule1)-1] == ruleIntersection[0:len(rule1)-1]:
-            return None
-        return ruleIntersection
+                logging.debug("els: " +str(permutation))
+                if self.ruleIsSubset(permutation):
+                    if (insertedRule[0] == '*' or insertedRule[0] == permutation[0]) and \
+                        (insertedRule[1] == '*' or insertedRule[1] == permutation[1]) and \
+                        (insertedRule[2] == '*' or insertedRule[2] == permutation[2]):
+                        logging.debug("Even tho subset, also a subset of the current inserted rule, so that takes over")
+                        #permutation[self.ruleLength-1] = insertedRule[3]
+                        logging.debug("sub of" + str(permutation) + " ins:" + str(insertedRule))
+                    else:
+                        #logging.debug("msg We else ")
+                        #logging.debug("sub0:" + str(permutation[0]) + " sub1:" + str(permutation[1]) + "sub2:" + str(permutation[2]) + " " + str(insertedRule) + " subset of " + str(self.isSubsetOf(permutation)))
+                        logging.debug("sub of" + str(permutation) + " ins:" + str(insertedRule) + " subset of " + str(self.isSubsetOf(permutation)))
+                        permutation[self.ruleLength-1] = self.isSubsetOf(permutation)[self.ruleLength-1]
+                        #permutation[self.ruleLength-1] = insertedRule[3]
+                else:
+                    
+                    if (insertedRule[0] == '*' or insertedRule[0] == permutation[0]) and \
+                        (insertedRule[1] == '*' or insertedRule[1] == permutation[1]) and \
+                        (insertedRule[2] == '*' or insertedRule[2] == permutation[2]):
+                        logging.debug("is super of" + str(permutation) + " " + str(insertedRule) )
+                        permutation[self.ruleLength-1] = insertedRule[3]
+                    #permutation[self.ruleLength-1] = insertedRule[self.ruleLength-1]
+                output.append(permutation)
+
+        return output
+            
     def generateCodeword(self, length):
         codeword = ""
         for _ in range(length):
@@ -110,18 +170,45 @@ class PolicyBuilder:
                (previousRule[0][2] == '*' or previousRule[0][2] == rule[2]):
                 return True
         return False
-
+    def isSubsetOf(self,rule):
+        for previousRule in self.previousRuleTuple:
+            if (previousRule[0][0] == '*' or previousRule[0][0] == rule[0]) and \
+               (previousRule[0][1] == '*' or previousRule[0][1] == rule[1]) and \
+               (previousRule[0][2] == '*' or previousRule[0][2] == rule[2]):
+                return previousRule[0]
+        return []
+    def ruleIsSuperset(self,rule):
+        for previousRule in self.previousRuleTuple:
+            if (previousRule[0][0] == rule[0] or rule[0] == '*') and \
+               (previousRule[0][1] == rule[1] or rule[1] == '*') and \
+               (previousRule[0][2] == rule[2] or rule[2] == '*'):
+                logging.debug("ruleIsSuperset: " + str(previousRule[0]) + " " + str(rule))
+                return True
+        return False
+    def IsSuperset(self, oldRule, newRule):
+       
+        if (oldRule[0] == newRule[0] or newRule[0] == '*') and \
+          (oldRule[1] == newRule[1] or newRule[1] == '*') and \
+          (oldRule[2] == newRule[2] or newRule[2] == '*'):
+           return True
+        return False
+    def isSubset(self, oldRule, newRule):
+        if (oldRule[0] == '*' or oldRule[0] == newRule[0]) and \
+           (oldRule[1] == '*' or oldRule[1] == newRule[1]) and \
+           (oldRule[2] == '*' or oldRule[2] == newRule[2]):
+            return True
+        return False
+    def isDifferent(self, oldRule, newRule):
+        if (oldRule[0] != newRule[0] and (newRule[0] != '*' or oldRule[0] != '*')) and \
+           (oldRule[1] != newRule[1] and (newRule[1] != '*' or oldRule[1] != '*')) and \
+           (oldRule[2] != newRule[2] and (newRule[2] != '*' or oldRule[2] != '*')):
+            return True
+        return False
     def writeCodewords(self):   #Writing to "codewords.txt"
         file = open("codewords.txt", "w")
         for rule in self.previousRuleTuple:
-            file.write(str(rule[0]) + " : " + rule[1] +  "\n")
+            file.write(str(rule[0]) + " " + rule[1] +  "\n")
         file.close()
-
-    def writePrettyString(self):   #Writing to "codewords.txt"
-        prettyFile = open("prettyStrings.txt", "w")
-        for rule in self.prettyString:
-            prettyFile.write(str(rule) + " : " + rule[1] +  "\n")
-        prettyFile.close()
 
         
     def getRuleTuple(self):
@@ -142,10 +229,12 @@ class PolicyBuilder:
             exists, codewordSegment = self.treeList[i].getCodeword(packet_value)
             logging.debug(f"packet[{i}] = {packet_value} Exists{i}: {exists} subcode{i}: {codewordSegment} ")
             
-            if exists:
+            if exists or codewordSegment != "":
                 codeword.append(codewordSegment)
+            
             else: 
                 # exists, codewordSegment = self.treeList[i].getCodeword("*")
+                logging.debug("WHY IS THIS HAPPENING")
                 return None
                 # if not exists:
                     # raise Exception("Error there is no wildcard route for tree " + str(i))
@@ -167,7 +256,8 @@ class PolicyBuilder:
         answerList = []
         for possibleCodeword in possibleCodewords:
             answer = ""
-            for i in range(3):
+            logging.debug("Possible codeword: " + str(possibleCodeword))
+            for i in range(self.ruleLength - 1):
                 answer += possibleCodeword[i]
             answerList.append(answer)
         logging.debug("Answer list: " + str(answerList))
@@ -192,5 +282,10 @@ class PolicyBuilder:
             tempCodeword.append((codeword))
             tempPacket.append("*")
 
-# pb.intersection((["*","*","3","alpha"],123),["0","2","*","beta"])
-#%%
+pb = PolicyBuilder([])
+pb.previousRuleTuple= [ (['*', '5', '2', 'beta'],123), (['*', '*', '2', 'alpha'],12345)]
+print(pb.ruleIsSubset(['*', '3', '2', 'beta']))
+print(pb.IsSuperset(['*', '5', '0', 'beta'],['*', '5', '*', 'beta']))
+
+
+print(pb.isDifferent(['*', '*', '0', 'alpha'],['*', '*', '2', 'beta']))

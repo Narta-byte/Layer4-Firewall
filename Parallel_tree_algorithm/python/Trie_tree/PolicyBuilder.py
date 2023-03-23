@@ -132,28 +132,41 @@ class PolicyBuilder:
         #        continue
             else:
                 logging.debug("els: " +str(permutation))
+                if self.ruleIsSubset(permutation) and \
+                    (insertedRule[0] == '*' or insertedRule[0] == permutation[0]) and \
+                    (insertedRule[1] == '*' or insertedRule[1] == permutation[1]) and \
+                    (insertedRule[2] == '*' or insertedRule[2] == permutation[2]):
+                    logging.debug("we in both" + str(permutation) + " ins:" + str(insertedRule))
+                    #permutation[self.ruleLength-1] = insertedRule[3] ## Skal være lig den øverste beslutning!
+                    output.append(permutation)
+                    continue
+                    #return output
+
+
                 if self.ruleIsSubset(permutation):
-                    if (insertedRule[0] == '*' or insertedRule[0] == permutation[0]) and \
-                        (insertedRule[1] == '*' or insertedRule[1] == permutation[1]) and \
-                        (insertedRule[2] == '*' or insertedRule[2] == permutation[2]):
-                        logging.debug("Even tho subset, also a subset of the current inserted rule, so that takes over")
-                        #permutation[self.ruleLength-1] = insertedRule[3]
-                        logging.debug("sub of" + str(permutation) + " ins:" + str(insertedRule))
-                    else:
-                        #logging.debug("msg We else ")
-                        #logging.debug("sub0:" + str(permutation[0]) + " sub1:" + str(permutation[1]) + "sub2:" + str(permutation[2]) + " " + str(insertedRule) + " subset of " + str(self.isSubsetOf(permutation)))
-                        logging.debug("sub of" + str(permutation) + " ins:" + str(insertedRule) + " subset of " + str(self.isSubsetOf(permutation)))
-                        permutation[self.ruleLength-1] = self.isSubsetOf(permutation)[self.ruleLength-1]
-                        #permutation[self.ruleLength-1] = insertedRule[3]
-                else:
-                    
-                    if (insertedRule[0] == '*' or insertedRule[0] == permutation[0]) and \
+                    # if (insertedRule[0] == '*' or insertedRule[0] == permutation[0]) and \
+                    #     (insertedRule[1] == '*' or insertedRule[1] == permutation[1]) and \
+                    #     (insertedRule[2] == '*' or insertedRule[2] == permutation[2]):
+                    logging.debug("Even tho subset, also a subset of the current inserted rule, so that takes over")
+                    #permutation[self.ruleLength-1] = insertedRule[3]
+                    logging.debug("sub of" + str(permutation) + " ins:" + str(insertedRule))
+                    output.append(permutation)
+                    continue
+                    #return output
+                
+                #Inserted subset
+                if (insertedRule[0] == '*' or insertedRule[0] == permutation[0]) and \
                         (insertedRule[1] == '*' or insertedRule[1] == permutation[1]) and \
                         (insertedRule[2] == '*' or insertedRule[2] == permutation[2]):
                         logging.debug("is super of" + str(permutation) + " " + str(insertedRule) )
                         permutation[self.ruleLength-1] = insertedRule[3]
-                    #permutation[self.ruleLength-1] = insertedRule[self.ruleLength-1]
-                output.append(permutation)
+                        output.append(permutation)
+                        continue
+                        #return output
+
+
+        output = [list(x) for x in set(tuple(x) for x in output)] #Delete duplicates
+        logging.debug("Output geben: " + str(output))
 
         return output
             
@@ -168,6 +181,7 @@ class PolicyBuilder:
             if (previousRule[0][0] == '*' or previousRule[0][0] == rule[0]) and \
                (previousRule[0][1] == '*' or previousRule[0][1] == rule[1]) and \
                (previousRule[0][2] == '*' or previousRule[0][2] == rule[2]):
+                rule[3] = previousRule[0][3]
                 return True
         return False
     def isSubsetOf(self,rule):

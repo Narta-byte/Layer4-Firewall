@@ -69,7 +69,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
     def test_randomPackets(self): # Test 500 random packages vs firewall list
         ruleList = []
         random.seed(311415)
-        for _ in range(0,50):
+        for _ in range(0,2000):
             rule = ["","","",""]
             for i in range(0,3):
                 chance = random.randint(0,50)
@@ -114,7 +114,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             self.hashTable.insert(rule[1], (rule[0], rank))
         
         packetList = []
-        for i in range(0,700):
+        for i in range(0,10000):
             packet = ["","",""]
             for j in range(0,3):
                 packet[j] = str(random.randint(0,5))

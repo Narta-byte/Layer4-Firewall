@@ -10,6 +10,7 @@ class PolicyBuilder:
         self.ruleCodeWord = ""
         self.codewordLength = 16
         self.nextCodeword = 0
+        self.treeDepth = 4
         
     def insertRuleIntoTree(self, rule, tree):
         ruleCodeword = ""
@@ -31,13 +32,16 @@ class PolicyBuilder:
         return False
 
     def insertRule(self,rule):
-        if self.ruleAlreadyExists(rule) or self.ruleIsSubset(rule):
-            logging.debug("Discarded rule bc it exits or is subset: " +str(rule))
+        if self.ruleAlreadyExists(rule):
+            logging.debug("Discarded if rule already exists: " +str(rule))
+            return
+        if self.ruleIsSubset(rule):
+            logging.debug("Discarded if2 it is subset " +str(rule))
             return
        
         ruleCodeword = self.insertRuleIntoTree(rule, self.treeList)
 
-        # if there are no previous rules, add the new rule to the list
+        # if there are no currRule rules, add the new rule to the list
         if self.previousRuleTuple == []:
             self.previousRuleTuple.append((rule, ruleCodeword))
             return
@@ -99,25 +103,21 @@ class PolicyBuilder:
 
             else:
                 logging.debug("els: " +str(permutation))
-                if self.ruleIsSubset(permutation) and \
-                    (insertedRule[0] == '*' or insertedRule[0] == permutation[0]) and \
-                    (insertedRule[1] == '*' or insertedRule[1] == permutation[1]) and \
-                    (insertedRule[2] == '*' or insertedRule[2] == permutation[2]):
+                if self.ruleIsSubset(permutation) and self.subset(permutation, insertedRule):
+                   
                     logging.debug("we in both" + str(permutation) + " ins:" + str(insertedRule))
 
                     output.append(permutation)
                     continue
 
                 if self.ruleIsSubset(permutation):
-                    logging.debug("Even tho subset, also a subset of the current inserted rule, so that takes over")
+                    logging.debug("Even tho  rule0, also a  rule0 of the current inserted rule, so that takes over")
                     logging.debug("sub of" + str(permutation) + " ins:" + str(insertedRule))
 
                     output.append(permutation)
                     continue
                 
-                if (insertedRule[0] == '*' or insertedRule[0] == permutation[0]) and \
-                        (insertedRule[1] == '*' or insertedRule[1] == permutation[1]) and \
-                        (insertedRule[2] == '*' or insertedRule[2] == permutation[2]):
+                if self.subset(permutation, insertedRule):
                         logging.debug("is super of" + str(permutation) + " " + str(insertedRule) )
                         permutation[self.ruleLength-1] = insertedRule[3]
                         output.append(permutation)
@@ -125,31 +125,73 @@ class PolicyBuilder:
 
         output = [list(x) for x in set(tuple(x) for x in output)] #Delete duplicates
         logging.debug("Output geben: " + str(output))
-
         return output
-            
-    def generateCodeword(self, length):
-        self.nextCodeword+=1
-        codeword = ""
-        codeword += format(self.nextCodeword, "0"+str(length) + 'b')
-        return codeword
-    
+
     def ruleIsSubset(self,rule):
         for previousRule in self.previousRuleTuple:
-            if (previousRule[0][0] == '*' or previousRule[0][0] == rule[0]) and \
-               (previousRule[0][1] == '*' or previousRule[0][1] == rule[1]) and \
-               (previousRule[0][2] == '*' or previousRule[0][2] == rule[2]):
+            if self.subset(rule, previousRule[0]):
                 
-                rule[3] = previousRule[0][3]
+                rule[self.ruleLength-1] = previousRule[0][self.ruleLength-1]
                 return True
         return False
+        
+    def subset(self, currRule, previousRule):
+        return self.matches(previousRule, currRule)
+
+
+    def matches(self, thisRule, currRule):
+       if thisRule[:len(thisRule)-1] == currRule:
+           return True
+       for i in range(len(thisRule)-1):
+           if thisRule[i] == currRule[i]:
+               continue
+           elif thisRule[i] == "*":
+               continue 
+           elif self.lpm(thisRule[i], currRule[i]):
+              continue
+           else:
+               return False
+       logging.debug("thisRule: "+str(thisRule))
+       logging.debug("currRule: "+str(currRule))
+       return True
+# thisRule = ['0*', '*', '5',
+# currRule = ['3', '*', '5',
+    def lpm(self, thisRule, currRule):
+        logging.debug("is this true: " + str(bool(thisRule.split('*')[0]) or bool(currRule.split('*')[0])))
+        # if bool(thisRule.split('*')[0]):# or bool(currRule.split('*')[0]):
+        #      return False
+        if thisRule == '*' or currRule == '*':
+            return False
+        logging.debug("WE IN HERE")
+
+        if '*' in thisRule:
+            lpmThisRule = (thisRule.split('*')[0])
+        else:
+            lpmThisRule = format(int(thisRule), '016b')
+
+        if '*' in currRule:
+            lpmCurrRule = (currRule.split('*')[0])
+        else:
+            lpmCurrRule = format(int(currRule), '016b')
+
+        logging.debug("thisRule: "+str(thisRule) + " currRule: "+str(currRule))
+        logging.debug("lpmThisRule: "+str(lpmThisRule) + " lpmCurrRule: "+str(lpmCurrRule))
+
+        
+        for i in range(len(lpmThisRule)):
+            if len(lpmCurrRule) <= i:
+               return False
+
+            if lpmThisRule[i] != lpmCurrRule[i]:
+               return False
+        return True
+
 
     def writeCodewords(self):   #Writing to "codewords.txt"
         file = open("codewords.txt", "w")
         for rule in self.previousRuleTuple:
             file.write(str(rule[0]) + " " + rule[1] +  "\n")
         file.close()
-
         
     def getRuleTuple(self):
         output = ""
@@ -160,7 +202,7 @@ class PolicyBuilder:
     def setSeed(self, seed):
         random.seed(seed)
         
-    def retriveCodeword(self, packet): # More readable?
+    def retriveCodeword(self, packet):
         codeword = ""
         logging.debug("Packet: " + str(packet))
 
@@ -171,4 +213,10 @@ class PolicyBuilder:
                 codeword += codewordSegment
             else: 
                 return None
+        return codeword
+
+    def generateCodeword(self, length):
+        self.nextCodeword+=1
+        codeword = ""
+        codeword += format(self.nextCodeword, "0"+str(length) + 'b')
         return codeword

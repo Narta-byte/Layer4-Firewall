@@ -53,14 +53,6 @@ class PolicyTrieTree(trieTree.TrieTree):
                     temp.color = "#2222BB"
                     temp.codeword = codeword
         crawl.isEnd = True
-
-    def to16Bit(self, port):
-        keyList = []
-        indiciesRange = port.split("-")
-        for i in range(int(indiciesRange[0]),int(indiciesRange[1])+1):
-            keyList.append(format(int(i), '016b'))
-        
-        return keyList
     
     def getCodeword(self, key):
         if not "*" in key:
@@ -69,9 +61,7 @@ class PolicyTrieTree(trieTree.TrieTree):
         else:
             key = key.split("*")[0]
             length = len(key)
-            # logging.debug(f'key: {key} length: {length}')
             
-
         crawl = self.root
         child = crawl.children
         tempKey = ""
@@ -87,12 +77,10 @@ class PolicyTrieTree(trieTree.TrieTree):
                 crawl = child[tempKey]
                 
             else:
-                logging.debug("key not found: "+ str(crawl.codeword)+ " best match: " + str(bestMatch)+ " for key: " + str(key))
                 if bestMatch == "":
                     return False, 0
                 else:
                     return False, bestMatch
-        #logging.debug("key found: " + str(crawl.codeword) + " best match: " + str(bestMatch) + " for key: " + str(key) + " crawl.codeword: " + str(crawl.codeword))
         if crawl.codeword == "":
             return False, 0
         else:

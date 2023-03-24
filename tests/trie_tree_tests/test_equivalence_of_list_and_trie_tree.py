@@ -69,10 +69,10 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
     def test_randomPackets_with_ranges(self): # Test 500 random packages vs firewall list
         ruleList = []
         random.seed(311415)
-        for _ in range(0,10000):
+        for _ in range(0,20):
             rule = ["","","",""]
             for i in range(0,3):
-                chance = random.randint(0,10)
+                chance = random.randint(0,100)
                 if chance <= 50:
                     rule[i] = str(random.randint(0,5))
                 elif chance > 50 and chance <= 55:

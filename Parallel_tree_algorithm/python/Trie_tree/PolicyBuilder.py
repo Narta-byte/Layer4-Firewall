@@ -131,7 +131,7 @@ class PolicyBuilder:
     def generateCodeword(self, length):
         self.nextCodeword+=1
         codeword = ""
-        codeword += format(self.nextCodeword, str(length) + 'b')
+        codeword += format(self.nextCodeword, "0"+str(length) + 'b')
         return codeword
     
     def ruleIsSubset(self,rule):

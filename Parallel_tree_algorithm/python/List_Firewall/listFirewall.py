@@ -4,8 +4,8 @@ import logging
 class ListFirewall:
     def __init__(self):
         self.rules = []
-
-    def insert(self, rule):
+        self.treeDepth = 16
+    def insertRule(self, rule):
         self.rules.append(rule)
         
     def lookup(self, inputPacket):
@@ -16,42 +16,33 @@ class ListFirewall:
         return "No Match"
     
     def matches(self, thisRule, inputPacket):
-        
-        
         if thisRule[:len(thisRule)-1] == inputPacket:
             return True
         for i in range(len(thisRule)-1):
-            if thisRule[i] == inputPacket[i]: 
+            if thisRule[i] == inputPacket[i]:
                 continue
-            elif thisRule[i] == "*" or inputPacket[i] == "*":
+            elif thisRule[i] == "*":
                 continue 
+            elif self.lpm(thisRule[i], inputPacket[i]):
+               continue
             else:
                 return False
-        #logging.debug("thisRule: "+str(thisRule))
-        #logging.debug("inputPacket: "+str(inputPacket))
+        logging.debug("thisRule: "+str(thisRule))
+        logging.debug("inputPacket: "+str(inputPacket))
         return True
-    
-    def insertRange(self, rule):
-        result = [[]]
 
-        for field in rule:
-            if "-" in field:
-                start, end = field.split("-")
-                new_lists = []
-                for tal in range(int(start), int(end)+1):
-                    for res in result:
-                        new_list = res + [str(tal)]
-                        new_lists.append(new_list)
-                result = new_lists
-            else:
-                for i in range(len(result)):
-                    result[i].append(field)
+    def lpm(self, thisRule, inputPacket):
+        if len(thisRule.split('*')) < 2:
+            return False
+        inputPacketToBin = format(int(inputPacket), "0" + str(self.treeDepth) + 'b') ###
 
-        for sublist in result:
-            #str_sublist = str(sublist).replace("'", "\"")
-            #logging.debug(sublist)
-            self.insert(sublist)
-    
+        for j in range(int(thisRule.split('*')[0])):
+            if thisRule[j] == "*":
+                return True
+            if thisRule[j] != inputPacketToBin[j]:
+                return False
+        return True
+                      
     def getRules(self):
         output = ""
         for rule in self.rules:

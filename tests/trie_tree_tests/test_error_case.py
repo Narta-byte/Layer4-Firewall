@@ -254,6 +254,73 @@ class TestErrorCase(unittest.TestCase):
             self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3])
 
 
+    def test_subRanges(self):
+        self.init3Trees(treeDepth = 4)
+        self.listFirewall = listFirewall.ListFirewall()
+        self.listFirewall.treeDepth = 4
+        self.policyFactory.codewordLength = 4
+        ruleList = [
+            ['10*', '1', '1', 'alpha'],
+            ['1*', '1', '1', 'beta'],
+            ['*', '*', '*', 'gamma']
+        ]
+
+        self.initListAndTreeFirewalls(ruleList)
+        packetList = [['8', '1', '1'], ['12','1','1']]
+
+        for packet in packetList:
+            codeword = self.policyFactory.retriveCodeword(packet)
+    
+            logging.debug("codeword: "+str(codeword)+" for packet "+str(packet))
+            if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
+                self.logDifference(packet, codeword)
+            logging.debug("different decisions : "+str(self.listFirewall.lookup(packet))+", " +str(self.hashTable.lookup(codeword)[3]))
+            self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3])
+    
+
+    def test_errorcaseTEMP(self):
+        self.init3Trees(treeDepth = 4)
+        self.listFirewall = listFirewall.ListFirewall()
+        self.listFirewall.treeDepth = 4
+        self.policyFactory.codewordLength = 4
+        ruleList = [
+            ['0*', '5', '3', 'gamma'],
+            ['1', '100*', '1', 'gamma'],
+            ['1*', '1', '0*', 'alpha'],
+            ['11*', '10*', '2', 'gamma'],
+            ['100*', '101*', '2', 'hotel'],
+            ['3', '100*', '3', 'alpha'],
+            ['3', '4', '3', 'gamma'],
+            ['5', '101*', '101*', 'hotel'],
+            ['0*', '*', '5', 'gamma'],
+            ['1*', '1', '*', 'alpha'],
+            ['2', '11*', '11*', 'gamma'],
+            ['2', '4', '10*', 'beta'],
+            ['5', '3', '5', 'beta'],
+            ['0', '100*', '10*', 'hotel'],
+            ['3', '0', '101*', 'gamma'],
+            ['10*', '0*', '4', 'hotel'],
+            ['100*', '0*', '1*', 'hotel'],
+            ['5', '1*', '0*', 'hotel'],
+            ['1', '*', '1*', 'hotel'],
+            ['101*', '3', '4', 'alpha'],
+
+        ]
+
+        self.initListAndTreeFirewalls(ruleList)
+        packetList = [['3', '4', '5']] #['12','1','1']]
+
+        for packet in packetList:
+            codeword = self.policyFactory.retriveCodeword(packet)
+    
+            logging.debug("codeword: "+str(codeword)+" for packet "+str(packet))
+            if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
+                self.logDifference(packet, codeword)
+            logging.debug("different decisions : "+str(self.listFirewall.lookup(packet))+", " +str(self.hashTable.lookup(codeword)[3]))
+            self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3])
+
+
+
 
     def logDifference(self, packet, codeword):
         logging.debug("hashtable lookup"+str(self.hashTable.lookup(["8","2","3"])))
@@ -272,7 +339,7 @@ class TestErrorCase(unittest.TestCase):
         for rule in ruleList:
             logging.debug("New inserted rule: " + str(rule))
             self.policyFactory.insertRule(rule)
-            self.listFirewall.insertRange(rule)    
+            self.listFirewall.insertRule(rule)    
             
         self.hashTable = CuckooHashTable.CuckooHashTable()
         for rule in self.policyFactory.previousRuleTuple:
@@ -280,10 +347,14 @@ class TestErrorCase(unittest.TestCase):
 
         self.policyFactory.writeCodewords()
 
-    def init3Trees(self):
+    def init3Trees(self, treeDepth = 16):
        self.tree0 = policyTrieTree.PolicyTrieTree()
+       self.tree0.treeDepth = treeDepth
        self.tree1 = policyTrieTree.PolicyTrieTree()
+       self.tree1.treeDepth = treeDepth
        self.tree2 = policyTrieTree.PolicyTrieTree()
+       self.tree2.treeDepth = treeDepth 
+
        treeList = [self.tree0,self.tree1,self.tree2]
        
        self.policyFactory = PolicyBuilder.PolicyBuilder(treeList)

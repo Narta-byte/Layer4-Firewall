@@ -6,14 +6,15 @@ import Parallel_tree_algorithm.python.Hash_table.CuckooHashTable as CuckooHashTa
 
 import random
 import logging
-
+import cProfile
+import pstats
 
 class TestEquivalenceOfListAndTrietree(unittest.TestCase):
     def setUp(self):
         self.tree0 = policyTrieTree.PolicyTrieTree()
         self.tree1 = policyTrieTree.PolicyTrieTree()
         self.tree2 = policyTrieTree.PolicyTrieTree()
-        treeList = [self.tree0,self.tree1,self.tree2]
+        treeList = [self.tree0, self.tree1, self.tree2]
 
         self.policyBuilder = PolicyBuilder.PolicyBuilder(treeList)
         self.policyBuilder.setSeed(311415)
@@ -29,7 +30,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         
         logging.basicConfig(format='%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
         datefmt='%d-%m-%Y:%H:%M:%S',
-        level=logging.DEBUG,
+        level=logging.INFO,
         filename='logs.txt')
 
     def test_samePacketsInBoth(self):
@@ -69,17 +70,17 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
     def test_randomPackets_with_ranges(self): # Test 500 random packages vs firewall list
         ruleList = []
         random.seed(311415)
-        for _ in range(0,20):
+        for k in range(0,1000):
+         
             rule = ["","","",""]
             for i in range(0,3):
                 chance = random.randint(0,100)
-                if chance <= 50:
-                    rule[i] = str(random.randint(0,5))
-                elif chance > 50 and chance <= 55:
+                if chance <= 2:
+                    rule[i] = str(random.randint(0,25))
+                elif chance > 2 and chance <= 4:
                     rule[i] = "*"
-                elif chance > 55:
-                    
-                    rule[i] = format(random.randint(0,5),'b') + "*"
+                elif chance > 4:
+                    rule[i] = format(random.randint(0,25),'b') + "*"
             chance = random.randint(0,100)
             if chance < 25:
                 rule[3] = "alpha"
@@ -90,30 +91,37 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             elif chance >= 75:
                 rule[3] = "hotel"
             ruleList.append(rule)
-        file = open("rule_list_for_random_test.txt", "w")
+        # file = open("rule_list_for_random_test.txt", "w")
+
+        
+        # cProfile.run(self.policyBuilder.insertRule([rule for rule in ruleList]), "profile.txt")
+        # stats = pstats.Stats('profile.txt')
+        # stats.sort_stats('cumulative').print_stats(10)
+        # self.policyBuilder.insertRule([rule for rule in ruleList])
+        
         for rule in ruleList:
             if rule[:3] == ['*', '*', '*']:
                 logging.debug("Throwing out ***" + str(rule))
                 continue
             logging.debug("New inserted packet: " + str(rule))
-            file.write(str(rule)+"\n")
+            # file.write(str(rule)+"\n")
             self.policyBuilder.insertRule(rule)
             self.listFirewall.insertRule(rule)
-        file.close()
+        # file.close()
         self.policyBuilder.insertRule(('*', '*', '*', 'delta'))
         self.listFirewall.insertRule(('*', '*', '*', 'delta'))
         
-        file = open("list_firewall.txt", "w")
-        file.write(self.listFirewall.getRules())
-        file.close()
+        # file = open("list_firewall.txt", "w")
+        # file.write(self.listFirewall.getRules())
+        # file.close()
         
         for rank, rule in enumerate(self.policyBuilder.previousRuleTuple):
             self.hashTable.insert(rule[1], (rule[0], rank))
         
-        self.tree0.drawGraph(html = True)
+        #self.tree0.drawGraph(html = True)
         packetList = []
-        for i in range(0,50):
-            packet = (str(random.randint(0,5)),str(random.randint(0,5)),str(random.randint(0,5)))
+        for i in range(0,100):
+            packet = (str(random.randint(0,25)),str(random.randint(0,25)),str(random.randint(0,25)))
             # for j in range(0,3):
             #     packet[j] = str(random.randint(0,5))
             
@@ -181,7 +189,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             self.hashTable.insert(rule[1], (rule[0], rank))
         
         packetList = []
-        for i in range(0,500):
+        for i in range(0,10):
             packet = (str(random.randint(0,5)),str(random.randint(0,5)),str(random.randint(0,5)))
             # for j in range(0,3):
             #     packet[j] = str(random.randint(0,5))
@@ -203,3 +211,62 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             logging.debug("packetnumber: " + str(i) + " firewalll: "+str(packet) + str(self.listFirewall.lookup(packet)))
             
             self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[0][3])
+
+    def test_performance(self):
+        ruleList = []
+        random.seed(311415)
+        for k in range(0,1000):
+            
+            rule = ["","","",""]
+            for i in range(0,3):
+                chance = random.randint(0,100)
+                if chance <= 2:
+                    rule[i] = str(random.randint(0,25))
+                elif chance > 2 and chance <= 4:
+                    rule[i] = "*"
+                elif chance > 4:
+                    rule[i] = format(random.randint(0,25),'b') + "*"
+            chance = random.randint(0,100)
+            if chance < 25:
+                rule[3] = "alpha"
+            elif chance >= 25 and chance <= 50:
+                rule[3] = "beta"
+            elif chance > 50 and chance < 75:
+                rule[3] = "gamma"
+            elif chance >= 75:
+                rule[3] = "hotel"
+            ruleList.append(rule)
+       
+        for rule in ruleList:
+            if rule[:3] == ['*', '*', '*']:
+                logging.debug("Throwing out ***" + str(rule))
+                continue
+            logging.debug("New inserted packet: " + str(rule))
+            # file.write(str(rule)+"\n")
+            self.policyBuilder.insertRule(rule)
+            
+        # file.close()
+        self.policyBuilder.insertRule(('*', '*', '*', 'delta'))
+        
+        # file = open("list_firewall.txt", "w")
+        # file.write(self.listFirewall.getRules())
+        # file.close()
+        
+        for rank, rule in enumerate(self.policyBuilder.previousRuleTuple):
+            self.hashTable.insert(rule[1], (rule[0], rank))
+        
+        #self.tree0.drawGraph(html = True)
+        packetList = []
+        for i in range(0,100):
+            packet = (str(random.randint(0,25)), str(random.randint(0,25)), str(random.randint(0,25)))
+            
+            codeword = self.policyBuilder.retriveCodeword(packet)
+            if codeword is None:
+                codeword = self.hashTable.defualtRule[0][3]            
+
+            self.policyBuilder.writeCodewords()
+
+            packetList.append(packet)
+            self.policyBuilder.retriveCodeword(packet)
+            
+

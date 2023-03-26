@@ -154,12 +154,9 @@ class PolicyBuilder:
        logging.debug("thisRule: "+str(thisRule))
        logging.debug("currRule: "+str(currRule))
        return True
-# thisRule = ['0*', '*', '5',
-# currRule = ['3', '*', '5',
+
     def lpm(self, thisRule, currRule):
         logging.debug("is this true: " + str(bool(thisRule.split('*')[0]) or bool(currRule.split('*')[0])))
-        # if bool(thisRule.split('*')[0]):# or bool(currRule.split('*')[0]):
-        #      return False
         if thisRule == '*' or currRule == '*':
             return False
         logging.debug("WE IN HERE")
@@ -173,10 +170,6 @@ class PolicyBuilder:
             lpmCurrRule = (currRule.split('*')[0])
         else:
             lpmCurrRule = format(int(currRule), '016b')
-
-        logging.debug("thisRule: "+str(thisRule) + " currRule: "+str(currRule))
-        logging.debug("lpmThisRule: "+str(lpmThisRule) + " lpmCurrRule: "+str(lpmCurrRule))
-
         
         for i in range(len(lpmThisRule)):
             if len(lpmCurrRule) <= i:

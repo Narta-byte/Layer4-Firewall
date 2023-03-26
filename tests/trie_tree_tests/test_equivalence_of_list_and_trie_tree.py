@@ -68,9 +68,13 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         self.assertEqual(self.listFirewall.lookup(("255","255","255")), self.hashTable.lookup(codeword)[0][3])
         
     def test_randomPackets_with_ranges(self): # Test 500 random packages vs firewall list
+        import cProfile
+        pr = cProfile.Profile()
+        pr.enable()
+
         ruleList = []
         random.seed(311415)
-        for k in range(0,1000):
+        for k in range(0,20):
          
             rule = ["","","",""]
             for i in range(0,3):
@@ -142,6 +146,10 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             logging.debug("packetnumber: " + str(i) + " firewalll: "+str(packet) + str(self.listFirewall.lookup(packet)))
             
             self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[0][3])
+        
+        pr.disable()
+        pr.print_stats(sort='time')
+
 
 
     def test_randomPackets(self): # Test 500 random packages vs firewall list

@@ -1,6 +1,6 @@
 import random
 import logging
-
+import time
 
 class PolicyBuilder:
     def __init__(self,treeList):
@@ -8,9 +8,9 @@ class PolicyBuilder:
         self.ruleLength = len(treeList)+1
         self.previousRuleTuple = []
         self.ruleCodeWord = ""
-        self.codewordLength = 16
+        self.codewordLength= 16
         self.nextCodeword = 0
-        self.treeDepth = 4
+        self.treeDepth = 16
         
     def insertRuleIntoTree(self, rule, tree):
         ruleCodeword = ""
@@ -25,18 +25,19 @@ class PolicyBuilder:
     
     def ruleAlreadyExists(self,rule):
         # if the rules fields are equal skip the iteration and let the old rule have precedence
-        # logging.debug(f'AlreadyExists oldRuleTuple: {self.previousRuleTuple} rule: {rule}')
+        prefix = rule[:self.ruleLength-1]
         for oldRuleTuple in self.previousRuleTuple:
-            if oldRuleTuple[0][0:self.ruleLength-1] == rule[0:self.ruleLength-1]:
+            if oldRuleTuple[0][:self.ruleLength-1] == prefix:
                 return True
         return False
-
+        
     def insertRule(self,rule):
-        if self.ruleAlreadyExists(rule):
-            logging.debug("Discarded if rule already exists: " +str(rule))
-            return
         if self.ruleIsSubset(rule):
             logging.debug("Discarded if2 it is subset " +str(rule))
+            return
+
+        if self.ruleAlreadyExists(rule):
+            logging.debug("Discarded; rule already exists: " +str(rule))
             return
        
         ruleCodeword = self.insertRuleIntoTree(rule, self.treeList)
@@ -69,7 +70,6 @@ class PolicyBuilder:
                 self.previousRuleTuple.append((outputRule, intersectionCodeword))
 
         self.previousRuleTuple.append((rule, ruleCodeword))
-
        
     def permutations(self,rule0Tuple,rule1):
         output = []
@@ -94,34 +94,32 @@ class PolicyBuilder:
     def filterPermutations(self,rulePermutations, insertedRule):
         output = []
         for permutation in rulePermutations:
-            if self.ruleAlreadyExists(permutation) or output.__contains__(permutation):
-                logging.debug("if1: " +str(permutation))
-                continue
-            elif insertedRule[0:self.ruleLength-1] == permutation[0:self.ruleLength-1]:
+            if insertedRule[0:self.ruleLength-1] == permutation[0:self.ruleLength-1]:
                 logging.debug("if2: " +str(permutation))
+                continue
+
+            elif self.ruleAlreadyExists(permutation) or output.__contains__(permutation):
+                logging.debug("if1: " +str(permutation))
                 continue
 
             else:
                 logging.debug("els: " +str(permutation))
-                if self.ruleIsSubset(permutation) and self.subset(permutation, insertedRule):
-                   
-                    logging.debug("we in both" + str(permutation) + " ins:" + str(insertedRule))
 
-                    output.append(permutation)
-                    continue
-
-                if self.ruleIsSubset(permutation):
+                if self.ruleIsSubset(permutation): #Subset of previous rules
                     logging.debug("Even tho  rule0, also a  rule0 of the current inserted rule, so that takes over")
                     logging.debug("sub of" + str(permutation) + " ins:" + str(insertedRule))
 
                     output.append(permutation)
                     continue
                 
-                if self.subset(permutation, insertedRule):
-                        logging.debug("is super of" + str(permutation) + " " + str(insertedRule) )
-                        permutation[self.ruleLength-1] = insertedRule[3]
-                        output.append(permutation)
-                        continue
+                if self.subset(permutation, insertedRule): #subset of curr inserted rule
+                    logging.debug("is super of" + str(permutation) + " " + str(insertedRule) )
+                    permutation[self.ruleLength-1] = insertedRule[3]
+                    output.append(permutation)
+                    continue
+
+                if all(x == '*' for x in permutation[:-1]):
+                    continue
 
         output = [list(x) for x in set(tuple(x) for x in output)] #Delete duplicates
         logging.debug("Output geben: " + str(output))
@@ -130,55 +128,55 @@ class PolicyBuilder:
     def ruleIsSubset(self,rule):
         for previousRule in self.previousRuleTuple:
             if self.subset(rule, previousRule[0]):
-                
                 rule[self.ruleLength-1] = previousRule[0][self.ruleLength-1]
                 return True
         return False
         
     def subset(self, currRule, previousRule):
+
+        if (previousRule[0] == '*' or previousRule[0] == currRule[0]) and \
+                 (previousRule[1] == '*' or previousRule[1] == currRule[1]) and \
+                (previousRule[2] == '*' or previousRule[2] == currRule[2]):
+                return True
+
         return self.matches(previousRule, currRule)
 
 
+
     def matches(self, thisRule, currRule):
-       if thisRule[:len(thisRule)-1] == currRule:
-           return True
-       for i in range(len(thisRule)-1):
-           if thisRule[i] == currRule[i]:
-               continue
-           elif thisRule[i] == "*":
-               continue 
-           elif self.lpm(thisRule[i], currRule[i]):
-              continue
-           else:
-               return False
-       logging.debug("thisRule: "+str(thisRule))
-       logging.debug("currRule: "+str(currRule))
-       return True
+        if thisRule[:len(thisRule)-1] == currRule:
+            return True
 
-    def lpm(self, thisRule, currRule):
-        logging.debug("is this true: " + str(bool(thisRule.split('*')[0]) or bool(currRule.split('*')[0])))
-        if thisRule == '*' or currRule == '*':
-            return False
-        logging.debug("WE IN HERE")
-
-        if '*' in thisRule:
-            lpmThisRule = (thisRule.split('*')[0])
-        else:
-            lpmThisRule = format(int(thisRule), '016b')
-
-        if '*' in currRule:
-            lpmCurrRule = (currRule.split('*')[0])
-        else:
-            lpmCurrRule = format(int(currRule), '016b')
-        
-        for i in range(len(lpmThisRule)):
-            if len(lpmCurrRule) <= i:
-               return False
-
-            if lpmThisRule[i] != lpmCurrRule[i]:
-               return False
+        for prevRuleField, currRuleField in zip(thisRule[:-1], currRule):
+            if prevRuleField == currRuleField:
+                continue
+            elif prevRuleField == "*":
+                continue
+            elif self.lpm(prevRuleField, currRuleField):
+                continue
+            else:
+                return False
         return True
 
+
+
+    def lpm(self, thisRule, currRule):
+
+        if thisRule == '*' or currRule == '*':
+            return False
+
+        # lpmThisRule = thisRule.split('*')[0] if '*' in thisRule else format(int(thisRule), '016b')
+        # lpmCurrRule = currRule.split('*')[0] if '*' in currRule else format(int(currRule), '016b')
+        lpmThisRule = thisRule.split('*')[0] if '*' in thisRule else bin(int(thisRule))[2:].zfill(self.treeDepth)
+        lpmCurrRule = currRule.split('*')[0] if '*' in currRule else bin(int(currRule))[2:].zfill(self.treeDepth)
+
+        if len(lpmCurrRule) < len(lpmThisRule):
+            return False
+
+        for val_this, val_curr in zip(lpmThisRule, lpmCurrRule):
+            if val_this != val_curr:
+                return False
+        return True
 
     def writeCodewords(self):   #Writing to "codewords.txt"
         file = open("codewords.txt", "w")
@@ -203,7 +201,7 @@ class PolicyBuilder:
             exists, codewordSegment = self.treeList[i].getCodeword(packet_value)
             logging.debug(f"packet[{i}] = {packet_value} Exists{i}: {exists} subcode{i}: {codewordSegment} ")
             if exists or codewordSegment != "":
-                codeword += codewordSegment
+                codeword += str(codewordSegment)
             else: 
                 return None
         return codeword

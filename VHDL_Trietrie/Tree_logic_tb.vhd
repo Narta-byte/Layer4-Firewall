@@ -37,7 +37,9 @@ architecture bench of Tree_logic_tb is
   signal pointer1 : std_logic_vector(8 downto 0);
   signal data_out : std_logic_vector(23 downto 0);
   type data_array is array (0 to 5) of std_logic_vector(23 downto 0);
-  signal data_array_sig : data_array;
+  signal data_array_sig : data_array := (others => (others => '0'));
+  signal new_row : std_logic_vector(23 downto 0);
+  
 
 begin
 
@@ -52,28 +54,50 @@ begin
     data_out => data_out
   );
 
-  process
+  Read_file :  process (clk)
     file input : TEXT open READ_MODE is "Trienodes.txt";
 
     variable current_read_line : line;
     variable hex_reader : std_logic_vector(23 downto 0);
   begin
-    READ_ARRAY : for i in 0 to 5 loop
-      if not ENDFILE(input) then
+    --READ_ARRAY : for i in 0 to 7 loop
+      if not ENDFILE(input) and rising_edge(clk) then
 
         readline(input, current_read_line);
         read(current_read_line, hex_reader);
 
-        --data_out <= hex_reader;
-        data_array_sig(i) <= hex_reader;
-        --wait for clk_period;
+        --data_array_sig(i) <= hex_reader;
+        --new_row <= hex_reader;
+        
         fileinput <= hex_reader;
+
+        elsif not rising_edge(clk) then
+
       end if;
 
-    end loop; -- READ_ARRAY
+    --end loop; -- READ_ARRAY
 
-    wait;
   end process;
+
+--   process (data_array_sig, clk)
+--     variable all_data : std_logic_vector(191 downto 0); -- 24 bits * 8 elements
+-- begin
+--     if rising_edge(clk) then
+--         -- concatenate all elements in data_array_sig into a single std_logic_vector
+--         for i in data_array_sig'range loop
+--             all_data(((i+1)*24)-1 downto i*24) := data_array_sig(i);
+--         end loop;
+        
+--         -- assign the concatenated value to fileinput
+--         fileinput <= all_data;
+--     end if;
+-- end process;
+
+
+  
+  
+
+
   clk_process : process
   begin
     while now < 1000 ns loop
@@ -83,5 +107,11 @@ begin
       wait for clk_period/2;
     end loop;
   end process clk_process;
+
+  rst_proc : process
+  begin
+    reset <= '1'; wait for clk_period;
+    reset <= '0'; wait;  
+  end process;
 
 end;

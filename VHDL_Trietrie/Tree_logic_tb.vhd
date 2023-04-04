@@ -1,18 +1,21 @@
+-- vsg_off
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.textio.all;
---use ieee.std_logic_textio.all;
+-- use ieee.std_logic_textio.all;
+
 library std;
---use ieee.std_logic_unsigned.all;
-use IEEE.std_logic_textio.all;
+-- use ieee.std_logic_unsigned.all;
+use ieee.std_logic_textio.all;
 
-entity Tree_logic_tb is
-end;
+entity tree_logic_tb is
+end entity tree_logic_tb;
 
-architecture bench of Tree_logic_tb is
+architecture bench of tree_logic_tb is
 
-  component Tree_logic
+  -- file input : text open read_mode is "Trienodes.txt";
+  component tree_logic is
     port (
       clk : in std_logic;
       reset : in std_logic;
@@ -36,52 +39,65 @@ architecture bench of Tree_logic_tb is
   signal pointer0 : std_logic_vector(8 downto 0);
   signal pointer1 : std_logic_vector(8 downto 0);
   signal data_out : std_logic_vector(23 downto 0);
+
   type data_array is array (0 to 5) of std_logic_vector(23 downto 0);
+
   signal data_array_sig : data_array;
 
 begin
 
-  Tree_logic_inst : Tree_logic
-  port map(
-    clk => clk,
-    reset => reset,
-    key => key,
-    fileinput => fileinput,
-    pointer0 => pointer0,
-    pointer1 => pointer1,
-    data_out => data_out
-  );
+  tree_logic_inst : component tree_logic
+    port map(
+      clk => clk,
+      reset => reset,
+      key => key,
+      fileinput => fileinput,
+      pointer0 => pointer0,
+      pointer1 => pointer1,
+      data_out => data_out
+    );
 
-  process
-    file input : TEXT open READ_MODE is "Trienodes.txt";
+    process (clk) is
 
-    variable current_read_line : line;
-    variable hex_reader : std_logic_vector(23 downto 0);
-  begin
-    READ_ARRAY : for i in 0 to 5 loop
-      if not ENDFILE(input) then
+      file input : text open read_mode is "Trienodes.txt";
 
-        readline(input, current_read_line);
-        read(current_read_line, hex_reader);
+      variable current_read_line : line;
+      variable hex_reader : std_logic_vector(23 downto 0);
 
-        --data_out <= hex_reader;
-        data_array_sig(i) <= hex_reader;
-        --wait for clk_period;
-        fileinput <= hex_reader;
-      end if;
+    begin
 
-    end loop; -- READ_ARRAY
+      read_array : for i in 0 to 5 loop
 
-    wait;
-  end process;
-  clk_process : process
-  begin
-    while now < 1000 ns loop
-      clk <= '1';
-      wait for clk_period/2;
-      clk <= '0';
-      wait for clk_period/2;
-    end loop;
-  end process clk_process;
+        if (not endfile(input)) then
+          readline(input, current_read_line);
+          read(current_read_line, hex_reader);
+          -- write(OUTPUT, current_read_line.all & LF);
 
-end;
+          -- data_out <= hex_reader;
+          -- data_array_sig(i) <= hex_reader;
+          -- fileinput <= current_read_line;
+          -- wait for clk_period;
+          fileinput <= hex_reader;
+          -- fileinput <= data_array_sig(4);
+
+        end if;
+
+      end loop; -- READ_ARRAY
+
+    end process;
+
+    clk_process : process is
+    begin
+
+      while now < 1000 ns loop
+
+        clk <= '1';
+        wait for clk_period / 2;
+        clk <= '0';
+        wait for clk_period / 2;
+
+      end loop;
+
+    end process clk_process;
+
+  end architecture bench;

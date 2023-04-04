@@ -1,21 +1,18 @@
--- vsg_off
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.textio.all;
--- use ieee.std_logic_textio.all;
-
+--use ieee.std_logic_textio.all;
 library std;
--- use ieee.std_logic_unsigned.all;
-use ieee.std_logic_textio.all;
+--use ieee.std_logic_unsigned.all;
+use IEEE.std_logic_textio.all;
 
-entity tree_logic_tb is
-end entity tree_logic_tb;
+entity Tree_logic_tb is
+end;
 
-architecture bench of tree_logic_tb is
+architecture bench of Tree_logic_tb is
 
-  -- file input : text open read_mode is "Trienodes.txt";
-  component tree_logic is
+  component Tree_logic
     port (
       clk : in std_logic;
       reset : in std_logic;
@@ -39,65 +36,82 @@ architecture bench of tree_logic_tb is
   signal pointer0 : std_logic_vector(8 downto 0);
   signal pointer1 : std_logic_vector(8 downto 0);
   signal data_out : std_logic_vector(23 downto 0);
-
   type data_array is array (0 to 5) of std_logic_vector(23 downto 0);
-
-  signal data_array_sig : data_array;
+  signal data_array_sig : data_array := (others => (others => '0'));
+  signal new_row : std_logic_vector(23 downto 0);
+  
 
 begin
 
-  tree_logic_inst : component tree_logic
-    port map(
-      clk => clk,
-      reset => reset,
-      key => key,
-      fileinput => fileinput,
-      pointer0 => pointer0,
-      pointer1 => pointer1,
-      data_out => data_out
-    );
+  Tree_logic_inst : Tree_logic
+  port map(
+    clk => clk,
+    reset => reset,
+    key => key,
+    fileinput => fileinput,
+    pointer0 => pointer0,
+    pointer1 => pointer1,
+    data_out => data_out
+  );
 
-    process (clk) is
+  Read_file :  process (clk)
+    file input : TEXT open READ_MODE is "Trienodes.txt";
 
-      file input : text open read_mode is "Trienodes.txt";
+    variable current_read_line : line;
+    variable hex_reader : std_logic_vector(23 downto 0);
+  begin
+    --READ_ARRAY : for i in 0 to 7 loop
+      if not ENDFILE(input) and rising_edge(clk) then
 
-      variable current_read_line : line;
-      variable hex_reader : std_logic_vector(23 downto 0);
+        readline(input, current_read_line);
+        read(current_read_line, hex_reader);
 
-    begin
+        --data_array_sig(i) <= hex_reader;
+        --new_row <= hex_reader;
+        
+        fileinput <= hex_reader;
 
-      read_array : for i in 0 to 5 loop
+        elsif not rising_edge(clk) then
 
-        if (not endfile(input)) then
-          readline(input, current_read_line);
-          read(current_read_line, hex_reader);
-          -- write(OUTPUT, current_read_line.all & LF);
+      end if;
 
-          -- data_out <= hex_reader;
-          -- data_array_sig(i) <= hex_reader;
-          -- fileinput <= current_read_line;
-          -- wait for clk_period;
-          fileinput <= hex_reader;
-          -- fileinput <= data_array_sig(4);
+    --end loop; -- READ_ARRAY
 
-        end if;
+  end process;
 
-      end loop; -- READ_ARRAY
+--   process (data_array_sig, clk)
+--     variable all_data : std_logic_vector(191 downto 0); -- 24 bits * 8 elements
+-- begin
+--     if rising_edge(clk) then
+--         -- concatenate all elements in data_array_sig into a single std_logic_vector
+--         for i in data_array_sig'range loop
+--             all_data(((i+1)*24)-1 downto i*24) := data_array_sig(i);
+--         end loop;
+        
+--         -- assign the concatenated value to fileinput
+--         fileinput <= all_data;
+--     end if;
+-- end process;
 
-    end process;
 
-    clk_process : process is
-    begin
+  
+  
 
-      while now < 1000 ns loop
 
-        clk <= '1';
-        wait for clk_period / 2;
-        clk <= '0';
-        wait for clk_period / 2;
+  clk_process : process
+  begin
+    while now < 1000 ns loop
+      clk <= '1';
+      wait for clk_period/2;
+      clk <= '0';
+      wait for clk_period/2;
+    end loop;
+  end process clk_process;
 
-      end loop;
+  rst_proc : process
+  begin
+    reset <= '1'; wait for clk_period;
+    reset <= '0'; wait;  
+  end process;
 
-    end process clk_process;
-
-  end architecture bench;
+end;

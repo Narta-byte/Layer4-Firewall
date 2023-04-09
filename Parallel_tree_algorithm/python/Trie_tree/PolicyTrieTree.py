@@ -11,6 +11,7 @@ class PolicyTrieNode(trieTree.TrieNode):
         self.color = "#11BB11"
         self.aggrateRule = ""
         self.codeword = ""
+        self.idx = None
 class PolicyTrieTree(trieTree.TrieTree):
     def __init__(self,key = ''):
         self.root = PolicyTrieNode(key)

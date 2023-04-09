@@ -33,41 +33,58 @@ class ACLBuilder():
         queue = [tree.root]
         idxQueue = [1]
         repList = []
-        # repList.append([tree.root.codeword,None,None])
         parrentQueue = [1]
-        idx = 0
+        idx = 1
+        # repList.append([idx, tree.root.codeword,None,None])
         
         while queue:
             node = queue.pop(0)
-            idx = idxQueue.pop(0)
+            # idx = idxQueue.pop(0)
 
             parrent = parrentQueue.pop(0)
             visited.append(node)
             
             self.n.add_node(idx, label = (node.value+", "+str(idx)), color = "#FF00FF")
-            repList.append([idx, node.codeword,None,None])
+            # repList.append([idx, node.codeword,None,None])
+            if node.idx is None:
+                # repList[-1][1+1] = idx
+                # node.children["0"].idx = idx
+                repList.append([idx, node.codeword,None,None])
+
+            else:
+                # repList[-1][1+1] = node.children["0"].idx
+                repList.append([node.idx, node.codeword,None,None])
+
+
+
             for child in node.children.values():
                 if child not in visited:
                     idx +=1
                     queue.append(child)
-                    idxQueue.append(idx)
+                    # idxQueue.append(idx)
                     parrentQueue.append(idx)
                     self.n.add_node(idx, label = (child.value+", "+str(idx)), color = child.color) 
 
-                    # try: 
                     if child.value == "0":
-                        repList[-1][1+1] = idx
-                        self.n.add_edge(parrent, idx)
+                        if node.children["0"].idx is None:
+                            repList[-1][1+1] = idx
+                            node.children["0"].idx = idx
+                        else:
+                            repList[-1][1+1] = node.children["0"].idx
+
+                        # self.n.add_edge(parrent, idx)
 
                     elif child.value == "1":
-                        repList[-1][2+1] = idx
-                        self.n.add_edge(parrent, idx)
+                        if node.children["1"].idx is None:
+                            repList[-1][2+1] = idx
+                            node.children["1"].idx = idx
+                        else:
+                            repList[-1][2+1] = node.children["0"].idx
+                        # self.n.add_edge(parrent, idx)
 
-                    # except KeyError:
-                    #     pass
 
                         
-                    # self.n.add_edge(parrent, idx)
+                    self.n.add_edge(parrent, idx)
         logging.debug("repList: ")
         for rep in repList:
             logging.debug(rep)

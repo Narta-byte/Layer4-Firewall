@@ -66,7 +66,6 @@ class ACLBuilder():
         # self.n = Network("1000px","1000px", directed=True)
         visited = []
         queue = [tree.root]
-        idxQueue = [1]
         repList = []
         parrentQueue = [1]
         idx = 0

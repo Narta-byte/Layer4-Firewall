@@ -60,7 +60,6 @@ entity Collect_header is
 end entity;
 
 architecture arch_Collect_header of Collect_header is
-
   signal bytenum    : integer range 0 to 100000 := 0;
   signal storebyte  : std_logic_vector(7 downto 0) :=(others => '0');
   signal storebyte2 : std_logic_vector(7 downto 0) :=(others => '0');
@@ -68,9 +67,6 @@ architecture arch_Collect_header of Collect_header is
   signal tcp_flag   : std_logic := '0';
   signal udp_flag   : std_logic := '0';
   signal wait_start : std_logic := '0';
-  
-
-
 
 begin
 

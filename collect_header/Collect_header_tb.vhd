@@ -148,17 +148,8 @@ begin
     rdy_FIFO        =>rdy_FIFO,
     rdy_hash        => rdy_hash,
     
-    -- rdy_collecthdr  => rdy_collecthdr,
-    -- vld_hdr         => vld_hdr,
-    -- vld_hdr_FIFO    =>vld_hdr_FIFO,
-    -- hdr_SoP         =>hdr_SoP,
-    -- hdr_EoP         =>hdr_EoPm,
-    
-    -- packet_forward  => packet_forward,
-    
     fileinput       => fileinput,
-    -- payload         => payload,
-     --readprotocol    => readprotocol,
+
 
     ip_version      => ip_version,
     ip_header_len   => ip_header_len,

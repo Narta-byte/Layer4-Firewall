@@ -19,7 +19,23 @@ architecture arch_Collect_header_tb of Collect_header_tb is
       reset : in std_logic;
 
       fileinput       : in std_logic_vector(size downto 0);
-      readprotocol    : in std_logic_vector(7 downto 0);
+     -- payload         : out std_logic_vector(size -224 downto 0);
+      --readprotocol    : in std_logic_vector(7 downto 0);
+
+    packet_in       : in std_logic_vector(9 downto 0);
+    SoP             : in std_logic;
+    EoP             : in std_logic;
+    vld_firewall    : in std_logic;
+    rdy_FIFO        : in std_logic;
+    rdy_hash        : in std_logic;
+    
+    rdy_collecthdr  : out std_logic;
+    vld_hdr         : out std_logic;
+    vld_hdr_FIFO    : out std_logic;
+    hdr_SoP         : out std_logic;
+    hdr_EoP         : out std_logic;
+    
+    packet_forward  : out std_logic_vector(9 downto 0);
 
       ip_version      : out std_logic_vector(3 downto 0);
       ip_header_len   : out std_logic_vector(3 downto 0);
@@ -39,12 +55,17 @@ architecture arch_Collect_header_tb of Collect_header_tb is
       tcp_seq_num     : out std_logic_vector(31 downto 0);
       tcp_ack_num     : out std_logic_vector(31 downto 0);
       tcp_data_offset : out std_logic_vector(3 downto 0);
-      tcp_flags       : out std_logic_vector(7 downto 0);
+      tcp_flags       : out std_logic_vector(8 downto 0);
       tcp_window_size : out std_logic_vector(15 downto 0);
       L4checksum      : out std_logic_vector(15 downto 0);
       tcp_urgent_ptr  : out std_logic_vector(15 downto 0);
       
       udp_len         : out std_logic_vector(15 downto 0)
+
+
+      -- new!
+      
+
 
     );
   end component;
@@ -57,7 +78,7 @@ architecture arch_Collect_header_tb of Collect_header_tb is
   signal reset : std_logic;
 
   signal fileinput        : std_logic_vector(size downto 0) := (others => '0');
-  signal readprotocol     : std_logic_vector(7 downto 0) := (others => '0');
+  -- signal readprotocol     : std_logic_vector(7 downto 0) := (others => '0');
 
   signal ip_version       : std_logic_vector(3 downto 0) := (others => '0');
   signal ip_header_len    : std_logic_vector(3 downto 0) := (others => '0');
@@ -79,7 +100,7 @@ architecture arch_Collect_header_tb of Collect_header_tb is
   signal tcp_seq_num      : std_logic_vector(31 downto 0) := (others => '0');
   signal tcp_ack_num      : std_logic_vector(31 downto 0) := (others => '0');
   signal tcp_data_offset  : std_logic_vector(3 downto 0) := (others => '0');
-  signal tcp_flags        : std_logic_vector(7 downto 0) := (others => '0');
+  signal tcp_flags        : std_logic_vector(8 downto 0) := (others => '0');
   signal tcp_window_size  : std_logic_vector(15 downto 0) := (others => '0');
   signal L4checksum       : std_logic_vector(15 downto 0) := (others => '0');
   signal tcp_urgent_ptr   : std_logic_vector(15 downto 0) := (others => '0');
@@ -87,7 +108,31 @@ architecture arch_Collect_header_tb of Collect_header_tb is
   signal udp_len          : std_logic_vector(15 downto 0);
   
   -- Payload signal
-  --signal payload : std_logic_vector(size -316 downto 0) := (others => '0');
+  --signal payload : std_logic_vector(size -224 downto 0) := (others => '0');
+
+
+  -- New version!
+  signal packet_in : std_logic_vector (9 downto 0);
+  signal packet_start : std_logic := '0';
+  signal bytenm : integer := 0;
+
+
+  signal SoP : std_logic;
+  signal EoP : std_logic;
+
+  signal packet_data : std_logic_vector(7 downto 0);
+
+
+  signal vld_firewall : std_logic;
+  signal rdy_FIFO : std_logic;
+  signal rdy_hash : std_logic;
+
+  signal ready_hdr : std_logic;
+
+  signal vld_hdr : std_logic;
+  signal hdr_SoP : std_logic;
+  signal hdr_EoP : std_logic;
+  signal filedone : std_logic;
 
 begin
 
@@ -95,9 +140,25 @@ begin
   port map(
     clk => clk,
     reset => reset,
+
+    packet_in => packet_in,
+    SoP             => SoP,
+    EoP             => EoP,
+    vld_firewall    => vld_firewall,
+    rdy_FIFO        =>rdy_FIFO,
+    rdy_hash        => rdy_hash,
+    
+    -- rdy_collecthdr  => rdy_collecthdr,
+    -- vld_hdr         => vld_hdr,
+    -- vld_hdr_FIFO    =>vld_hdr_FIFO,
+    -- hdr_SoP         =>hdr_SoP,
+    -- hdr_EoP         =>hdr_EoPm,
+    
+    -- packet_forward  => packet_forward,
     
     fileinput       => fileinput,
-    readprotocol    => readprotocol,
+    -- payload         => payload,
+     --readprotocol    => readprotocol,
 
     ip_version      => ip_version,
     ip_header_len   => ip_header_len,
@@ -130,31 +191,81 @@ begin
     file input : TEXT open READ_MODE is "C:/Users/Asger/OneDrive/Skrivebord/Layer4-Firewall/collect_header/input_packets.txt";
 
     variable current_read_line : line;
-    variable hex_reader : std_logic_vector(size downto 0);
+    variable current_read_field	: std_logic_vector (7 downto 0);
+    variable current_write_line : std_logic;
   begin
-      if not ENDFILE(input) then 
+
       if rising_edge(clk) then
 
-        readline(input, current_read_line);
-        hread(current_read_line, hex_reader);
+        if filedone = '1' then
+          -- do nothing
+        elsif rdy_FIFO = '0' or rdy_hash = '0' or vld_firewall = '0' then
+          -- niemand
 
-        fileinput <= hex_reader;
+        elsif vld_firewall = '1' and rdy_hash = '1' and rdy_FIFO = '1' then --and SoP = '1' then
+          if not ENDFILE(input) then 
+
+            packet_start <= '1';
+            bytenm <= bytenm + 1;
+            readline(input, current_read_line);
+            hread(current_read_line, current_read_field);
+            packet_data <= current_read_field;
+        
+
+            read(current_read_line, current_write_line);
+            SoP <= current_write_line;
+        
+            read(current_read_line, current_write_line);
+            EoP <= current_write_line;
+
+            packet_in <= packet_data & SoP & EoP;
+
+          else
+            filedone <= '1';
+
+          end if;
+        end if;
 
       end if;
-    end if;
+    
   end process;
 
-  readprotocol <= fileinput(size-72 downto size-79);
+  --readprotocol <= fileinput(size-72 downto size-79);
   --payload    <= fileinput(size-316 downto 0); --rest is paylaod
+
+
+
+  TestInputs : process 
+  begin
+--     rdy_FIFO <= '1'; wait for 5 ns;
+-- --    rdy_FIFO <= '1'; wait for 10000 ns;
+--     rdy_FIFO <= '0'; wait for 10 ns;  
+    rdy_FIFO <= '1'; wait;
+
+  end process;
+
+  Testcuckoo : process
+  begin
+    -- rdy_hash <= '0'; wait for 10 ns;
+    -- rdy_hash <= '1'; wait for 2033 ns;
+    -- rdy_hash <= '0'; wait for 6 ns;
+    -- rdy_hash <= '1'; wait for 2 ns;
+    -- rdy_hash <= '0'; wait for 6 ns;
+    rdy_hash <= '1'; wait;
+  end process;
+
+  testvld : process 
+  begin
+    vld_firewall <= '1'; wait;
+    
+  end process;
 
 
   clk_proc : process --clk proc
   begin
     while now < 100000 ns loop
-      clk <= '1';
-      wait for clk_period/2;
-      clk <= '0';
-      wait for clk_period/2;
+      clk <= '1'; wait for clk_period/2;
+      clk <= '0'; wait for clk_period/2;
     end loop;
   end process;
 

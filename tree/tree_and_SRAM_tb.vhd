@@ -18,20 +18,23 @@ architecture bench of tree_and_sram_tb is
       tree_depth : integer
     );
       port (
-      key_in : in std_logic_vector(key_length downto 0);
+      data_in : in std_logic_vector(
+            key_length  +                              -- key
+            codeword_length  + address_width * 2  + -- SRAM_data
+            address_width  +                           -- address
+            1 +                                              -- select
+            (-1)
+            downto 0);
       codeword : out std_logic_vector(codeword_length - 1 downto 0);
-      data_in : in std_logic_vector(codeword_length + address_width * 2 downto 0);
-      address : in std_logic_vector(address_width downto 0);
-      RW : in std_logic;
       rdy_collect_header : out std_logic;
       vld_collect_header : in std_logic;
       rdy_codeword_concatinator : in std_logic;
       vld_codeword_concatinator : out std_logic;
-
       clk : in std_logic;
       reset : in std_logic
     );
   end component;
+  
 
   -- Clock period
   constant clk_period : time := 5 ns;
@@ -42,19 +45,40 @@ architecture bench of tree_and_sram_tb is
   constant tree_depth : integer := 16;
 
   -- Ports
-  signal key_in : std_logic_vector(key_length - 1 downto 0);
+  signal data_in : std_logic_vector(
+            key_length  +                              -- key
+            codeword_length  + address_width * 2  + -- SRAM_data
+            address_width  +                           -- address
+            1 +                                              -- select
+            (-1)
+            downto 0);
   signal codeword : std_logic_vector(codeword_length - 1 downto 0);
-  signal data_in : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
-  signal address : std_logic_vector(address_width - 1 downto 0);
-  signal RW : std_logic := '0';
   signal rdy_collect_header : std_logic;
-  signal vld_collect_header : std_logic:= '0';
+  signal vld_collect_header : std_logic;
+  signal rdy_codeword_concatinator : std_logic;
+  signal vld_codeword_concatinator : std_logic;
   signal clk : std_logic;
   signal reset : std_logic;
-  signal cnt : integer := 0;
-  signal wait_cnt : integer := 0;  
-  signal rdy_codeword_concatinator : std_logic := '1';
-  signal vld_codeword_concatinator : std_logic;
+
+  signal cnt : integer  := 0;
+  signal wait_cnt : integer := 0;
+
+  
+  constant total_length : integer:=key_length  +                             
+  codeword_length  + address_width * 2  +
+  address_width  +                          
+  1;                    
+
+  alias key_in :std_logic_vector is data_in(total_length - 1 downto total_length - key_length);
+
+  alias data_in0 :std_logic_vector is data_in(total_length - key_length - 1 downto
+                                             (total_length - key_length - 1) - (codeword_length + address_width * 2) + 1);
+
+  alias address : std_logic_vector is data_in((total_length - key_length - 1) - (codeword_length + address_width * 2)  downto
+                                              1);
+  alias RW : std_logic is data_in(0);
+  
+  
 begin
 
   tree_and_sram_inst : tree_and_sram
@@ -65,11 +89,8 @@ begin
       tree_depth => tree_depth
     )
     port map (
-      key_in => key_in,
-      codeword => codeword,
       data_in => data_in,
-      address => address,
-      RW => RW,
+      codeword => codeword,
       rdy_collect_header => rdy_collect_header,
       vld_collect_header => vld_collect_header,
       rdy_codeword_concatinator => rdy_codeword_concatinator,
@@ -77,6 +98,9 @@ begin
       clk => clk,
       reset => reset
     );
+
+
+
 
   clk_process : process
   begin
@@ -98,7 +122,7 @@ begin
           readline(input, current_read_line);
           hread(current_read_line, hex_reader);
 
-          data_in <= hex_reader;
+          data_in0 <= hex_reader;
           address <= std_logic_vector(to_unsigned(cnt, address_width));
           
           cnt <= cnt + 1;
@@ -110,6 +134,7 @@ begin
         elsif wait_cnt = 3 then
            
           vld_collect_header <= '1';
+          rdy_codeword_concatinator <= '1';
           key_in <= "1100100000000000";
         elsif wait_cnt = 4 then
           -- vld <= '0';
@@ -134,3 +159,9 @@ begin
   end process;
 
 end;
+
+
+
+
+
+

@@ -7,15 +7,32 @@ entity tree_and_sram is
         key_length : integer := 32;
         address_width : integer := 8;
         codeword_length : integer := 16;
-        
         tree_depth : integer := 16
     );
     port (
-        key_in : in std_logic_vector(key_length - 1 downto 0);
+        -- key_in : in std_logic_vector(key_length - 1 downto 0);
+        -- data_in : in std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
+        -- address : in std_logic_vector(address_width - 1 downto 0);
+        -- RW : in std_logic;
+
+        data_in : in std_logic_vector(
+            key_length  +                              -- key
+            codeword_length  + address_width * 2  + -- SRAM_data
+            address_width  +                           -- address
+            1 +                                              -- select
+            (-1)
+            downto 0);
+        -- data_in : in std_logic_vector(
+        --       16 - 1 +                              -- key
+        --       16 - 1 + 8 * 2 - 1 + -- SRAM_data
+        --       8 - 1 +                           -- address
+        --       1                                             -- select
+              
+        --       downto 0);
+
+
         codeword : out std_logic_vector(codeword_length - 1 downto 0);
-        data_in : in std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
-        address : in std_logic_vector(address_width - 1 downto 0);
-        RW : in std_logic;
+        
         rdy_collect_header : out std_logic;
         vld_collect_header : in std_logic;
 
@@ -67,25 +84,39 @@ architecture rtl of tree_and_sram is
           data_out : out std_logic_vector(codeword_length + address_width * 2 - 1 downto 0)
         );
       end component;
--- Generics
---   constant key_length : integer := 32;
---   constant address_width : integer := 7;
---   constant codeword_length : integer := 16;
 
---   constant tree_depth : integer := 16;
+  -- signal data_from_memory : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
+  -- alias key_in : std_logic_vector is data_in(key_length - 1 downto 
+  --   codeword_length - 1 + address_width * 2 - 1 + 
+  --   address_width - 1 +                         
+  --   1);
+  -- alias data_in0 : std_logic_vector is data_in(codeword_length - 1 + address_width * 2 - 1 +
+  --   address_width - 1 +                         
+  --   1 downto address_width - 1 +                         
+  --   1);
+  -- alias address : std_logic_vector is data_in(address_width - 1 +                        
+  --   1 downto 1);
+  -- alias RW : std_logic is data_in(0);
+  constant total_length : integer:=key_length  +                             
+                                   codeword_length  + address_width * 2  +
+                                   address_width  +                          
+                                   1;                     
+                                   
+                                   
+  alias key_in :std_logic_vector is data_in(total_length - 1 downto total_length - key_length);
+
+  alias data_in0 :std_logic_vector is data_in(total_length - key_length - 1 downto
+                                             (total_length - key_length - 1) - (codeword_length + address_width * 2) + 1);
+
+  alias address : std_logic_vector is data_in((total_length - key_length - 1) - (codeword_length + address_width * 2)  downto
+                                              1);
+  alias RW : std_logic is data_in(0);
+  
+  
 
 
-
-  -- Ports
---   signal key_in : std_logic_vector(key_length downto 0);
---   signal codeword : std_logic_vector(codeword_length downto 0);
   signal wire0, wire1 : std_logic_vector(address_width - 1 downto 0);
   signal data_from_memory : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
---   signal rdy : std_logic;
---   signal vld : std_logic;
-
---   signal data_in : std_logic_vector(codeword_length + address_width * 2 downto 0);
---   signal data_out : std_logic_vector(codeword_length + address_width * 2 downto 0);
 
 
 
@@ -133,7 +164,7 @@ begin
       reset => reset,
       RW => RW,
       address => wire1,
-      data_in => data_in,
+      data_in => data_in0,
       data_out => data_from_memory
     );
 

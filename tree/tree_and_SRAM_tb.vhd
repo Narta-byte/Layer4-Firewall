@@ -19,7 +19,7 @@ architecture bench of tree_and_sram_tb is
     );
       port (
       key_in : in std_logic_vector(key_length downto 0);
-      codeword : out std_logic_vector(codeword_length downto 0);
+      codeword : out std_logic_vector(codeword_length - 1 downto 0);
       data_in : in std_logic_vector(codeword_length + address_width * 2 downto 0);
       address : in std_logic_vector(address_width downto 0);
       RW : in std_logic;

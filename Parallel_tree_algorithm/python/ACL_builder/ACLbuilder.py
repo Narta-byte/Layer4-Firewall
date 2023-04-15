@@ -18,45 +18,60 @@ class ACLBuilder():
         self.treeList = treeList
         self.policyBuilder = policyBuilder
         self.hashTable = hashTable
-    
+        
+
+
+
     def buildACL(self):
         self.arrayTree = []
-        logging.debug("treeList: " + str(self.treeList))
         for tree in self.treeList:
             self.arrayTree.append(self.convertTreeToArray(tree))
-        logging.debug("arrayTree: " + str(self.arrayTree))
+        file = open("tree/tree_data_tb.txt", "w")
+
+        for i, tree in enumerate(self.treeList):
+            # file.write(self.treeToVHDL(self.treeList[i])[0])
+            file.write(self.treeToVHDL(self.treeList[i])[0])
+        file.close()
 
 
     def convertTreeToArray(self, tree):
-        # self.output = []
-        # self.output = DLL(tree.root.codeword)
-        
-        # self.n.show("tree.html",False)
+       
         return (self.bfs(tree)[-1][0], self.bfs(tree))
     
-    def treeToVHDL(self, tree):
+    def treeToVHDL(self, tree, addressLength = '02X', dataLength = '04X'):
         vhdlString = ""
         list = self.bfs(tree)
-        file = open("tree/tree_data_tb.txt", "w")
-        file.write("00000000\n")
+        # file = open("tree/tree_data_tb.txt", "w")
+        vhdlString += (str(format(0, dataLength)) + str(format(0, addressLength)) + str(format(0, addressLength))+"\n")
+        length = 1
+
+
         output = self.bfs(tree)
-        for element in output:
+        logging.debug("output: " + str(output))
+        for i in range(2**8):
+            element = [0,0,0,0]
+            if len(output) > i: 
+                element = output[i]
+            
+            logging.debug("element: " + str(element))
+            length += 1
             if bool(element[1]):
-                codeword = format(int(element[1], 2), '04X')
+                codeword = format(int(str(element[1]), 2), dataLength)
             else:
-                codeword = format(0, '04X')
+                codeword = format(0, dataLength)
             if element[2]:
-                zeroPointer = format(element[2], '02X')
+                zeroPointer = format(element[2], addressLength)
             else:
-                zeroPointer = format(0, '02X')
+                zeroPointer = format(0, addressLength)
             if element[3]:
-                onePointer = format(element[3], '02X')
+                onePointer = format(element[3], addressLength)
             else:
-                onePointer = format(0, '02X')
+                onePointer = format(0, addressLength)
 
             logging.debug("codeword: " + str(codeword) + " zeroPointer: " + str(zeroPointer) + " onePointer: " + str(onePointer))
-            file.write(codeword + zeroPointer + onePointer+"\n")
-        file.close()
+            vhdlString += (codeword + zeroPointer + onePointer+"\n")
+        return vhdlString, length
+        # file.close()
 
 
 

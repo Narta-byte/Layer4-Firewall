@@ -1,37 +1,45 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
+use work.my_types_pkg.all;
 
 
 entity rule_engine is
     generic (
-        address_width : integer;
-        codeword_length : integer;
-        tree_depth : integer;
+        number_of_trees : integer := 5;
+        tree_depth : integer := 16;
 
-        tree0_key_length : integer:= 16;
-        tree0_address_width : integer:= 8;
-        tree1_key_length : integer:= 16;
-        tree1_address_width : integer:= 8;
-        tree2_key_length : integer:= 16;
-        tree2_address_width : integer:= 8;
-        tree3_key_length : integer:= 16;
-        tree3_address_width : integer:= 8;
-        tree4_key_length : integer:= 16;
-        tree4_address_width : integer:= 8
+        address_width : tree_array := (8,8,8,16,8);
+        total_address_width : integer := 48;
+        address_width_cumsum : tree_array := (0,8,16,24,40,48);
+
+        largest_address_width : integer := 16;
+
+        key_in_lengths : tree_array:=(16,16,16,32,16);
+        total_key_in_length : integer := 96; 
+
+        tree_cumsum : tree_array :=  (0,16,32,48,80,96); 
+
+        codeword_length : tree_array := (16,16,16,16,16);
+        largest_codeword : integer := 16
       );
 
     port (
         cmd_in : in std_logic_vector(4 downto 0);
-        data_in : in std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
-        data_out : out std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
-        RW : out std_logic;
-        sel : out std_logic_vector(2 downto 0) := "000";
-        address : out std_logic_vector(address_width - 1 downto 0);
 
-        rdy : out std_logic;
-        vld : in std_logic;
+        codeword_in : in std_logic_vector(largest_codeword - 1 downto 0);
+        zero_pointer_in : in std_logic_vector(largest_address_width - 1 downto 0);
+        one_pointer_in : in std_logic_vector(largest_address_width - 1 downto 0);
+
+        codeword_out : out std_logic_vector(largest_codeword - 1 downto 0);
+        zero_pointer_out : out std_logic_vector(largest_address_width - 1 downto 0);
+        one_pointer_out : out std_logic_vector(largest_address_width - 1 downto 0);
+
+        RW : out std_logic_vector(number_of_trees - 1 downto 0) := (others => '0');
+        address : out std_logic_vector(largest_address_width - 1 downto 0);
+
+        rdy_driver : out std_logic;
+        vld_driver : in std_logic;
 
         clk   : in std_logic;
         reset : in std_logic
@@ -39,85 +47,39 @@ entity rule_engine is
 end entity rule_engine;
 
 architecture rtl of rule_engine is
-    signal tree_cnt : natural range 0 to 2 ** tree0_address_width - 1 := 0; -- address with has to be the largest
-
-    signal num_tree_cnt : natural range 0 to 4 := 0;
-
-    signal sel_reg : integer range 0 to 15 := 0;
-    
-
+    signal rw_reg : std_logic_vector(number_of_trees - 1 + 1 downto 0) := (number_of_trees downto 1 => '0') & '1';
+    signal zeros : std_logic_vector(largest_codeword + largest_address_width * 2 - 1 downto 0) := (others => '0') ;
+    signal debug : boolean;
     
 begin
 
-    sel <=  std_logic_vector(to_unsigned(sel_reg, 3));
-    
+    RW <= rw_reg(number_of_trees downto 1);
+
+    codeword_out <= codeword_in;
+    zero_pointer_out <= zero_pointer_in;
+    one_pointer_out <= one_pointer_in;
+
+
     process (clk, reset)
     begin
-        data_out <= data_in;
             if reset = '1' then
-                rdy <= '0';
-                sel_reg <= 0;
+                rdy_driver <= '1';
+                rw_reg <= (others => '0') ;
             elsif rising_edge(clk) then
                 
-                if cmd_in = "00001" and vld = '1' then
-                    RW <= '1';
-
-                    if tree_cnt < 2 ** tree0_address_width - 1 then
-                        tree_cnt <= tree_cnt + 1;
-                    else
-                        tree_cnt <= 0;
-                        sel_reg <= sel_reg + 1;
-                        
-
+                if cmd_in = "00001" and vld_driver = '1' then
+                    debug <= (codeword_in & zero_pointer_in & one_pointer_in) = zeros;
+                    if (codeword_in & zero_pointer_in & one_pointer_in) = zeros then
+                        rw_reg <= rw_reg(rw_reg'high - 1 downto rw_reg'low) & rw_reg(rw_reg'high);
+                        if rw_reg(rw_reg'high) = '1' then
+                            rdy_driver <= '0';
+                        end if;
                     end if;
-
-
-
-                    -- if tree_cnt < 2 ** tree0_address_width - 1 and sel_reg = "000" then
-                    --     tree_cnt <= tree_cnt + 1;
-                    -- else
-                    --     tree_cnt <= 0;
-                    --     sel_reg <= "001";
-                    -- end if;
-
-                    -- if tree_cnt < 2 ** tree1_address_width - 1 and sel_reg = "001" then
-                    --     tree_cnt <= tree_cnt + 1;
-                    -- else
-                    --     tree_cnt <= 0;
-                    --     sel_reg <= "010";
-                    -- end if;
-
-                    -- if tree_cnt < 2 ** tree2_address_width - 1 and sel_reg = "010" then
-                    --     tree_cnt <= tree_cnt + 1;
-                    -- else
-                    --     tree_cnt <= 0;
-                    --     sel_reg <= "011";
-                    -- end if;
-
-                    -- if tree_cnt < 2 ** tree3_address_width - 1 and sel_reg = "011" then
-                    --     tree_cnt <= tree_cnt + 1;
-                    -- else
-                    --     tree_cnt <= 0;
-                    --     sel_reg <= "100";
-                    -- end if;
-
-                    -- if tree_cnt < 2 ** tree4_address_width - 1 and sel_reg = "100" then
-                    --     tree_cnt <= tree_cnt + 1;
-                    -- else
-                    --     tree_cnt <= 0;
-                    --     -- sel_reg <= "000";
-                    --     rdy <= '0';
-                    -- end if;
-                    
-
-
                     
                 else
-                    rdy <= '1';
-                    RW <= '0';
+                    rdy_driver <= '1';
 
                 end if;
-
 
 
 

@@ -10,25 +10,14 @@ entity tree_and_sram is
         tree_depth : integer := 16
     );
     port (
-        -- key_in : in std_logic_vector(key_length - 1 downto 0);
+        key_in : in std_logic_vector(key_length - 1 downto 0);
         -- data_in : in std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
-        -- address : in std_logic_vector(address_width - 1 downto 0);
-        -- RW : in std_logic;
+        codeword_in : in std_logic_vector(codeword_length - 1 downto 0);
+        zero_pointer : in std_logic_vector(address_width - 1 downto 0);
+        one_pointer : in std_logic_vector(address_width - 1 downto 0);
+        address : in std_logic_vector(address_width - 1 downto 0);
+        RW : in std_logic;
 
-        data_in : in std_logic_vector(
-            key_length  +                              -- key
-            codeword_length  + address_width * 2  + -- SRAM_data
-            address_width  +                           -- address
-            1 +                                              -- select
-            (-1)
-            downto 0);
-        -- data_in : in std_logic_vector(
-        --       16 - 1 +                              -- key
-        --       16 - 1 + 8 * 2 - 1 + -- SRAM_data
-        --       8 - 1 +                           -- address
-        --       1                                             -- select
-              
-        --       downto 0);
 
 
         codeword : out std_logic_vector(codeword_length - 1 downto 0);
@@ -103,14 +92,14 @@ architecture rtl of tree_and_sram is
                                    1;                     
                                    
                                    
-  alias key_in :std_logic_vector is data_in(total_length - 1 downto total_length - key_length);
+  -- alias key_in :std_logic_vector is data_in(total_length - 1 downto total_length - key_length);
 
-  alias data_in0 :std_logic_vector is data_in(total_length - key_length - 1 downto
-                                             (total_length - key_length - 1) - (codeword_length + address_width * 2) + 1);
+  -- alias data_in0 :std_logic_vector is data_in(total_length - key_length - 1 downto
+  --                                            (total_length - key_length - 1) - (codeword_length + address_width * 2) + 1);
 
-  alias address : std_logic_vector is data_in((total_length - key_length - 1) - (codeword_length + address_width * 2)  downto
-                                              1);
-  alias RW : std_logic is data_in(0);
+  -- alias address : std_logic_vector is data_in((total_length - key_length - 1) - (codeword_length + address_width * 2)  downto
+  --                                             1);
+  -- alias RW : std_logic is data_in(0);
   
   
 
@@ -118,9 +107,13 @@ architecture rtl of tree_and_sram is
   signal wire0, wire1 : std_logic_vector(address_width - 1 downto 0);
   signal data_from_memory : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
 
-
+  signal this_data_in : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
+  
 
 begin
+
+  this_data_in <= codeword_in & zero_pointer & one_pointer;
+
     process (clk, RW)
     begin
       if rising_edge(clk) then
@@ -164,7 +157,7 @@ begin
       reset => reset,
       RW => RW,
       address => wire1,
-      data_in => data_in0,
+      data_in => this_data_in,
       data_out => data_from_memory
     );
 

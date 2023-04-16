@@ -1,23 +1,17 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-
+use work.my_types_pkg.all;
 
 entity rule_engine_and_tree_collection is
     generic (
         address_width : integer;
         codeword_length : integer;
         tree_depth : integer;
-        tree0_key_length : integer;
-        tree0_address_width : integer;
-        tree1_key_length : integer;
-        tree1_address_width : integer;
-        tree2_key_length : integer;
-        tree2_address_width : integer;
-        tree3_key_length : integer;
-        tree3_address_width : integer;
-        tree4_key_length : integer;
-        tree4_address_width : integer
+        number_of_trees : integer;
+        tree_atributes : tree_array:= (16, 16, 16, 32, 16);
+        total_tree_attributes : integer := 16 + 16 + 16 + 32 + 16;
+        tree_cumsum : tree_array
       );
     port (
         cmd_in : in std_logic_vector(4 downto 0);
@@ -26,26 +20,15 @@ entity rule_engine_and_tree_collection is
         rdy : out std_logic;
         vld : in std_logic;
 
-        tree0_key_in : in std_logic_vector(tree0_key_length - 1 downto 0);
-        tree1_key_in : in std_logic_vector(tree1_key_length - 1 downto 0);
-        tree2_key_in : in std_logic_vector(tree2_key_length - 1 downto 0);
-        tree3_key_in : in std_logic_vector(tree3_key_length - 1 downto 0);
-        tree4_key_in : in std_logic_vector(tree4_key_length - 1 downto 0);
-
-        tree0_rdy_collect_header : out std_logic;
-        tree0_vld_collect_header : in std_logic;
+        -- tree0_key_in : in std_logic_vector(tree_atributes(0) - 1 downto 0);
+        -- tree1_key_in : in std_logic_vector(tree_atributes(1) - 1 downto 0);
+        -- tree2_key_in : in std_logic_vector(tree_atributes(2) - 1 downto 0);
+        -- tree3_key_in : in std_logic_vector(tree3_key_length - 1 downto 0);
+        -- tree4_key_in : in std_logic_vector(tree4_key_length - 1 downto 0);
+        key_in : in std_logic_vector(total_tree_attributes - 1 downto 0);
         
-        tree1_rdy_collect_header : out std_logic;
-        tree1_vld_collect_header : in std_logic;
-
-        tree2_rdy_collect_header : out std_logic;
-        tree2_vld_collect_header : in std_logic;
-
-        tree3_rdy_collect_header : out std_logic;
-        tree3_vld_collect_header : in std_logic;
-
-        tree4_rdy_collect_header : out std_logic;
-        tree4_vld_collect_header : in std_logic;
+        rdy_collect_header : out std_logic_vector(number_of_trees - 1 downto 0);
+        vld_collect_header : in std_logic_vector(number_of_trees - 1 downto 0);
 
         clk : in std_logic;
         reset : in std_logic
@@ -104,80 +87,41 @@ architecture rtl of rule_engine_and_tree_collection is
   
   component tree_collection
     generic (
-      codeword_length : integer;
+      number_of_trees : integer;
+      address_width : integer;
       tree_depth : integer;
-      tree0_key_length : integer;
-      tree0_address_width : integer;
-      tree1_key_length : integer;
-      tree1_address_width : integer;
-      tree2_key_length : integer;
-      tree2_address_width : integer;
-      tree3_key_length : integer;
-      tree3_address_width : integer;
-      tree4_key_length : integer;
-      tree4_address_width : integer
+      tree_atributes : tree_array;
+      total_tree_attributes : integer;
+      tree_cumsum : tree_array;
+      codeword_length : integer
     );
       port (
-      tree0_key_in : in std_logic_vector(tree0_key_length - 1 downto 0);
-      tree0_data_in : in std_logic_vector(codeword_length + tree0_address_width * 2 - 1 downto 0);
-      tree0_address : in std_logic_vector(tree0_address_width - 1 downto 0);
-      tree0_RW : in std_logic;
-      tree0_rdy_collect_header : out std_logic;
-      tree0_vld_collect_header : in std_logic;
-      tree1_key_in : in std_logic_vector(tree1_key_length - 1 downto 0);
-      tree1_data_in : in std_logic_vector(codeword_length + tree1_address_width * 2 - 1 downto 0);
-      tree1_address : in std_logic_vector(tree1_address_width - 1 downto 0);
-      tree1_RW : in std_logic;
-      tree1_rdy_collect_header : out std_logic;
-      tree1_vld_collect_header : in std_logic;
-      tree2_key_in : in std_logic_vector(tree2_key_length - 1 downto 0);
-      tree2_data_in : in std_logic_vector(codeword_length + tree2_address_width * 2 - 1 downto 0);
-      tree2_address : in std_logic_vector(tree2_address_width - 1 downto 0);
-      tree2_RW : in std_logic;
-      tree2_rdy_collect_header : out std_logic;
-      tree2_vld_collect_header : in std_logic;
-      tree3_key_in : in std_logic_vector(tree3_key_length - 1 downto 0);
-      tree3_data_in : in std_logic_vector(codeword_length + tree3_address_width * 2 - 1 downto 0);
-      tree3_address : in std_logic_vector(tree3_address_width - 1 downto 0);
-      tree3_RW : in std_logic;
-      tree3_rdy_collect_header : out std_logic;
-      tree3_vld_collect_header : in std_logic;
-      tree4_key_in : in std_logic_vector(tree4_key_length - 1 downto 0);
-      tree4_data_in : in std_logic_vector(codeword_length + tree3_address_width * 2 - 1 downto 0);
-      tree4_address : in std_logic_vector(tree4_address_width - 1 downto 0);
-      tree4_RW : in std_logic;
-      tree4_rdy_collect_header : out std_logic;
-      tree4_vld_collect_header : in std_logic;
+      data_in : in std_logic_vector(
+              total_tree_attributes - 1 +                               --key_in
+              (codeword_length + address_width * 2) * number_of_trees + --data_in
+              (address_width) * number_of_trees +                       -- address
+              number_of_trees +                                         -- RW (select)
+              (-1)                                               
+          downto 0);
+      data_out : out std_logic_vector(
+              number_of_trees -- rdy_collect_header
+          downto 0);
+      vld_collect_header : in std_logic_vector(number_of_trees -1 downto 0);
       clk : in std_logic;
       reset : in std_logic
     );
   end component;
   
+  
   -- Wires
-    signal wire_mux : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
-    signal RW_in : std_logic;
-    signal sel : std_logic_vector(2 downto 0);
+    -- signal wire_mux : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
+    -- signal RW_in : std_logic;
+    -- signal sel : std_logic_vector(2 downto 0);
 
-    signal wire_address : std_logic_vector(address_width - 1 downto 0);
-    signal data_out : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
+    -- signal wire_address : std_logic_vector(address_width - 1 downto 0);
+    -- signal data_out : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
 
-    signal tree0 : std_logic_vector(codeword_length+address_width * 2 - 1 downto 0);
-    signal tree1 : std_logic_vector(codeword_length+address_width * 2 - 1 downto 0);
-    signal tree2 : std_logic_vector(codeword_length+address_width * 2 - 1 downto 0);
-    signal tree3 : std_logic_vector(codeword_length+address_width * 2 - 1 downto 0);
-    signal tree4 : std_logic_vector(codeword_length+address_width * 2 - 1 downto 0);
-
-    signal RW0:  std_logic;
-    signal RW1:  std_logic;
-    signal RW2:  std_logic;
-    signal RW3:  std_logic;
-    signal RW4:  std_logic;
-
-    signal address0 : std_logic_vector(address_width - 1 downto 0);
-    signal address1 : std_logic_vector(address_width - 1 downto 0);
-    signal address2 : std_logic_vector(address_width - 1 downto 0);
-    signal address3 : std_logic_vector(address_width - 1 downto 0);
-    signal address4 : std_logic_vector(address_width - 1 downto 0);
+   
 
 
 begin

@@ -13,6 +13,7 @@ entity tree_collection is
 
         tree_atributes : tree_array:=(16,16,16,16,32);
         total_tree_attributes : integer := 96;  
+        tree_cumsum : tree_array :=  (16,32,48,64,96);
         -- total_tree_address : integer := number_of_trees * address_width ;
 
         codeword_length : integer := 16
@@ -20,10 +21,11 @@ entity tree_collection is
     );
     port (
         data_in : in std_logic_vector(
-            total_tree_attributes - 1 +                                   --key_in
-            (codeword_length + address_width * 2 - 1) * number_of_trees + --data_in
-            (address_width - 1) * number_of_trees +                       -- address
-            number_of_trees                                               -- RW (select)
+            total_tree_attributes - 1 +                               --key_in
+            (codeword_length + address_width * 2) * number_of_trees + --data_in
+            (address_width) * number_of_trees +                       -- address
+            number_of_trees +                                         -- RW (select)
+            (-1)                                               
         downto 0);
 
         data_out : out std_logic_vector(
@@ -74,34 +76,37 @@ architecture rtl of tree_collection is
       end component;
 
 
-      constant offset : natural := total_tree_attributes - 1 +                                  --key_in
-                                  (codeword_length + address_width * 2 - 1) * number_of_trees + --data_in
-                                  (address_width - 1) * number_of_trees +                       -- address
-                                  number_of_trees;                                              -- RW (select);
+      -- constant offset : natural := total_tree_attributes - 1 +                                  --key_in
+      --                             (codeword_length + address_width * 2 - 1) * number_of_trees + --data_in
+      --                             (address_width - 1) * number_of_trees +                       -- address
+      --                             number_of_trees;                                              -- RW (select);
       
-      signal lower_bound : tree_array(0 to number_of_trees ) := (0) & (tree_atributes);
+      -- signal lower_bound : tree_array(0 to number_of_trees ) := (0) & (tree_atributes);
 
+      
+      
+      -- signal offset_key_in : integer := -- tree_atributes(i) +
+      --                            (codeword_length + address_width * 2 - 1) +
+      --                            address_width +
+      --                            1 +
+      --                            1;
+      
+      -- signal offset_data_in : integer := -- tree_atributes(i) +
+      --                            (codeword_length + address_width * 2 - 1) +
+      --                            address_width +
+      --                            1 +
+      --                            1;
+      
+      
       signal codeword_o : std_logic_vector((codeword_length - 1) * number_of_trees downto 0);
-
-
-      signal offset_key_in : integer := -- tree_atributes(i) +
-                                 (codeword_length + address_width * 2 - 1) +
-                                 address_width +
-                                 1 +
-                                 1;
-
-      signal offset_data_in : integer := -- tree_atributes(i) +
-                                 (codeword_length + address_width * 2 - 1) +
-                                 address_width +
-                                 1 +
-                                 1;
-
-                 
        signal w_rdy_concatinator : std_logic_vector(number_of_trees - 1 downto 0);
        signal w_vld_concatinator : std_logic_vector(number_of_trees - 1 downto 0);
 
     begin
-    tree_gen : for i in 0 to number_of_trees generate
+    
+    
+    
+      tree_gen : for i in 0 to number_of_trees generate
 
       new_tree_and_sram_inst : new_tree_and_sram
       generic map (
@@ -111,7 +116,34 @@ architecture rtl of tree_collection is
         tree_depth => tree_depth
       )
       port map (
-        data_in => data_in((i+1)*offset - 1 downto i*offset),
+        data_in => data_in(total_tree_attributes - 1 +                              
+                          (codeword_length + address_width * 2) * number_of_trees + 
+                          (address_width) * number_of_trees +                       
+                          number_of_trees -
+                          (i) * (
+                            tree_cumsum(i)  +                             
+                            codeword_length  + address_width * 2  +
+                            address_width  +                          
+                            1
+                          )
+                          -1
+                          downto 
+                          total_tree_attributes - 1 +                              
+                          (codeword_length + address_width * 2) * number_of_trees + 
+                          (address_width) * number_of_trees +                       
+                          number_of_trees -
+                          (i+1) * (
+                            tree_cumsum(i)  +                             
+                            codeword_length  + address_width * 2  +
+                            address_width  +                          
+                            1
+                          )
+                          -1
+                          ),
+
+
+
+
         codeword => codeword_o((i + 1)*(codeword_length - 1) downto i*(codeword_length - 1)),
         rdy_collect_header => data_out(i),
         vld_collect_header => vld_collect_header(i),

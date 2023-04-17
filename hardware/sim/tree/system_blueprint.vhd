@@ -7,7 +7,7 @@ use work.my_types_pkg.all;
 
 
 
-entity rule_engine_to_tree_collection is
+entity system_blueprint is
   generic (
     number_of_trees : integer;
     tree_depth : integer;
@@ -46,7 +46,7 @@ entity rule_engine_to_tree_collection is
   );
 end;
 
-architecture rtl of rule_engine_to_tree_collection is
+architecture rtl of system_blueprint is
 
   component tree_collection
     generic (

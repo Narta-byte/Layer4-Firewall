@@ -50,6 +50,7 @@ architecture rtl of rule_engine is
     signal rw_reg : std_logic_vector(number_of_trees - 1 + 1 downto 0) := (number_of_trees downto 1 => '0') & '1';
     signal zeros : std_logic_vector(largest_codeword + largest_address_width * 2 - 1 downto 0) := (others => '0') ;
     signal debug : boolean;
+    signal address_cnt : natural range 0 to 2**largest_address_width := 0;
     
 begin
 
@@ -58,6 +59,7 @@ begin
     codeword_out <= codeword_in;
     zero_pointer_out <= zero_pointer_in;
     one_pointer_out <= one_pointer_in;
+    address <= std_logic_vector(to_unsigned(address_cnt, largest_address_width));
 
 
     process (clk, reset)
@@ -69,11 +71,16 @@ begin
                 
                 if cmd_in = "00001" and vld_driver = '1' then
                     debug <= (codeword_in & zero_pointer_in & one_pointer_in) = zeros;
+                    
+
                     if (codeword_in & zero_pointer_in & one_pointer_in) = zeros then
                         rw_reg <= rw_reg(rw_reg'high - 1 downto rw_reg'low) & rw_reg(rw_reg'high);
+                        address_cnt <= 0;
                         if rw_reg(rw_reg'high) = '1' then
                             rdy_driver <= '0';
                         end if;
+                    else 
+                        address_cnt <= address_cnt + 1;
                     end if;
                     
                 else

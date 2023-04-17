@@ -74,35 +74,6 @@ architecture rtl of tree_and_sram is
         );
       end component;
 
-  -- signal data_from_memory : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
-  -- alias key_in : std_logic_vector is data_in(key_length - 1 downto 
-  --   codeword_length - 1 + address_width * 2 - 1 + 
-  --   address_width - 1 +                         
-  --   1);
-  -- alias data_in0 : std_logic_vector is data_in(codeword_length - 1 + address_width * 2 - 1 +
-  --   address_width - 1 +                         
-  --   1 downto address_width - 1 +                         
-  --   1);
-  -- alias address : std_logic_vector is data_in(address_width - 1 +                        
-  --   1 downto 1);
-  -- alias RW : std_logic is data_in(0);
-  constant total_length : integer:=key_length  +                             
-                                   codeword_length  + address_width * 2  +
-                                   address_width  +                          
-                                   1;                     
-                                   
-                                   
-  -- alias key_in :std_logic_vector is data_in(total_length - 1 downto total_length - key_length);
-
-  -- alias data_in0 :std_logic_vector is data_in(total_length - key_length - 1 downto
-  --                                            (total_length - key_length - 1) - (codeword_length + address_width * 2) + 1);
-
-  -- alias address : std_logic_vector is data_in((total_length - key_length - 1) - (codeword_length + address_width * 2)  downto
-  --                                             1);
-  -- alias RW : std_logic is data_in(0);
-  
-  
-
 
   signal wire0, wire1 : std_logic_vector(address_width - 1 downto 0);
   signal data_from_memory : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
@@ -114,15 +85,13 @@ begin
 
   this_data_in <= codeword_in & zero_pointer & one_pointer;
 
-    process (clk, RW)
+    mux : process (wire0, address, RW)
     begin
-      if rising_edge(clk) then
         if RW = '1' then
           wire1 <= address;
-        else
+        elsif RW = '0' then
           wire1 <= wire0;
         end if;
-      end if;
       
     end process;
 

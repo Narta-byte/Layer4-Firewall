@@ -353,7 +353,36 @@ class TestErrorCase(unittest.TestCase):
                 self.logDifference(packet, codeword)
             logging.debug("different decisions : "+str(self.listFirewall.lookup(packet))+", " +str(self.hashTable.lookup(codeword)[3]))
             self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3])
+    def test_should_never_have_happened(self):
+        self.init3Trees()
+        self.listFirewall = listFirewall.ListFirewall()
+        ruleList = [
+            ['0', '5', '3', 'gamma'],
+            ['1', '4', '1', 'gamma'],
+            ['1', '1', '0', 'alpha'],
+            ['3', '2', '2', 'gamma'],
+            ['4', '5', '2', 'hotel'],
+            ['3', '4', '3', 'alpha'],
+            ['3', '4', '3', 'gamma'],
+            ['5', '5', '5', 'hotel'],
+            ['0', '*', '5', 'gamma'],
+            ['1', '1', '*', 'alpha'],
+            # ['*', '*', '*', 'delta']
+            ]
 
+        self.initListAndTreeFirewalls(ruleList)
+#        self.initListAndTreeFirewalls(['*', '*', '*', 'delta'])
+
+        packetList = [['1', '2', '4']]#,["1","2","3"]] #['12','1','1']]
+
+        for packet in packetList:
+            codeword = self.policyFactory.retriveCodeword(packet)
+    
+            logging.debug("codeword: "+str(codeword)+" for packet "+str(packet))
+            if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
+                self.logDifference(packet, codeword)
+            logging.debug("different decisions : "+str(self.listFirewall.lookup(packet))+", " +str(self.hashTable.lookup(codeword)[3]))
+            self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3])
 
     def logDifference(self, packet, codeword):
         logging.debug("hashtable lookup"+str(self.hashTable.lookup(["8","2","3"])))

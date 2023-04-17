@@ -81,3 +81,11 @@ PLLJ_PLLSPE_INFO.txt
 
 # Userdefined
 vunit_out
+hardware/sim/work/_info
+hardware/sim/work/_lib.qdb
+*.qpb
+*.qpf
+*.qpg
+_vmake
+_lib*
+*.wlf

@@ -29,16 +29,8 @@ entity tree_collection is
 
     );
     port (
-        -- data_in : in std_logic_vector(
-        --     total_key_in_length - 1 +                               --key_in
-        --     (codeword_length + address_width * 2) * number_of_trees + --data_in
-        --     (address_width) * number_of_trees +                       -- address
-        --     number_of_trees +                                         -- RW (select)
-        --     (-1)                                               
-        -- downto 0);
-        
         key_in : in std_logic_vector(total_key_in_length - 1 downto 0);
-        -- data_in : in std_logic_vector(largest_codeword + largest_address_width * 2 - 1 downto 0);
+
         codeword_in : in std_logic_vector(largest_codeword - 1 downto 0);
         zero_pointer : in std_logic_vector(largest_address_width - 1 downto 0);
         one_pointer : in std_logic_vector(largest_address_width - 1 downto 0);
@@ -46,15 +38,13 @@ entity tree_collection is
         address : in std_logic_vector(largest_address_width - 1 downto 0);
         RW : in std_logic_vector(number_of_trees - 1 downto 0);
 
-
-
         rdy_collect_header : out std_logic_vector(number_of_trees - 1 downto 0);
         vld_collect_header : in std_logic_vector(number_of_trees -1 downto 0); 
 
         codeword_out : out std_logic_vector(largest_codeword * number_of_trees - 1 downto 0);
+        cuckoo_codeword : out std_logic_vector(largest_codeword * number_of_trees - 1 downto 0);
         rdy_cuckoo_hash : in std_logic;
-        vld_cuckoo_hash : out std_logic := '0';
-
+        vld_cuckoo_hash : out std_logic;
 
         clk   : in std_logic;
         reset : in std_logic
@@ -86,20 +76,39 @@ architecture rtl of tree_collection is
       reset : in std_logic
     );
   end component;
-  
-  
-  
-  
-      
-      
-  
+  component codeword_concatinator
+    generic (
+      number_of_trees : integer;
+      tree_depth : integer;
+      address_width : tree_array;
+      total_address_width : integer;
+      address_width_cumsum : tree_array;
+      largest_address_width : integer;
+      key_in_lengths : tree_array;
+      total_key_in_length : integer;
+      tree_cumsum : tree_array;
+      codeword_length : tree_array;
+      largest_codeword : integer
+    );
+      port (
+      codeword_in : in std_logic_vector(largest_codeword * number_of_trees - 1 downto 0);
+      codeword_out : out std_logic_vector(largest_codeword * number_of_trees - 1 downto 0);
+      rdy_tree : out std_logic_vector(number_of_trees - 1 downto 0);
+      vld_tree : in std_logic_vector(number_of_trees - 1 downto 0);
+      rdy_cuckoo_hash : in std_logic;
+      vld_cuckoo_hash : out std_logic;
+      clk : in std_logic;
+      reset : in std_logic
+    );
+  end component;
       constant data_in_length : integer := largest_codeword + largest_address_width * 2;
+      constant total_code_word_length : integer := largest_codeword * number_of_trees;
       
-      signal codeword_o : std_logic_vector((codeword_length(0) - 1) * number_of_trees downto 0);
-      signal w_rdy_concatinator : std_logic_vector(number_of_trees - 1 downto 0);
+      signal w_rdy_concatinator : std_logic_vector(number_of_trees - 1 downto 0) := (others => '1');
       signal w_vld_concatinator : std_logic_vector(number_of_trees - 1 downto 0);
 
       signal debug : std_logic_vector(15 downto 0);
+      signal codeword_to_concat : std_logic_vector(largest_codeword * number_of_trees - 1 downto 0);
     begin
     
     
@@ -119,7 +128,7 @@ architecture rtl of tree_collection is
             one_pointer => one_pointer(address_width(i) - 1 downto 0),
             address => address(address_width(i) - 1 downto 0),
             RW => RW(i),
-            codeword => debug,
+            codeword => codeword_to_concat(total_code_word_length - largest_codeword * i - 1 downto total_code_word_length - largest_codeword*(i+1)),
             rdy_collect_header => rdy_collect_header(i),
             vld_collect_header => vld_collect_header(i),
             rdy_codeword_concatinator => w_rdy_concatinator(i),
@@ -127,10 +136,37 @@ architecture rtl of tree_collection is
             clk => clk,
             reset => reset
           );
-
-            
-    
     end generate;
 
-
+    codeword_concatinator_inst : codeword_concatinator
+    generic map (
+      number_of_trees => number_of_trees,
+      tree_depth => tree_depth,
+      address_width => address_width,
+      total_address_width => total_address_width,
+      address_width_cumsum => address_width_cumsum,
+      largest_address_width => largest_address_width,
+      key_in_lengths => key_in_lengths,
+      total_key_in_length => total_key_in_length,
+      tree_cumsum => tree_cumsum,
+      codeword_length => codeword_length,
+      largest_codeword => largest_codeword
+    )
+    port map (
+      codeword_in => codeword_to_concat,
+      codeword_out => codeword_out,
+      rdy_tree => w_rdy_concatinator,
+      vld_tree => w_vld_concatinator,
+      rdy_cuckoo_hash => '1', --rdy_cuckoo_hash,
+      vld_cuckoo_hash => vld_cuckoo_hash,
+      clk => clk,
+      reset => reset
+    );
 end architecture;
+
+
+
+
+
+
+

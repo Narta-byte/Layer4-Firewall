@@ -133,12 +133,8 @@ class PolicyBuilder:
         return False
         
     def subset(self, currRule, previousRule):
-
-        if (previousRule[0] == '*' or previousRule[0] == currRule[0]) and \
-                 (previousRule[1] == '*' or previousRule[1] == currRule[1]) and \
-                (previousRule[2] == '*' or previousRule[2] == currRule[2]):
-                return True
-
+        if all(prev == '*' or prev == curr for prev, curr in zip(previousRule, currRule)):
+            return True
         return self.matches(previousRule, currRule)
 
 

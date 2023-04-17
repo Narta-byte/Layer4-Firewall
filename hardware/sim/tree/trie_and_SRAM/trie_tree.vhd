@@ -92,7 +92,7 @@ begin
       case(current_state) is
         when idle_state => 
           rdy_collect_header <= '1';
-          codeword <= (others => '0');
+          -- codeword <= (others => '0');
           eof_key_flag <= '0';
           address <= (others => '0');
           key_cnt <= 0;

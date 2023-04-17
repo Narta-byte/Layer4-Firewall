@@ -20,7 +20,7 @@ class TestRuleFile(unittest.TestCase):
         filename='logs.txt')
         random.seed(31415)
         self.treeList = []
-        self.numberOfTrees = 3
+        self.numberOfTrees = 5
         for _ in range(self.numberOfTrees):
             self.treeList.append(policyTrieTree.PolicyTrieTree())
 
@@ -28,6 +28,7 @@ class TestRuleFile(unittest.TestCase):
         self.hashTable = CuckooHashTable.CuckooHashTable()
 
         ruleList = self.createRuleList(10)
+        logging.debug("Rule list: " + str(ruleList))
         for rule in ruleList:
            logging.debug("Rule in for loop: " + str(rule))
            self.policyBuilder.insertRule(rule)
@@ -36,15 +37,15 @@ class TestRuleFile(unittest.TestCase):
             self.hashTable.insert(rule[1], rule[0])
         self.policyBuilder.writeCodewords()
         
-        self.hashTable.defualtRule = ['*', '*', '*', 'default']
+        self.hashTable.defualtRule = (["*"]*self.numberOfTrees) + ["default"]
         
         self.aclBuilder = ACLbuilder.ACLBuilder(self.treeList, self.policyBuilder,  self.hashTable)
         
     def createRuleList(self, numberOfRules = 10):
         ruleList = []
         for _ in range(0,numberOfRules):
-            rule = ["","","",""]
-            for i in range(0,3):
+            rule = [""] * self.numberOfTrees
+            for i in range(0,self.numberOfTrees):
                 chance = random.randint(0,100)
                 if chance <= 2:
                     rule[i] = str(random.randint(0,25))
@@ -54,29 +55,25 @@ class TestRuleFile(unittest.TestCase):
                     rule[i] = format(random.randint(0,25),'b') + "*"
             chance = random.randint(0,100)
             if chance < 25:
-                rule[3] = "alpha"
+                rule.append("alpha")
             elif chance >= 25 and chance <= 50:
-                rule[3] = "beta"
+                rule.append("beta")
             elif chance > 50 and chance < 75:
-                rule[3] = "gamma"
+                rule.append("gamma")
             elif chance >= 75:
-                rule[3] = "hotel"
+                # rule[-1] = "hotel"
+                rule.append("hotel")
+            
             ruleList.append(rule)
         return ruleList
     
     def test_treeToVHDL(self):
         logging.debug("treeList: " + str(self.aclBuilder.treeList))
         # self.aclBuilder.treeList[0].drawGraph(html = True)
-        parsedTrees = self.aclBuilder.convertTreeToArray(self.aclBuilder.treeList[0])
-        logging.debug("Parsed trees: " + str(parsedTrees))
+        # parsedTrees = self.aclBuilder.convertTreeToArray(self.aclBuilder.treeList[0])
+        # logging.debug("Parsed trees: " + str(parsedTrees))
         logging.debug("codeword for 11001*" + str(self.aclBuilder.treeList[0].getCodeword("11001*")))
         self.aclBuilder.buildACL()
 
         self.aclBuilder.treeToVHDL(self.aclBuilder.treeList[0])
         self.assertTrue(True)
-
-
-    def test_rulefile(self):
-        self.assertTrue(True)
-
-    

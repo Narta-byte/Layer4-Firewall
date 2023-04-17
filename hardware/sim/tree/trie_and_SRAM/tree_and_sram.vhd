@@ -5,17 +5,23 @@ use ieee.std_logic_1164.all;
 entity tree_and_sram is
     generic (
         key_length : integer := 32;
-        address_width : integer := 7;
+        address_width : integer := 8;
         codeword_length : integer := 16;
-        
         tree_depth : integer := 16
     );
     port (
         key_in : in std_logic_vector(key_length - 1 downto 0);
-        codeword : out std_logic_vector(codeword_length - 1 downto 0);
-        data_in : in std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
+        -- data_in : in std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
+        codeword_in : in std_logic_vector(codeword_length - 1 downto 0);
+        zero_pointer : in std_logic_vector(address_width - 1 downto 0);
+        one_pointer : in std_logic_vector(address_width - 1 downto 0);
         address : in std_logic_vector(address_width - 1 downto 0);
         RW : in std_logic;
+
+
+
+        codeword : out std_logic_vector(codeword_length - 1 downto 0);
+        
         rdy_collect_header : out std_logic;
         vld_collect_header : in std_logic;
 
@@ -67,38 +73,25 @@ architecture rtl of tree_and_sram is
           data_out : out std_logic_vector(codeword_length + address_width * 2 - 1 downto 0)
         );
       end component;
--- Generics
---   constant key_length : integer := 32;
---   constant address_width : integer := 7;
---   constant codeword_length : integer := 16;
-
---   constant tree_depth : integer := 16;
 
 
-
-  -- Ports
---   signal key_in : std_logic_vector(key_length downto 0);
---   signal codeword : std_logic_vector(codeword_length downto 0);
   signal wire0, wire1 : std_logic_vector(address_width - 1 downto 0);
   signal data_from_memory : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
---   signal rdy : std_logic;
---   signal vld : std_logic;
 
---   signal data_in : std_logic_vector(codeword_length + address_width * 2 downto 0);
---   signal data_out : std_logic_vector(codeword_length + address_width * 2 downto 0);
-
-
+  signal this_data_in : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
+  
 
 begin
-    process (clk, RW)
+
+  this_data_in <= codeword_in & zero_pointer & one_pointer;
+
+    mux : process (wire0, address, RW)
     begin
-      if rising_edge(clk) then
         if RW = '1' then
           wire1 <= address;
-        else
+        elsif RW = '0' then
           wire1 <= wire0;
         end if;
-      end if;
       
     end process;
 
@@ -133,7 +126,7 @@ begin
       reset => reset,
       RW => RW,
       address => wire1,
-      data_in => data_in,
+      data_in => this_data_in,
       data_out => data_from_memory
     );
 

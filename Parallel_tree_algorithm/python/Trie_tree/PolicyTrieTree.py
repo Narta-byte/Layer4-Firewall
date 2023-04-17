@@ -86,5 +86,3 @@ class PolicyTrieTree(trieTree.TrieTree):
             return False, 0
         else:
             return True, crawl.codeword
-    
-            

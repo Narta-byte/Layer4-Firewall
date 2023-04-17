@@ -14,7 +14,12 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         self.tree0 = policyTrieTree.PolicyTrieTree()
         self.tree1 = policyTrieTree.PolicyTrieTree()
         self.tree2 = policyTrieTree.PolicyTrieTree()
+        self.tree3 = policyTrieTree.PolicyTrieTree()
+        self.tree4 = policyTrieTree.PolicyTrieTree()
+        #treeList = [self.tree0, self.tree1, self.tree2, self.tree3, self.tree4]
         treeList = [self.tree0, self.tree1, self.tree2]
+        #treeList = [self.tree0, self.tree1]
+        #treeList = [self.tree0]
 
         self.policyBuilder = PolicyBuilder.PolicyBuilder(treeList)
         self.policyBuilder.setSeed(311415)
@@ -42,8 +47,8 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         for rank, rule in enumerate(self.policyBuilder.previousRuleTuple):
             self.hashTable.insert(rule[1], (rule[0], rank))
             
-        self.listFirewall.insertRange(rule0)
-        self.listFirewall.insert(rule1)
+        self.listFirewall.insertRule(rule0)
+        self.listFirewall.insertRule(rule1)
         
         #1ST TEST
         codeword = ""
@@ -74,7 +79,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
 
         ruleList = []
         random.seed(311415)
-        for k in range(0,10):
+        for k in range(0,20):
          
             rule = ["","","",""]
             for i in range(0,3):
@@ -277,4 +282,162 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             packetList.append(packet)
             self.policyBuilder.retriveCodeword(packet)
             
+
+    def test_twoTrees(self):
+        rule0 = ("5", "12", "alpha")
+        rule1 = ("*","*","beta")
+        self.policyBuilder.insertRule(rule0)
+        self.policyBuilder.insertRule(rule1)
+
+        for rank, rule in enumerate(self.policyBuilder.previousRuleTuple):
+            self.hashTable.insert(rule[1], (rule[0], rank))
+            
+        self.listFirewall.insertRule(rule0)
+        self.listFirewall.insertRule(rule1)
+        
+        #1ST TEST
+        codeword = ""
+        codeword = self.policyBuilder.retriveCodeword(("1","1"))
+
+        logging.debug("codeword!: " + str(codeword))
+
+        self.policyBuilder.writeCodewords()
+        self.assertEqual(self.listFirewall.lookup(("1","1")), self.hashTable.lookup(codeword)[0][2])
+
+        # #2ND TEST
+        # codeword = ""
+        # codeword = self.policyBuilder.retriveCodeword(("1","7","11"))
+        # self.assertEqual(self.listFirewall.lookup(("1","7","11")), self.hashTable.lookup(codeword)[0][3])
+        # logging.debug("codeword!: " + str(codeword))
+        
+        # #3RD TEST
+        # codeword = ""
+        # codeword = self.policyBuilder.retriveCodeword(("255","255","255"))
+        # logging.debug("codeword!: " + str(codeword))
+
+        # self.assertEqual(self.listFirewall.lookup(("255","255","255")), self.hashTable.lookup(codeword)[0][3])
+
+
+    def test_oneTree(self):
+        rule0 = ("5", "alpha")
+        rule1 = ("*","beta")
+        self.policyBuilder.insertRule(rule0)
+        self.policyBuilder.insertRule(rule1)
+
+        for rank, rule in enumerate(self.policyBuilder.previousRuleTuple):
+            self.hashTable.insert(rule[1], (rule[0], rank))
+            
+        self.listFirewall.insertRule(rule0)
+        self.listFirewall.insertRule(rule1)
+        
+        #1ST TEST
+        codeword = ""
+        codeword = self.policyBuilder.retriveCodeword(("1"))
+
+        logging.debug("codeword!: " + str(codeword))
+
+        self.policyBuilder.writeCodewords()
+        self.assertEqual(self.listFirewall.lookup(("1")), self.hashTable.lookup(codeword)[0][1])
+
+
+
+    def test_randomPackets_with_ranges(self, tree_count=3):  # Test 500 random packages vs firewall list
+        pr = cProfile.Profile()
+        pr.enable()
+
+        ruleList = self.generate_rule_list(50, tree_count) #Num of rules!
+
+        for rule in ruleList:
+            if rule[:tree_count] == ['*'] * tree_count:
+                logging.debug("Throwing out ***" + str(rule))
+                continue
+            logging.debug("New inserted packet: " + str(rule))
+            self.policyBuilder.insertRule(rule)
+            self.listFirewall.insertRule(rule)
+
+        self.policyBuilder.insertRule(('*',) * tree_count + ('delta',))
+        self.listFirewall.insertRule(('*',) * tree_count + ('delta',))
+
+        for rank, rule in enumerate(self.policyBuilder.previousRuleTuple):
+            self.hashTable.insert(rule[1], (rule[0], rank))
+
+        self.tree0.drawGraph(html=True)
+
+        packetList = [self.generate_packet(tree_count) for _ in range(100)]
+        for i, packet in enumerate(packetList):
+            logging.debug("\nNEW PACKET:       packetnum: " + str(i))
+
+            codeword = self.policyBuilder.retriveCodeword(packet)
+            if codeword is None:
+                codeword = self.hashTable.defualtRule[0][tree_count]
+            logging.debug("(codeword) " + str(codeword))
+
+            logging.debug("looking up packet op: " + str(packet) + str(self.listFirewall.lookup(packet)))
+            logging.debug("looking up hash op: " + str(self.hashTable.lookup(codeword)))
+
+            self.policyBuilder.writeCodewords()
+
+            logging.debug("packetnumber: " + str(i) + " firewalll: " + str(packet) + str(self.listFirewall.lookup(packet)))
+
+            self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[0][tree_count])
+
+        pr.disable()
+        pr.print_stats(sort='time')
+
+    def generate_rule_list(self, count, tree_count):
+        random.seed(311415)
+        ruleList = []
+
+        for _ in range(count):
+            rule = [self.generate_rule_element(i) for i in range(tree_count)]
+            rule.append(self.generate_action())
+            ruleList.append(rule)
+
+        return ruleList
+    
+    
+    def generate_rule_element(self, i):
+        chance = random.randint(0, 40)
+        if chance <= 2:
+            return str(random.randint(0, 2**16))
+        elif chance <= 4:
+            return "*"
+        else:
+            return format(random.randint(0, 2**16), 'b') + "*"
+    
+    def generate_action(self):
+        chance = random.randint(0, 100)
+        if chance < 25:
+            return "alpha"
+        elif chance <= 50:
+            return "beta"
+        elif chance < 75:
+            return "gamma"
+        else:
+            return "hotel"
+
+
+    # The rest of the helper functions remain unchanged
+
+    def generate_packet(self, tree_count):
+        return tuple(str(random.randint(0, 2**16)) for _ in range(tree_count))
+
+    def test_packets(self, packetList, tree_count):
+        for i, packet in enumerate(packetList):
+            logging.debug("\nNEW PACKET:       packetnum: " + str(i))
+
+            codeword = self.policyBuilder.retriveCodeword(packet)
+            if codeword is None:
+                codeword = self.hashTable.defualtRule[0][3]
+            logging.debug("(codeword) " + str(codeword))
+
+            logging.debug("looking up packet op: " + str(packet) + str(self.listFirewall.lookup(packet)))
+            logging.debug("looking up hash op: " + str(self.hashTable.lookup(codeword)))
+
+            self.policyBuilder.writeCodewords()
+
+            logging.debug("packetnumber: " + str(i) + " firewalll: " + str(packet) + str(self.listFirewall.lookup(packet)))
+
+            self.assertEqual(self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[0][3])
+
 

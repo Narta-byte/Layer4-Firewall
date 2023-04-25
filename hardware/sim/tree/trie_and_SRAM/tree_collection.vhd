@@ -157,7 +157,7 @@ architecture rtl of tree_collection is
       codeword_out => codeword_out,
       rdy_tree => w_rdy_concatinator,
       vld_tree => w_vld_concatinator,
-      rdy_cuckoo_hash => '1', --rdy_cuckoo_hash,
+      rdy_cuckoo_hash => rdy_cuckoo_hash, --rdy_cuckoo_hash,
       vld_cuckoo_hash => vld_cuckoo_hash,
       clk => clk,
       reset => reset

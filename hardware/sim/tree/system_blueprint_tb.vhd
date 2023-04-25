@@ -6,12 +6,12 @@ use std.textio.all;
 use work.my_types_pkg.all;
 
 
-entity rule_engine_to_tree_collection_tb is
+entity system_blueprint_tb is
 end;
 
-architecture bench of rule_engine_to_tree_collection_tb is
+architecture bench of system_blueprint_tb is
 
-  component rule_engine_to_tree_collection
+  component system_blueprint
     generic (
       number_of_trees : integer;
       tree_depth : integer;
@@ -23,7 +23,8 @@ architecture bench of rule_engine_to_tree_collection_tb is
       total_key_in_length : integer;
       tree_cumsum : tree_array;
       codeword_length : tree_array;
-      largest_codeword : integer
+      largest_codeword : integer;
+      codeword_sum : integer
     );
       port (
       cmd_in : in std_logic_vector(4 downto 0);
@@ -35,9 +36,9 @@ architecture bench of rule_engine_to_tree_collection_tb is
       vld_driver : in std_logic;
       rdy_collect_header : out std_logic_vector(number_of_trees - 1 downto 0);
       vld_collect_header : in std_logic_vector(number_of_trees -1 downto 0);
-      cuckoo_codeword : out std_logic_vector(largest_codeword * number_of_trees - 1 downto 0);
-      rdy_cuckoo_hash : in std_logic;
-      vld_cuckoo_hash : out std_logic;
+      cuckoo_key_in : in std_logic_vector(codeword_sum - 1 downto 0);
+      -- rdy_cuckoo_hash : in std_logic;
+      -- vld_cuckoo_hash : out std_logic;
       clk : in std_logic;
       reset : in std_logic
     );
@@ -57,6 +58,7 @@ architecture bench of rule_engine_to_tree_collection_tb is
   constant tree_cumsum : tree_array := (0,16,32,48,80,96);
   constant codeword_length : tree_array := (16,16,16,16,16);
   constant largest_codeword : integer := 16;
+  constant codeword_sum : integer := 80;
 
   -- Ports
   signal cmd_in : std_logic_vector(4 downto 0);
@@ -69,15 +71,19 @@ architecture bench of rule_engine_to_tree_collection_tb is
   signal rdy_collect_header : std_logic_vector(number_of_trees - 1 downto 0);
   signal vld_collect_header : std_logic_vector(number_of_trees -1 downto 0);
   signal cuckoo_codeword : std_logic_vector(largest_codeword * number_of_trees - 1 downto 0);
+  signal cuckoo_key_in : std_logic_vector(codeword_sum - 1 downto 0);
   signal rdy_cuckoo_hash : std_logic;
   signal vld_cuckoo_hash : std_logic;
   signal clk : std_logic;
   signal reset : std_logic;
-  signal i, cnt, wait_cnt : integer:=0;
+
+
+  signal i, j, cnt, wait_cnt : integer:=0;
+  signal enable : std_logic := '0';
 
 begin
 
-  rule_engine_to_tree_collection_inst : rule_engine_to_tree_collection
+  system_blueprint_inst : system_blueprint
     generic map (
       number_of_trees => number_of_trees,
       tree_depth => tree_depth,
@@ -89,7 +95,8 @@ begin
       total_key_in_length => total_key_in_length,
       tree_cumsum => tree_cumsum,
       codeword_length => codeword_length,
-      largest_codeword => largest_codeword
+      largest_codeword => largest_codeword,
+      codeword_sum => codeword_sum
     )
     port map (
       cmd_in => cmd_in,
@@ -101,9 +108,9 @@ begin
       vld_driver => vld_driver,
       rdy_collect_header => rdy_collect_header,
       vld_collect_header => vld_collect_header,
-      cuckoo_codeword => cuckoo_codeword,
-      rdy_cuckoo_hash => rdy_cuckoo_hash,
-      vld_cuckoo_hash => vld_cuckoo_hash,
+      cuckoo_key_in => cuckoo_key_in,
+      -- rdy_cuckoo_hash => rdy_cuckoo_hash,
+      -- vld_cuckoo_hash => vld_cuckoo_hash,
       clk => clk,
       reset => reset
     );
@@ -122,53 +129,87 @@ begin
 
 
   process (clk)
-    file input : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/tree/tree_data_tb.txt";
-    
+    file input0 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/tree/tree_data_tb.txt";
+    variable current_read_line0 : line;
+    variable hex_reader0 : std_logic_vector(largest_codeword + largest_address_width * 2 - 1 downto 0);
 
-    variable current_read_line : line;
-    variable hex_reader : std_logic_vector(largest_codeword + largest_address_width * 2 - 1 downto 0);
+    file input1 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/tree/cuckoo_hash/large_input_file_increment.txt";
+    variable current_read_line1 : line;
+    variable hex_reader1 : std_logic_vector(codeword_sum - 1 downto 0);
+    
   begin
     if rising_edge(clk) and rdy_driver = '1' then
         i <= i + 1;
         if i >= 2 then
-            if not ENDFILE(input) and rdy_driver = '1' then 
+            if not ENDFILE(input0) and rdy_driver = '1' then 
                   vld_driver <= '1';
                   cmd_in <= "00001";
 
-                  readline(input, current_read_line);
-                  hread(current_read_line, hex_reader);
+                  readline(input0, current_read_line0);
+                  hread(current_read_line0, hex_reader0);
         
-                  codeword_in     <= hex_reader(largest_codeword + largest_address_width * 2 - 1 downto largest_address_width * 2);
-                  zero_pointer_in <= hex_reader(largest_address_width * 2 - 1 downto largest_address_width);
-                  one_pointer_in  <= hex_reader(largest_address_width - 1  downto 0);
+                  codeword_in     <= hex_reader0(largest_codeword + largest_address_width * 2 - 1 downto largest_address_width * 2);
+                  zero_pointer_in <= hex_reader0(largest_address_width * 2 - 1 downto largest_address_width);
+                  one_pointer_in  <= hex_reader0(largest_address_width - 1  downto 0);
                   cnt <= cnt + 1;
                 else
                     vld_driver <= '0';
                     wait_cnt <= wait_cnt + 1;
                     if wait_cnt = 2 then
-                        vld_collect_header <= ((others => '1'));
+                        -- vld_collect_header <= ((others => '1'));
                      
-                    key_in <= ("1100100000000000"& 
-                               "1110000000000000"&
-                               "1000100000000000"&
-                               "11010000000000000000000000000000"&
-                               "1011000000000000");
+                        -- key_in <= ("1100100000000000"& 
+                        --            "1110000000000000"&
+                        --            "1000100000000000"&
+                        --            "11010000000000000000000000000000"&
+                        --            "1011000000000000");
                     elsif wait_cnt = 4 then
                         vld_collect_header <= ((others => '0'));
                     elsif wait_cnt = 15 then
                         if rdy_collect_header = "11111" then
-                            vld_collect_header <= ((others => '1'));
+                            -- vld_collect_header <= ((others => '1'));
                      
-                            key_in <= (
-                                "0000000000000000" &
-                                "1000000000000000" &
-                                "1010000000000000" &
-                                "11100000000000000000000000000000" &
-                                "1010000000000000" );
+                            -- key_in <= (
+                            --     "0000000000000000" &
+                            --     "1000000000000000" &
+                            --     "1010000000000000" &
+                            --     "11100000000000000000000000000000" &
+                            --     "1010000000000000" );
                         end if;
                     elsif wait_cnt = 17 then
                         vld_collect_header <= ((others => '0'));
+                        enable <= '1';
+                        -- i <= 0;
+                        -- wait_cnt <= 0;
+                    
+                    elsif wait_cnt >= 19 then
+                      j <= j + 1;
+                      if j > 2 then
+                        if not ENDFILE(input1) and  rdy_driver = '1' then
+                          readline(input1, current_read_line1);
+                          read(current_read_line1, hex_reader1);
+                          cuckoo_key_in <= hex_reader1;
+                          cmd_in <= "00010";
+                          vld_driver <= '1';
+                        else
+                          -- vld_cuckoo_hash <= '0';
+                          cmd_in <= "00000";
+
+                          vld_driver <= '0';
+                          key_in <= (
+                                "1100100000000000" &
+                                "1110000000000000" &
+                                "1000100000000000" &
+                                "11010000000000000000000000000000" &
+                                "1011000000000000" );
+                        vld_collect_header <= ((others => '1'));
+                        
+                        end if;
+                       
+                        
+                      end if;
                 end if;
+
              
             end if;
                 
@@ -177,3 +218,7 @@ begin
     end if;
   end process;
 end;
+
+
+
+

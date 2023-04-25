@@ -73,6 +73,7 @@ class TestRuleFile(unittest.TestCase):
         # parsedTrees = self.aclBuilder.convertTreeToArray(self.aclBuilder.treeList[0])
         # logging.debug("Parsed trees: " + str(parsedTrees))
         logging.debug("codeword for 11001*" + str(self.aclBuilder.treeList[0].getCodeword("11001*")))
+        
         self.aclBuilder.buildACL()
 
         self.aclBuilder.treeToVHDL(self.aclBuilder.treeList[0])

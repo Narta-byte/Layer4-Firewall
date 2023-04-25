@@ -26,7 +26,7 @@ class ACLBuilder():
         self.arrayTree = []
         for tree in self.treeList:
             self.arrayTree.append(self.convertTreeToArray(tree))
-        file = open("tree/tree_data_tb.txt", "w")
+        file = open("hardware/sim/tree/tree_data_tb.txt", "w")
 
         for i, tree in enumerate(self.treeList):
             # file.write(self.treeToVHDL(self.treeList[i])[0])
@@ -70,6 +70,7 @@ class ACLBuilder():
 
             logging.debug("codeword: " + str(codeword) + " zeroPointer: " + str(zeroPointer) + " onePointer: " + str(onePointer))
             vhdlString += (codeword + zeroPointer + onePointer+"\n")
+        vhdlString += (str(format(0, dataLength)) + str(format(0, addressLength)) + str(format(0, addressLength))+"\n")
         return vhdlString, length
         # file.close()
 

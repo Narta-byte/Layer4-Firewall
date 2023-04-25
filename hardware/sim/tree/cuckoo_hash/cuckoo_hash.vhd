@@ -6,17 +6,33 @@ use ieee.std_logic_unsigned.all;
 use std.textio.all;
 use STD.textio.all;
 use IEEE.std_logic_textio.all;
+use work.my_types_pkg.all;
+
 
 entity Cuckoo_Hashing is
+  generic (
+    number_of_trees : integer;
+    tree_depth : integer;
+    address_width : tree_array;
+    total_address_width : integer;
+    address_width_cumsum : tree_array;
+    largest_address_width : integer;
+    key_in_lengths : tree_array;
+    total_key_in_length : integer;
+    tree_cumsum : tree_array;
+    codeword_length : tree_array;
+    largest_codeword : integer;
+    codeword_sum : integer
+  );
   port (
     clk : in std_logic;
     reset : in std_logic;
 
     set_rule : in std_logic;
     cmd_in : in std_logic_vector(1 downto 0);
-    key_in : in std_logic_vector(95 downto 0);
+    key_in : in std_logic_vector(codeword_sum - 1 downto 0);
 
-    header_data : in std_logic_vector(95 downto 0);
+    header_data : in std_logic_vector(codeword_sum - 1 downto 0);
     vld_hdr : in std_logic;
     rdy_hash : out std_logic;
 
@@ -67,9 +83,23 @@ architecture Cuckoo_Hashing_tb of Cuckoo_Hashing is
 
   -- Hash matching signals
   signal exits_matching, previous_search : std_logic := '0';
-  signal insertion_key : std_logic_vector(95 downto 0) := (others => '0');
+  signal insertion_key : std_logic_vector(codeword_sum - 1 downto 0) := (others => '0');
 
-  component SRAM
+  component cuckoo_SRAM
+    generic (
+      number_of_trees : integer;
+      tree_depth : integer;
+      address_width : tree_array;
+      total_address_width : integer;
+      address_width_cumsum : tree_array;
+      largest_address_width : integer;
+      key_in_lengths : tree_array;
+      total_key_in_length : integer;
+      tree_cumsum : tree_array;
+      codeword_length : tree_array;
+      largest_codeword : integer;
+      codeword_sum : integer
+    );
     port (
       clk : in std_logic;
       reset : in std_logic;
@@ -77,17 +107,17 @@ architecture Cuckoo_Hashing_tb of Cuckoo_Hashing is
       occupied : in std_logic;
       RW : in std_logic;
       address : in std_logic_vector(8 downto 0);
-      data_in : in std_logic_vector(95 downto 0);
-      data_out : out std_logic_vector(96 downto 0)
+      data_in : in std_logic_vector(codeword_sum -1 downto 0);
+      data_out : out std_logic_vector(codeword_sum + 1 downto 0)
     );
   end component;
 
-  signal flush_sram : std_logic := '0';
+  signal flush_cuckoo_sram : std_logic := '0';
   signal occupied : std_logic := '0';
   signal RW : std_logic := '0';
   signal address : std_logic_vector(8 downto 0) := (others => '0');
-  signal data_in : std_logic_vector(95 downto 0) := (others => '0');
-  signal data_out : std_logic_vector(96 downto 0) := (others => '0');
+  signal data_in : std_logic_vector(codeword_sum - 1 downto 0) := (others => '0');
+  signal data_out : std_logic_vector(codeword_sum - 1 + 1 downto 0) := (others => '0');
 
   --debug
 
@@ -99,10 +129,10 @@ architecture Cuckoo_Hashing_tb of Cuckoo_Hashing is
   signal flush_flag_next : std_logic;
   signal delete_flag_next : std_logic;
   signal insert_flag_next : std_logic;
-  signal flush_SRAM_next : std_logic;
+  signal flush_cuckoo_SRAM_next : std_logic;
   signal flip_next : std_logic;
   signal rdy_firewall_hash_next : std_logic;
-  signal insertion_key_next : std_logic_vector (95 downto 0);
+  signal insertion_key_next : std_logic_vector (codeword_sum - 1 downto 0);
   signal MAX_next : integer range 0 to MAX_ITER;
   signal eq_key_next : std_logic;
   signal occupied_next : std_logic;
@@ -127,8 +157,8 @@ architecture Cuckoo_Hashing_tb of Cuckoo_Hashing is
     variable connect : std_logic;
 
   begin
-    REST : for i in 0 to 95 loop
-      if (i > 95) then
+    REST : for i in 0 to codeword_sum - 1 loop
+      if (i > codeword_sum - 1) then
         connect := R(7);
       else
         connect := M(i) xor R(7);
@@ -154,11 +184,25 @@ begin
   vld_ad_hash <= vld_ad_hash_next;
   acc_deny_hash <= acc_deny_hash_next;
 
-  SRAM_inst : SRAM
+  cuckoo_SRAM_inst : cuckoo_SRAM
+  generic map (
+    number_of_trees => number_of_trees,
+    tree_depth => tree_depth,
+    address_width => address_width,
+    total_address_width => total_address_width,
+    address_width_cumsum => address_width_cumsum,
+    largest_address_width => largest_address_width,
+    key_in_lengths => key_in_lengths,
+    total_key_in_length => total_key_in_length,
+    tree_cumsum => tree_cumsum,
+    codeword_length => codeword_length,
+    largest_codeword => largest_codeword,
+    codeword_sum => codeword_sum
+  )
   port map(
     clk => clk,
     reset => reset,
-    flush_sram => flush_sram,
+    flush_sram => flush_cuckoo_sram,
     occupied => occupied,
     RW => RW,
     address => address_next,
@@ -174,7 +218,7 @@ begin
       flush_flag <= flush_flag_next;
       delete_flag <= delete_flag_next;
       insert_flag <= insert_flag_next;
-      flush_sram <= flush_sram_next;
+      flush_cuckoo_sram <= flush_cuckoo_sram_next;
       rdy_firewall_hash_read <= rdy_firewall_hash_next;
       flip <= flip_next;
       insertion_key <= insertion_key_next;
@@ -291,7 +335,7 @@ begin
 end process;
 
 OUTPUT_LOGIC : process (current_state, cmd_in, flush_flag, delete_flag, insert_flag,
-  flush_sram, flip, rdy_firewall_hash_read, insertion_key, MAX,
+  flush_cuckoo_sram, flip, rdy_firewall_hash_read, insertion_key, MAX,
   occupied, address, exits_cuckoo, rdy_hash_read, previous_search,
   vld_ad_hash_read, exits_matching, acc_deny_hash_read,
   eq_key, data_out, header_data, key_in)
@@ -299,7 +343,7 @@ begin
   flush_flag_next <= flush_flag;
   delete_flag_next <= delete_flag;
   insert_flag_next <= insert_flag;
-  flush_SRAM_next <= flush_sram;
+  flush_cuckoo_SRAM_next <= flush_cuckoo_sram;
   flip_next <= flip;
   rdy_firewall_hash_next <= rdy_firewall_hash_read;
   insertion_key_next <= insertion_key;
@@ -318,7 +362,7 @@ begin
 
   case(current_state) is
     when command_state =>
-    flush_sram_next <= '0';
+    flush_cuckoo_sram_next <= '0';
 
     case(cmd_in) is
       when "00" => --flush
@@ -335,7 +379,7 @@ begin
 
     end case;
     when flush_memory => 
-    flush_sram_next <= '1';
+    flush_cuckoo_sram_next <= '1';
     flush_flag_next <= '0';
 
     when insert_key =>
@@ -363,9 +407,9 @@ begin
     address_next <= src_hash(insertion_key, g2) + "100000000";
     
     when is_occupied =>
-    if data_out(95 downto 0) = insertion_key then
+    if data_out(codeword_sum - 1 downto 0) = insertion_key then
       eq_key_next <= '1';
-    elsif data_out(96) = '1' then
+    elsif data_out(data_out'left) = '1' then
       exits_cuckoo_next <= '1';
     else
       exits_cuckoo_next <= '0';
@@ -374,7 +418,7 @@ begin
     when remember_and_replace =>
     RW <= '1';
     data_in <= insertion_key;
-    insertion_key_next <= data_out(95 downto 0);
+    insertion_key_next <= data_out(codeword_sum - 1 downto 0);
     MAX_next <= MAX + 1;
     if flip = '1' then
       flip_next <= '0';
@@ -398,7 +442,7 @@ begin
     previous_search_next <= '1';
 
     when matching =>
-    if data_out(95 downto 0) = header_data then
+    if data_out(codeword_sum - 1 downto 0) = header_data then
       exits_matching_next <= '1';
       acc_deny_hash_next <= '0';
     else
@@ -429,7 +473,7 @@ begin
     address_next <= src_hash(key_in, g2) + "100000000";
     previous_search_next <= '1';
     when match_for_delete =>
-    if data_out(95 downto 0) = key_in then
+    if data_out(codeword_sum - 1 downto 0) = key_in then
       exits_matching_next <= '1';
     else
       if previous_search = '1' then

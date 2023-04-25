@@ -27,7 +27,7 @@ end SRAM;
 architecture SRAM_arch of SRAM is
 
   type WE_type is array (0 to 2**address_width - 1) of std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);  
-  signal WE : WE_type := (others => (others => '0'));
+  signal WE : WE_type := (others => (others => 'U'));
 
 begin
  
@@ -35,7 +35,7 @@ begin
 
   begin
     if reset = '1' then
-      WE <= (others => (others => '0'));
+      WE <= (others => (others => 'U'));
     elsif rising_edge(clk) then
       if RW = '1' then
         WE(to_integer(unsigned(address))) <= data_in;

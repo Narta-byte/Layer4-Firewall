@@ -21,7 +21,8 @@ entity rule_engine is
         tree_cumsum : tree_array :=  (0,16,32,48,80,96); 
 
         codeword_length : tree_array := (16,16,16,16,16);
-        largest_codeword : integer := 16
+        largest_codeword : integer := 16;
+        codeword_sum : integer := 80
       );
 
     port (
@@ -41,6 +42,17 @@ entity rule_engine is
         rdy_driver : out std_logic;
         vld_driver : in std_logic;
 
+
+
+        cuckoo_select : out std_logic := '0';
+        cuckoo_cmd : out std_logic_vector(1 downto 0);
+        cuckoo_key_out : out std_logic_vector(codeword_sum - 1 downto 0) := (others => '0');
+
+        cuckoo_key_in : in std_logic_vector(codeword_sum - 1 downto 0);
+
+        cuckoo_rdy : in std_logic;
+        cuckoo_vld : out std_logic := '0';
+        cuckoo_set_rule : out std_logic := '0';
         clk   : in std_logic;
         reset : in std_logic
     );
@@ -60,7 +72,7 @@ begin
     zero_pointer_out <= zero_pointer_in;
     one_pointer_out <= one_pointer_in;
     address <= std_logic_vector(to_unsigned(address_cnt, largest_address_width));
-
+    cuckoo_key_out <= cuckoo_key_in;
 
     process (clk, reset)
     begin
@@ -82,15 +94,26 @@ begin
                     else 
                         address_cnt <= address_cnt + 1;
                     end if;
+
+                elsif cmd_in = "00010" and vld_driver = '1' then
+                    if cuckoo_rdy = '1' then
+                        rdy_driver <= '1';
+                    else
+                        rdy_driver <= '0';
+                    end if;
+                    cuckoo_cmd <= "01";
+                    cuckoo_set_rule <= '1';
+                    cuckoo_vld <= '1';
                     
                 else
+                    cuckoo_set_rule <= '0';
+                    cuckoo_cmd <= "11";
                     rdy_driver <= '1';
-
+                    cuckoo_vld <= '0';
                 end if;
 
 
-
-
+           
             end if;
 
 

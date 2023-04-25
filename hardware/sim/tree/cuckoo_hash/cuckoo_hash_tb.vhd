@@ -186,7 +186,7 @@ begin
   end process;
 
   OUTPUT_LOGIC : process (current_state)
-  file input : TEXT open READ_MODE is "large_input_file_increment.txt";
+  file input : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/tree/cuckoo_hash/large_input_file_increment.txt";
   variable current_read_line : line;
   variable hex_reader : std_logic_vector(95 downto 0);
   

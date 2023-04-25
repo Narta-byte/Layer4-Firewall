@@ -129,11 +129,11 @@ begin
 
 
   process (clk)
-    file input0 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/tree/tree_data_tb.txt";
+    file input0 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/blueprint/tree_data_tb.txt";
     variable current_read_line0 : line;
     variable hex_reader0 : std_logic_vector(largest_codeword + largest_address_width * 2 - 1 downto 0);
 
-    file input1 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/tree/cuckoo_hash/large_input_file_increment.txt";
+    file input1 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/blueprint/cuckoo_hash/large_input_file_increment.txt";
     variable current_read_line1 : line;
     variable hex_reader1 : std_logic_vector(codeword_sum - 1 downto 0);
     

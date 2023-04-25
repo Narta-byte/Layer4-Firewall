@@ -26,7 +26,7 @@ class ACLBuilder():
         self.arrayTree = []
         for tree in self.treeList:
             self.arrayTree.append(self.convertTreeToArray(tree))
-        file = open("hardware/sim/tree/tree_data_tb.txt", "w")
+        file = open("hardware/sim/blueprint/tree_data_tb.txt", "w")
 
         for i, tree in enumerate(self.treeList):
             # file.write(self.treeToVHDL(self.treeList[i])[0])

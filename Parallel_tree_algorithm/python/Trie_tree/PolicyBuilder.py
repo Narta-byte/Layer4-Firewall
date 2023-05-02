@@ -1,41 +1,34 @@
 import random
 import logging
 import time
+import re
+import itertools
+
 
 class PolicyBuilder:
-    def __init__(self,treeList):
+    def __init__(self, treeList):
         self.treeList = treeList
-        self.ruleLength = len(treeList)+1
+        self.ruleLength = len(treeList) + 1
         self.previousRuleTuple = []
         self.ruleCodeWord = ""
-        self.codewordLength= 16
+        self.codewordLength = 16
         self.nextCodeword = 0
         self.treeDepth = 16
-        self.previousRulePrefixes = set()  # Add this line to store previous rule prefixes
+        self.previousRulePrefixes = (
+            set()
+        )  # Add this line to store previous rule prefixes
+        self.tempRules = []
 
-        
     def insertRuleIntoTree(self, rule, tree):
         ruleCodeword = ""
         for i, tree in enumerate(self.treeList):
             exists, codeword = tree.getCodeword(rule[i])
             if not exists:
                 codeword = self.generateCodeword(self.codewordLength)
-            logging.debug(f'codeword: {codeword} rule: {rule[i]} exists: {exists} ')
+            logging.debug(f"codeword: {codeword} rule: {rule[i]} exists: {exists} ")
             ruleCodeword += codeword
             tree.insert(rule[i], codeword)
         return ruleCodeword
-    
-    def ruleAlreadyExists(self,rule):
-        # if the rules fields are equal skip the iteration and let the old rule have precedence
-        # prefix = rule[:self.ruleLength-1]
-        # for oldRuleTuple in self.previousRuleTuple:
-        #     if oldRuleTuple[0][:self.ruleLength-1] == prefix:
-        #         return True
-        # return False
-        prefix = tuple(rule[:self.ruleLength - 1])
-        return prefix in self.previousRulePrefixes
-
-
 
     def createIntersectionCodeword(self, output_rule):
         intersection_codeword = ""
@@ -46,134 +39,203 @@ class PolicyBuilder:
             intersection_codeword += temp_codeword
         return intersection_codeword
 
-        
+    def combine_2d_lists(self, list_2d):
+        if len(list_2d) > 1:
+            result = []
+            for sublist1 in list_2d:
+                for sublist2 in list_2d:
+                    result.append([sublist1[0], sublist2[1]])
+            return result
+
+    def remove_duplicate_elements(self, array):
+        unique_elements = []
+        seen = {}
+
+        for element in array:
+            key = tuple(element[:3]) if isinstance(element, list) else element[:3]
+
+            if key not in seen:
+                unique_elements.append(element)
+                seen[key] = True
+
+        return unique_elements
+
+    def generate_permutations(self, old_rules, new_rule):
+        permutations = []
+        results = []
+        if new_rule.count("*") == self.ruleLength - 1:
+            permutations.append(new_rule)
+            return permutations
+
+        if not new_rule.__contains__("*"):
+            for rule_index, rule in enumerate(old_rules):
+                temp = rule.copy()
+                temparr = []
+                if temp.__contains__("*"):
+                    wildcard_indices = [
+                        i for i, element in enumerate(temp) if element == "*"
+                    ]  # For new * rule
+                    addarr = []
+
+                    currperm = [x for x in rule if x.isdigit()]
+                    # logging.debug("currperm: " + str(currperm))
+                    for i, field in enumerate(rule):
+                        if field == "*":
+                            temp[i] = new_rule[i]
+                    permutations.append(temp)
+
+                    if rule.count("*") > 1:
+                        extended_rules = old_rules + [new_rule]
+                        rest_rules_elements = [
+                            extended_rules[i][:-1]
+                            for i in range(rule_index + 1, len(extended_rules))
+                        ]
+                        #    logging.debug("old rules: " + str(old_rules))
+                        #   logging.debug("msg")
+                        logging.debug(rest_rules_elements)
+                        for rest in rest_rules_elements:
+                            # logging.debug("rest:")
+                            # logging.debug(rest)
+                            temparr.append([rest[i] for i in wildcard_indices])
+
+                        #                        logging.debug(temparr)
+
+                        temparr = self.combine_2d_lists(temparr)
+                        # print(self.combine_2d_lists(temparr))
+
+                    if temparr and currperm:
+                        for i, comb in enumerate(temparr):
+                            result = [None] * (len(new_rule) - 1)
+
+                            for i, value in enumerate(comb):
+                                result[wildcard_indices[i]] = value
+
+                            index_of_digit = next(
+                                (
+                                    index
+                                    for index, element in enumerate(rule)
+                                    if element.isdigit()
+                                )
+                            )
+                            result[index_of_digit] = currperm[0]
+                            result.append(rule[-1])
+                            permutations.append(result)
+                    # permutations.append(new_rule)
+
+        wildcard_indices = [
+            i for i, element in enumerate(new_rule) if element == "*"
+        ]  # For new * rule
+        # print(wildcard_indices)
+        for combination in itertools.product(old_rules, repeat=len(wildcard_indices)):
+            # print(combination)
+            temp_rule = list(new_rule)
+            for i, index in enumerate(wildcard_indices):
+                temp_rule[index] = combination[i][index]
+            # if combination[-1].__contains__('*'):
+            #     temp_rule[-1] = combination[-1][-1]
+            # Check if the temp_rule is a subset of any old rules
+
+            permutations.append(temp_rule)
+
+        for i, value in enumerate(new_rule):  # Insert eg * 19 and 64 *
+            if value == "*":
+                for old_rule in old_rules:
+                    temp = new_rule.copy()
+                    temp[i] = old_rule[i]
+                    # results.append(temp)
+                    permutations.append(temp)
+
+        # permutations.append(results)
+        permutations.append(new_rule)
+        # permutations = self.remove_duplicate_elements(permutations)
+
+        for perm_rule in permutations:  # Set decision right
+            for old_rule in old_rules:
+                if all(
+                    old == "*" or old == curr
+                    for old, curr in zip(old_rule[:-1], perm_rule[:-1])
+                ):
+                    # print("Match found:", old_rule, perm_rule)
+                    perm_rule[-1] = old_rule[-1]
+
+                # else:
+                # print("No match found:", old_rule, perm_rule)
+                # logging.debug("No matcho found!")
+        permutations = self.remove_duplicate_elements(permutations)  # duplikater
+        return permutations
+
     def insertRule(self, rule):
-        if self.ruleIsSubset(rule): #or self.ruleAlreadyExists(rule): Already exists is checked for in filterperm
+        if self.ruleIsSubset(rule):
+            logging.debug("Inserted rule is subset.. Return" + str(rule))
             return
+
+        if rule.count("*") == self.ruleLength - 1:
+            rule_codeword = self.insertRuleIntoTree(rule, self.treeList)
+            self.previousRuleTuple.append((rule, rule_codeword))
+            # self.tempRules.append(rule)
+            self.previousRulePrefixes.add(tuple(rule))
+            logging.debug("Returned cus default")
+            return
+
+        # logging.debug("Check for subset manually")
+        # for prevrules in self.previousRuleTuple:
+        #     logging.debug("prevrules: " +str(prevrules[0]))
+        #     if all(prev == '*' or prev == curr for prev, curr in zip(prevrules[0][:-1], rule)):
+        #         logging.debug("This rules?" + str(rule))
+        #         return
 
         rule_codeword = self.insertRuleIntoTree(rule, self.treeList)
 
         if not self.previousRuleTuple:
             self.previousRuleTuple.append((rule, rule_codeword))
-            self.previousRulePrefixes.add(tuple(rule[:self.ruleLength - 1]))
-
+            self.tempRules.append(rule)
+            self.previousRulePrefixes.add(tuple(rule))
+            logging.debug("First rule. INSERT. Nothing more")
             return
 
-        for old_rule_tuple in self.previousRuleTuple:
-            rule_permutations = self.permutations(old_rule_tuple, rule)
-            if rule_permutations is None:
-                continue
+        # logging.debug("alle temp rules: ")
+        # logging.debug(self.tempRules)
+        rule_permutations = self.generate_permutations(self.tempRules, rule)
 
-            rule_permutations = self.filterPermutations(rule_permutations, rule)
+        # logging.debug("Output perms: ")
+        # for rules in rule_permutations:
+        #    logging.debug(rules)
 
-            for output_rule in rule_permutations:
-                intersection_codeword = self.createIntersectionCodeword(output_rule)
-                self.previousRuleTuple.append((output_rule, intersection_codeword))
-                self.previousRulePrefixes.add(tuple(output_rule[:self.ruleLength - 1]))
+        # logging.debug("prevRule tuple!! ")
+        # for perms in self.previousRuleTuple:
+        #    logging.debug(perms)
 
-        self.previousRuleTuple.append((rule, rule_codeword))
-        self.previousRulePrefixes.add(tuple(rule[:self.ruleLength - 1]))
-       
-    def permutations(self,rule0Tuple,rule1):
-        output = []
-        def permutationsHelper(oldRule, newRule, workingList):
-            if len(workingList) == self.ruleLength-1:
-                
-                workingList.append(rule0Tuple[0][self.ruleLength-1])
-                output.append(workingList)
-                return
-                
-            idx = len(workingList)
-            newWorkingList = workingList.copy()
-            workingList.append(newRule[idx])
-            newWorkingList.append(oldRule[idx])
-            permutationsHelper(oldRule, newRule, workingList)
-            permutationsHelper(oldRule, newRule, newWorkingList)
-         
-        permutationsHelper(rule0Tuple[0], rule1, [])
-        logging.debug(f'output from perms: {output} rule0: {rule0Tuple[0]} rule1: {rule1} ')
-        return output
+        logging.debug("Add codewords:")
+        for output_rule in rule_permutations:
+            intersection_codeword = self.createIntersectionCodeword(output_rule)
+            self.previousRuleTuple.append((output_rule, intersection_codeword))
+            self.tempRules.append(output_rule)
 
-    def filterPermutations(self,rulePermutations, insertedRule):
-        output = []
-        for permutation in rulePermutations:
-            if insertedRule[0:self.ruleLength-1] == permutation[0:self.ruleLength-1]:
-                logging.debug("if2: " +str(permutation))
-                continue
+        # logging.debug("prevRule tuple!! ")
+        # for perms in self.previousRuleTuple:
+        #     logging.debug(perms)
 
-            elif self.ruleAlreadyExists(permutation) or output.__contains__(permutation):
-                logging.debug("if1: " +str(permutation))
-                continue
+    def ruleIsSubset(self, rule):
+        # logging.debug("self.matches : " + str(self.matches(previousRule, currRule)))
 
-            else:
-                logging.debug("els: " +str(permutation))
+        codeword = ""
+        logging.debug("rule is subset: " + str(rule))
+        rule = rule[: self.ruleLength - 1]
 
-                if self.ruleIsSubset(permutation): #Subset of previous rules
-                    logging.debug("Even tho  rule0, also a  rule0 of the current inserted rule, so that takes over")
-                    logging.debug("sub of" + str(permutation) + " ins:" + str(insertedRule))
-
-                    output.append(permutation)
-                    continue
-                
-                if self.subset(permutation, insertedRule): #subset of curr inserted rule
-                    logging.debug("is super of" + str(permutation) + " " + str(insertedRule) )
-                    permutation[self.ruleLength-1] = insertedRule[len(self.treeList)]
-                    output.append(permutation)
-                    continue
-
-                if all(x == '*' for x in permutation[:-1]):
-                    continue
-
-        output = [list(x) for x in set(tuple(x) for x in output)] #Delete duplicates
-        logging.debug("Output geben: " + str(output))
-        return output
-
-    def ruleIsSubset(self,rule):
-        for previousRule in self.previousRuleTuple:
-            if self.subset(rule, previousRule[0]):
-                rule[self.ruleLength-1] = previousRule[0][self.ruleLength-1]
-                return True
-        return False
-        
-    def subset(self, currRule, previousRule):
-        if all(prev == '*' or prev == curr for prev, curr in zip(previousRule, currRule)):
-            return True
-        return self.matches(previousRule, currRule)
-
-    def matches(self, thisRule, currRule):
-        if thisRule[:len(thisRule)-1] == currRule:
-            return True
-
-        for prevRuleField, currRuleField in zip(thisRule[:-1], currRule):
-            if prevRuleField == currRuleField:
-                continue
-            elif prevRuleField == "*":
-                continue
-            elif self.lpm(prevRuleField, currRuleField):
-                continue
+        for i, rule_value in enumerate(rule):
+            exists, codewordSegment = self.treeList[i].getCodeword(rule_value)
+            logging.debug(
+                f"ruleissubset[{i}] = {rule_value} Exists{i}: {exists} subcode{i}: {codewordSegment} "
+            )
+            if exists:  # or codewordSegment != "0":
+                # logging.debug("Exists: " str((exists) and codewordSegment)))
+                codeword += str(codewordSegment)
             else:
                 return False
+        if codeword == "0" * (self.ruleLength - 1):
+            return False
+        logging.debug("rule is subset is True and codeword is " + str(codeword))
         return True
-
-
-    def lpm(self, this_rule, curr_rule):
-        if '*' in (this_rule, curr_rule):
-            return False
-    
-        def get_lpm(rule):
-            return rule.split('*')[0] if '*' in rule else bin(int(rule))[2:].zfill(self.treeDepth)
-    
-        lpm_this_rule = get_lpm(this_rule)
-        lpm_curr_rule = get_lpm(curr_rule)
-    
-        if len(lpm_curr_rule) < len(lpm_this_rule):
-            return False
-    
-        return all(this == curr for this, curr in zip(lpm_this_rule, lpm_curr_rule))
-
-
-
-        
 
     def retriveCodeword(self, packet):
         codeword = ""
@@ -181,10 +243,12 @@ class PolicyBuilder:
 
         for i, packet_value in enumerate(packet):
             exists, codewordSegment = self.treeList[i].getCodeword(packet_value)
-            logging.debug(f"packet[{i}] = {packet_value} Exists{i}: {exists} subcode{i}: {codewordSegment} ")
-            if exists or codewordSegment != "":
+            logging.debug(
+                f"packet[{i}] = {packet_value} Exists{i}: {exists} subcode{i}: {codewordSegment} "
+            )
+            if exists or ((not exists) and (codewordSegment != "")):
                 codeword += str(codewordSegment)
-            else: 
+            else:
                 return None
         return codeword
 
@@ -192,18 +256,38 @@ class PolicyBuilder:
         self.nextCodeword += 1
         return format(self.nextCodeword, f"0{length}b")
 
-    def writeCodewords(self):   #Writing to "codewords.txt"
+    def writeCodewords(self):  # Writing to "codewords.txt"
         file = open("codewords.txt", "w")
         for rule in self.previousRuleTuple:
-            file.write(str(rule[0]) + " " + rule[1] +  "\n")
+            file.write(str(rule[0]) + " " + rule[1] + "\n")
         file.close()
-        
+        # rules_list = [list(rule) for rule in self.previousRulePrefixes]
+        # file = open("codewords2.txt", "w")
+        # for rules in self.previousRulePrefixes:
+        #     file.write(str(rules[0]) + " " + str(rules[1]) + " " + str(rules[2]) + "\n")
+        # file.close
+
     def getRuleTuple(self):
         output = ""
         for rule in self.previousRuleTuple:
-            output += (str(rule[0]) + " " + rule[1] + "\n")
+            output += str(rule[0]) + " " + rule[1] + "\n"
         return output
 
     def setSeed(self, seed):
         random.seed(seed)
-        
+
+
+# def remove_duplicate_elements(array):
+#     unique_elements = []
+
+#     for element in array:
+#         duplicate = False
+#         for unique_element in unique_elements:
+#             if element[:3] == unique_element[:3]:
+#                 duplicate = True
+#                 break
+
+#         if not duplicate:
+#             unique_elements.append(element)
+
+#     return unique_elements

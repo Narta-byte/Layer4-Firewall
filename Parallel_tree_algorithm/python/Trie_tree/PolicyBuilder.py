@@ -67,59 +67,59 @@ class PolicyBuilder:
             permutations.append(new_rule)
             return permutations
 
-        if not new_rule.__contains__("*"):
-            for rule_index, rule in enumerate(old_rules):
-                temp = rule.copy()
-                temparr = []
-                if temp.__contains__("*"):
-                    wildcard_indices = [
-                        i for i, element in enumerate(temp) if element == "*"
-                    ]  # For new * rule
+        # if not new_rule.__contains__("*"):
+        for rule_index, rule in enumerate(old_rules):
+            temp = rule.copy()
+            temparr = []
+            if temp.__contains__("*"):
+                wildcard_indices = [
+                    i for i, element in enumerate(temp) if element == "*"
+                ]  # For new * rule
 
-                    currperm = [x for x in rule if x.isdigit()]
-                    # logging.debug("currperm: " + str(currperm))
-                    for i, field in enumerate(rule):
-                        if field == "*":
-                            temp[i] = new_rule[i]
-                    permutations.append(temp)
+                currperm = [x for x in rule if x.isdigit()]
+                # logging.debug("currperm: " + str(currperm))
+                for i, field in enumerate(rule):
+                    if field == "*":
+                        temp[i] = new_rule[i]
+                permutations.append(temp)
 
-                    if rule.count("*") > 1:
-                        extended_rules = old_rules + [new_rule]
-                        rest_rules_elements = [
-                            extended_rules[i][:-1]
-                            for i in range(rule_index + 1, len(extended_rules))
-                        ]
-                        #    logging.debug("old rules: " + str(old_rules))
-                        #   logging.debug("msg")
-                        logging.debug(rest_rules_elements)
-                        for rest in rest_rules_elements:
-                            # logging.debug("rest:")
-                            # logging.debug(rest)
-                            temparr.append([rest[i] for i in wildcard_indices])
+                if rule.count("*") > 1:
+                    extended_rules = old_rules + [new_rule]
+                    rest_rules_elements = [
+                        extended_rules[i][:-1]
+                        for i in range(rule_index + 1, len(extended_rules))
+                    ]
+                    #    logging.debug("old rules: " + str(old_rules))
+                    #   logging.debug("msg")
+                    logging.debug(rest_rules_elements)
+                    for rest in rest_rules_elements:
+                        # logging.debug("rest:")
+                        # logging.debug(rest)
+                        temparr.append([rest[i] for i in wildcard_indices])
 
-                        #                        logging.debug(temparr)
+                    #                        logging.debug(temparr)
 
-                        temparr = self.combine_2d_lists(temparr)
-                        # print(self.combine_2d_lists(temparr))
+                    temparr = self.combine_2d_lists(temparr)
+                    # print(self.combine_2d_lists(temparr))
 
-                    if temparr and currperm:
-                        for i, comb in enumerate(temparr):
-                            result = [None] * (len(new_rule) - 1)
+                if temparr and currperm:
+                    for i, comb in enumerate(temparr):
+                        result = [None] * (len(new_rule) - 1)
 
-                            for i, value in enumerate(comb):
-                                result[wildcard_indices[i]] = value
+                        for i, value in enumerate(comb):
+                            result[wildcard_indices[i]] = value
 
-                            index_of_digit = next(
-                                (
-                                    index
-                                    for index, element in enumerate(rule)
-                                    if element.isdigit()
-                                )
+                        index_of_digit = next(
+                            (
+                                index
+                                for index, element in enumerate(rule)
+                                if element.isdigit()
                             )
-                            result[index_of_digit] = currperm[0]
-                            result.append(rule[-1])
-                            permutations.append(result)
-                    # permutations.append(new_rule)
+                        )
+                        result[index_of_digit] = currperm[0]
+                        result.append(rule[-1])
+                        permutations.append(result)
+                # permutations.append(new_rule)
 
         wildcard_indices = [
             i for i, element in enumerate(new_rule) if element == "*"

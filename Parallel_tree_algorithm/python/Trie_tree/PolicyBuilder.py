@@ -75,7 +75,6 @@ class PolicyBuilder:
                     wildcard_indices = [
                         i for i, element in enumerate(temp) if element == "*"
                     ]  # For new * rule
-                    addarr = []
 
                     currperm = [x for x in rule if x.isdigit()]
                     # logging.debug("currperm: " + str(currperm))

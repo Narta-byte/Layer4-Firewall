@@ -79,10 +79,16 @@ class PolicyTrieTree(trieTree.TrieTree):
                 
             else:
                 if bestMatch == "":
-                    return False, 0
+                    # logging.debug("False 1 Key: " + str(int(key,2)))
+                    return False, ""
                 else:
+                    # logging.debug("False 2. Key: " + str(int(key,2)))
                     return False, bestMatch
         if crawl.codeword == "":
-            return False, 0
+            # if key != '':
+            #     logging.debug("Return 3 Key: " + str(int(key,2)))
+            return False, ""
         else:
+            # if key != '':
+            #     logging.debug("TRUE Key: " + str(int(key,2)))
             return True, crawl.codeword

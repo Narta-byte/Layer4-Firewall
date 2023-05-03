@@ -189,7 +189,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         pr.enable()
         ruleList = []
         random.seed(311415)
-        for _ in range(0, 33):
+        for _ in range(0, 33):  # NUM PACKETS
             rule = ["", "", "", ""]
             for i in range(0, 3):
                 chance = random.randint(0, 100)

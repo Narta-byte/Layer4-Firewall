@@ -581,6 +581,7 @@ class TestErrorCase(unittest.TestCase):
         self.init3Trees()
         self.listFirewall = listFirewall.ListFirewall()
         ruleList = [
+            ["29", "13", "10", "gamma"],
             ["30", "64", "19", "gamma"],
             ["7", "*", "*", "alpha"],
             ["*", "*", "*", "delta"],
@@ -920,6 +921,113 @@ class TestErrorCase(unittest.TestCase):
         ]
         self.initListAndTreeFirewalls(ruleList)
         packetList = [["76", "11", "46"]]
+        for packet in packetList:
+            codeword = self.policyFactory.retriveCodeword(packet)
+
+            logging.debug("codeword: " + str(codeword) + " for packet " + str(packet))
+            logging.debug(
+                "is this list index?: " + str(self.hashTable.lookup(codeword))
+            )
+            if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
+                self.logDifference(packet, codeword)
+            logging.debug(
+                "In firewall : "
+                + str(self.listFirewall.lookup(packet))
+                + ", in hash: "
+                + str(self.hashTable.lookup(codeword)[3])
+            )
+            self.assertEqual(
+                self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3]
+            )
+
+    def test_range200(self):
+        self.init3Trees()
+        self.listFirewall = listFirewall.ListFirewall()
+        ruleList = [
+            ["18", "188", "109", "gamma"],
+            ["60", "129", "39", "gamma"],
+            ["48", "*", "144", "alpha"],
+            ["156", "190", "1", "beta"],
+            ["163", "134", "51", "beta"],
+            ["59", "185", "21", "gamma"],
+            ["20", "104", "132", "beta"],
+            ["115", "190", "180", "hotel"],
+            ["152", "22", "93", "hotel"],
+            ["185", "*", "40", "gamma"],
+            ["45", "154", "124", "gamma"],
+            ["74", "11", "155", "beta"],
+            ["2", "56", "79", "hotel"],
+            ["17", "16", "147", "hotel"],
+            ["172", "*", "26", "alpha"],
+            ["189", "134", "167", "alpha"],
+            ["150", "121", "127", "alpha"],
+            ["44", "51", "155", "alpha"],
+            ["2", "50", "107", "gamma"],
+            ["*", "160", "26", "gamma"],
+            ["147", "*", "80", "beta"],
+            ["88", "125", "2", "hotel"],
+            ["135", "*", "42", "alpha"],
+            ["16", "69", "46", "gamma"],
+            ["70", "52", "61", "alpha"],
+            ["192", "21", "146", "hotel"],
+            ["122", "74", "45", "alpha"],
+            ["42", "142", "152", "beta"],
+            ["29", "130", "71", "alpha"],
+            ["28", "140", "168", "gamma"],
+            ["179", "67", "170", "gamma"],
+            ["30", "145", "104", "hotel"],
+            ["25", "159", "139", "hotel"],
+            ["175", "130", "189", "hotel"],
+            ["20", "15", "110", "alpha"],
+            ["124", "95", "91", "beta"],
+            ["58", "162", "81", "hotel"],
+            ["19", "134", "183", "gamma"],
+            ["195", "14", "58", "gamma"],
+            ["21", "22", "97", "hotel"],
+            ["119", "*", "181", "beta"],
+            ["*", "175", "25", "beta"],
+            ["149", "75", "90", "gamma"],
+            ["22", "155", "3", "alpha"],
+            ["17", "6", "11", "hotel"],
+            ["107", "161", "111", "gamma"],
+            ["196", "44", "94", "gamma"],
+            ["69", "16", "*", "beta"],
+            ["112", "44", "84", "alpha"],
+            ["194", "181", "105", "hotel"],
+            ["170", "19", "186", "gamma"],
+            ["176", "102", "105", "gamma"],
+            ["82", "85", "192", "gamma"],
+            ["31", "87", "14", "hotel"],
+            ["7", "73", "192", "hotel"],
+            ["59", "187", "41", "hotel"],
+            ["129", "21", "1", "beta"],
+            ["30", "140", "13", "hotel"],
+            ["160", "192", "125", "beta"],
+            ["41", "*", "142", "gamma"],
+            ["40", "43", "69", "hotel"],
+            ["48", "0", "18", "alpha"],
+            ["66", "18", "176", "beta"],
+            ["30", "10", "10", "gamma"],
+            ["60", "40", "199", "hotel"],
+            ["87", "173", "28", "beta"],
+            ["*", "157", "64", "hotel"],
+            ["30", "55", "196", "gamma"],
+            ["29", "184", "61", "gamma"],
+            ["103", "72", "73", "beta"],
+            ["*", "30", "146", "alpha"],
+            ["82", "146", "154", "gamma"],
+            ["200", "10", "33", "beta"],
+            ["*", "182", "164", "hotel"],
+            ["184", "23", "174", "beta"],
+            ["83", "174", "146", "hotel"],
+            ["52", "13", "110", "hotel"],
+            ["196", "117", "*", "alpha"],
+            ["81", "16", "96", "hotel"],
+            ["7", "104", "22", "alpha"],
+            ["*", "*", "*", "delta"],
+        ]
+        self.initListAndTreeFirewalls(ruleList)
+        packetList = [["0", "134", "3"]]
         for packet in packetList:
             codeword = self.policyFactory.retriveCodeword(packet)
 

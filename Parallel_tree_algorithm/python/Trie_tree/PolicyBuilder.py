@@ -40,55 +40,73 @@ class PolicyBuilder:
         return intersection_codeword
 
     def combine_2d_lists_insert(self, list_2d, indexes):
-        # if len(indexes) == 1:
-        #     return
         result = []
+        unique_sublists = set()
         for sublist1 in list_2d:
             first_element = sublist1[indexes[0]]
             for sublist2 in list_2d:
-                result.append([first_element, sublist2[indexes[1]]])
+                new_sublist = (first_element, sublist2[indexes[1]])
+                if new_sublist not in unique_sublists:
+                    unique_sublists.add(new_sublist)
+                    result.append(list(new_sublist))
+        logging.debug("Done insertslists")
+        logging.debug(result)
         return result
 
     def combine_2d_lists(self, list_2d):
+        logging.info("Combining:")
         if len(list_2d) > 1:
+            unique_sublists = set()
             result = []
-            for sublist1 in list_2d:
-                for sublist2 in list_2d:
-                    result.append([sublist1[0], sublist2[1]])
+
+            for i, sublist1 in enumerate(list_2d):
+                for sublist2 in list_2d[i:]:
+                    new_sublist = (sublist1[0], sublist2[1])
+                    if new_sublist not in unique_sublists:
+                        unique_sublists.add(new_sublist)
+                        result.append(list(new_sublist))
+
+            logging.info("Done lists:")
+            logging.debug(result)
             return result
 
     def remove_duplicate_elements(self, array):
         unique_elements = []
         seen = {}
 
+        logging.debug("Removing duplicate element")
         for element in array:
             key = tuple(element[:3]) if isinstance(element, list) else element[:3]
 
             if key not in seen:
                 unique_elements.append(element)
                 seen[key] = True
+            else:
+                logging.debug(element)
 
         return unique_elements
 
-    def generate_permutations(self, old_rules, new_rule):
+    def find_first_digit_index(self, sequence):
+        try:
+            return next(
+                index
+                for index, element in enumerate(sequence)
+                if str(element).isdigit()
+            )
+        except StopIteration:
+            return None
+
+    def process_old_rules_with_new_rule(self, old_rules, new_rule):
         permutations = []
-        results = []
-        if new_rule.count("*") == self.ruleLength - 1:
-            permutations.append(new_rule)
-            return permutations
-
-        # if not new_rule.__contains__("*"):
-
         for rule_index, rule in enumerate(old_rules):
             temp = rule.copy()
             temparr = []
             if temp.__contains__("*"):
                 wildcard_indices = [
                     i for i, element in enumerate(temp) if element == "*"
-                ]  # For new * rule
+                ]
 
                 currperm = [x for x in rule if x.isdigit()]
-                # logging.debug("currperm: " + str(currperm))
                 for i, field in enumerate(rule):
                     if field == "*":
                         temp[i] = new_rule[i]
@@ -102,64 +120,34 @@ class PolicyBuilder:
                         extended_rules[i][:-1]
                         for i in range(rule_index + 1, len(extended_rules))
                     ]
-                    #    logging.debug("old rules: " + str(old_rules))
-                    #   logging.debug("msg")
-                    logging.debug(rest_rules_elements)
                     for rest in rest_rules_elements:
-                        # logging.debug("rest:")
-                        # logging.debug(rest)
                         temparr.append([rest[i] for i in wildcard_indices])
 
-                    #                        logging.debug(temparr)
-
                     temparr = self.combine_2d_lists(temparr)
-                    # print(self.combine_2d_lists(temparr))
 
                 if temparr and currperm:
+                    index_of_digit = self.find_first_digit_index(rule)
                     for i, comb in enumerate(temparr):
                         result = [None] * (len(new_rule) - 1)
 
                         for i, value in enumerate(comb):
                             result[wildcard_indices[i]] = value
 
-                        index_of_digit = next(
-                            (
-                                index
-                                for index, element in enumerate(rule)
-                                if element.isdigit()
-                            )
-                        )  # FIX THIS
                         result[index_of_digit] = currperm[0]
                         result.append(rule[-1])
                         permutations.append(result)
-                # permutations.append(new_rule)
-        logging.debug("from first:")
-        logging.debug(permutations)
+        return permutations
 
-        wildcard_indices = [
-            i for i, element in enumerate(new_rule) if element == "*"
-        ]  # For new * rule
-        currperm = [x for x in new_rule if x.isdigit()]  # Digit value
-        # print(wildcard_indices)
-        logging.debug("Combinations:")
-        # for combination in itertools.product(old_rules, repeat=len(wildcard_indices)):
-        #     # print(combination)
-        #     logging.debug(combination)
-        #     temp_rule = list(new_rule)
-        #     for i, index in enumerate(wildcard_indices):
-        #         temp_rule[index] = combination[i][index]
-        #     # if combination[-1].__contains__('*'):
-        #     #     temp_rule[-1] = combination[-1][-1]
-        #     # Check if the temp_rule is a subset of any old rules
-        #     # logging.debug(temp_rule)
-        #     permutations.append(temp_rule)
+    def process_new_rule_with_wildcards_and_old_rules(self, old_rules, new_rule):
+        permutations = []
+        wildcard_indices = [i for i, element in enumerate(new_rule) if element == "*"]
+        currperm = [x for x in new_rule if x.isdigit()]
 
         if len(old_rules) > 1 and len(wildcard_indices) > 1:
             index_of_digit = next(
                 (index for index, element in enumerate(new_rule) if element.isdigit())
             )
             currperm = [x for x in new_rule if x.isdigit()]
-            # print(currperm)
 
             combinations = self.combine_2d_lists_insert(old_rules, wildcard_indices)
             for comb in combinations:
@@ -167,31 +155,39 @@ class PolicyBuilder:
                 comb.append(new_rule[-1])
                 permutations.append(comb)
 
-        logging.debug("From products: ")
-        logging.debug(permutations)
+        return permutations
 
-        for i, value in enumerate(new_rule):  # Insert eg * 19 and 64 *
+    def process_new_rule_with_wildcards(self, old_rules, new_rule, permutations):
+        for i, value in enumerate(new_rule):  # Inserts eg *19 and 54*
             if value == "*":
                 for old_rule in old_rules:
                     temp = new_rule.copy()
                     temp[i] = old_rule[i]
-                    # results.append(temp)
                     permutations.append(temp)
+        return permutations
 
-        # permutations.append(results)
+    def generate_permutations(self, old_rules, new_rule):
+        permutations = []
+        results = []
+        if new_rule.count("*") == self.ruleLength - 1:
+            permutations.append(new_rule)
+            return permutations
+
+        permutations.extend(self.process_old_rules_with_new_rule(old_rules, new_rule))
+
+        # for permutation in self.process_old_rules_with_new_rule(old_rules, new_rule):
+        #     permutations.append(permutation)
+
+        permutations.extend(self.process_old_rules_with_new_rule(old_rules, new_rule))
+
+        permutations = self.process_new_rule_with_wildcards(
+            old_rules, new_rule, permutations
+        )
+
         permutations.append(new_rule)
-        # permutations = self.remove_duplicate_elements(permutations)
 
-        # for perm_rule in permutations:  # Set decision right
-        #     for old_rule in old_rules:
-        #         if all(old == "*" or old == curr for old, curr in zip(old_rule[:-1], perm_rule[:-1])):
-        #             # print("Match found:", old_rule, perm_rule)
-        #             perm_rule[-1] = old_rule[-1]
-
-        # else:
-        # print("No match found:", old_rule, perm_rule)
-        # logging.debug("No matcho found!")
         permutations = self.remove_duplicate_elements(permutations)  # duplikater
+
         return permutations
 
     def insertRule(self, rule):

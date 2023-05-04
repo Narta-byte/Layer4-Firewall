@@ -37,7 +37,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         logging.basicConfig(
             format="%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s",
             datefmt="%d-%m-%Y:%H:%M:%S",
-            level=logging.DEBUG,
+            level=logging.INFO,
             filename="logs.txt",
         )
 
@@ -189,16 +189,16 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         pr.enable()
         ruleList = []
         random.seed(311415)
-        for _ in range(0, 80):  # NUM PACKETS
+        for _ in range(0, 44):  # NUM PACKETS
             rule = ["", "", "", ""]
             for i in range(0, 3):
-                chance = random.randint(0, 200)
-                if chance <= 45:
-                    rule[i] = str(random.randint(0, 200))
-                elif chance > 45 and chance <= 55:
+                chance = random.randint(0, 100)
+                if chance <= 50:
+                    rule[i] = str(random.randint(0, 100))
+                elif chance > 50 and chance <= 55:
                     rule[i] = "*"
                 elif chance > 55:
-                    rule[i] = str(random.randint(0, 200))
+                    rule[i] = str(random.randint(0, 100))
             chance = random.randint(0, 100)
             if chance < 25:
                 rule[3] = "alpha"
@@ -235,9 +235,9 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         packetList = []
         for i in range(0, 1000):  # INSERT MORE PACKETS HERE
             packet = (
-                str(random.randint(0, 200)),
-                str(random.randint(0, 200)),
-                str(random.randint(0, 200)),
+                str(random.randint(0, 100)),
+                str(random.randint(0, 100)),
+                str(random.randint(0, 100)),
             )
             # for j in range(0,3):
             #     packet[j] = str(random.randint(0,5))

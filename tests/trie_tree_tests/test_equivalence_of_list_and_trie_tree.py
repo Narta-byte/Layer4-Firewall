@@ -342,7 +342,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         pr = cProfile.Profile()
         pr.enable()
 
-        ruleList = self.generate_rule_list(10, tree_count)  # Num of rules!
+        ruleList = self.generate_rule_list(13, tree_count)  # Num of rules!
 
         for rule in ruleList:
             if rule[:tree_count] == ["*"] * tree_count:

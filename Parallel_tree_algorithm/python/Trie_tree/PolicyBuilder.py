@@ -10,7 +10,7 @@ class PolicyBuilder:
         self.ruleLength = len(treeList) + 1
         self.previousRuleTuple = []
         self.ruleCodeWord = ""
-        self.codewordLength = 16
+        self.codewordLength = 4 # 16
         self.nextCodeword = 0
         self.treeDepth = 16
         self.store_inserted = []
@@ -154,31 +154,21 @@ class PolicyBuilder:
                     temp = rule.copy()
                     if field == "*":
                         temp[i] = new_rule[i]
-                        logging.debug("temp in *: " + str(temp))
-                        permutations.append(temp)
+                        if temp != rule:
+                            logging.debug("added temp in *: " + str(temp))
+                            permutations.append(temp)
                         # continue
                     if self.contains_star_and_digit(field):
                         logging.debug("This contains star and digit: " + str(field))
                         field = field.split("*")
                         logging.debug("This contains digit: " + str(field[0]))
-                        logging.debug(
-                            "This contains digit max: "
-                            + str(int(field[0].ljust(self.codewordLength, "1"), 2))
-                        )
-                        logging.debug(
-                            "This contains digit min: "
-                            + str(int(field[0].ljust(self.codewordLength, "0"), 2))
-                        )
-                        # logging.debug(new_rule[i] < str(int(field[0].ljust(self.codewordLength, "1"), 2)) and new_rule[i] > str(int(field[0].ljust(self.codewordLength, "0"), 2)))
-                        if new_rule[i] < str(
-                            int(field[0].ljust(self.codewordLength, "1"), 2)
-                        ) and new_rule[i] > str(
-                            int(field[0].ljust(self.codewordLength, "0"), 2)
-                        ):
-                            logging.debug("In if at: " + str(i))
-                            logging.debug(
-                                "Field is in between range: " + str(new_rule[i])
-                            )
+                        logging.debug("This contains digit max: "+ str(int(field[0].ljust(self.codewordLength, "1"), 2)))
+                        logging.debug("This contains digit min: "+ str(int(field[0].ljust(self.codewordLength, "0"), 2)))
+                        logging.debug("Field is in between range: " + str(new_rule[i]))
+
+                        logging.debug(int(new_rule[i]) < int(field[0].ljust(self.codewordLength, "1"), 2) and new_rule[i] > int(field[0].ljust(self.codewordLength, "0"), 2))
+                        if int(new_rule[i]) < int(field[0].ljust(self.codewordLength, "1"), 2) and new_rule[i] > int(field[0].ljust(self.codewordLength, "0"), 2):
+                            logging.debug("In if at pos: " + str(i))
                             logging.debug(temp)
                             temp[i] = new_rule[i]
                             logging.debug(
@@ -309,6 +299,9 @@ class PolicyBuilder:
 
     def insertRule(self, rule):
         # rule = [self.to_binary_if_not_already(x) if x.isdigit() else x for x in rule]
+        rule = [
+        element[:-1] if (len(element) == self.codewordLength +1 and element[-1] == '*' and element[:-1].isdigit()) else element
+        for element in rule]
         logging.debug("_______ New inserted rule ______" + str(rule))
 
         if rule.count("*") == self.ruleLength - 1:

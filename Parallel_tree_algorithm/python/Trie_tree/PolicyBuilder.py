@@ -96,31 +96,102 @@ class PolicyBuilder:
 
     def find_first_digit_index(self, sequence):
         try:
+            logging.debug(
+                "find_first_digit_index: "
+                + str(
+                    next(
+                        index
+                        for index, element in enumerate(sequence)
+                        if str(element).isdigit()
+                    )
+                )
+            )
             return next(
                 index
                 for index, element in enumerate(sequence)
                 if str(element).isdigit()
             )
         except StopIteration:
+            logging.debug("Found")
             return None
 
+    def contains_star_and_digit(self, s):
+        return "*" in s and any(char.isdigit() for char in s)
+
     def account_for_old_rules(self, old_rules, new_rule):
+        logging.debug("acc for old rule ")
         permutations = []
         for rule_index, rule in enumerate(old_rules):
             temp = rule.copy()
             temparr = []
             result = []
             if temp.__contains__("*"):
+                # wildcard_indices = [
+                #     i for i, element in enumerate(temp) if element == "*"
+                # ]  # For new * rule
                 wildcard_indices = [
                     i for i, element in enumerate(temp) if element == "*"
-                ]  # For new * rule
+                ]  # or self.contains_star_and_digit(element)]
+
+                range_indices = [
+                    i
+                    for i, element in enumerate(temp)
+                    if "*" in element and any(char.isdigit() for char in element)
+                ]
 
                 currperm = [x for x in rule if x.isdigit()]
-                # logging.debug("currperm: " + str(currperm))
+                logging.debug(
+                    "Wildcard indicies for rule old rule: "
+                    + str(rule)
+                    + "\nIs: "
+                    + str(wildcard_indices)
+                    + "\nSubrange indecies: "
+                    + str(range_indices)
+                    + "\nwholenum is: "
+                    + str(currperm)
+                )
                 for i, field in enumerate(rule):
+                    temp = rule.copy()
                     if field == "*":
                         temp[i] = new_rule[i]
-                permutations.append(temp)
+                        logging.debug("temp in *: " + str(temp))
+                        permutations.append(temp)
+                        # continue
+                    if self.contains_star_and_digit(field):
+                        logging.debug("This contains star and digit: " + str(field))
+                        field = field.split("*")
+                        logging.debug("This contains digit: " + str(field[0]))
+                        logging.debug(
+                            "This contains digit max: "
+                            + str(int(field[0].ljust(self.codewordLength, "1"), 2))
+                        )
+                        logging.debug(
+                            "This contains digit min: "
+                            + str(int(field[0].ljust(self.codewordLength, "0"), 2))
+                        )
+                        # logging.debug(new_rule[i] < str(int(field[0].ljust(self.codewordLength, "1"), 2)) and new_rule[i] > str(int(field[0].ljust(self.codewordLength, "0"), 2)))
+                        if new_rule[i] < str(
+                            int(field[0].ljust(self.codewordLength, "1"), 2)
+                        ) and new_rule[i] > str(
+                            int(field[0].ljust(self.codewordLength, "0"), 2)
+                        ):
+                            logging.debug("In if at: " + str(i))
+                            logging.debug(
+                                "Field is in between range: " + str(new_rule[i])
+                            )
+                            logging.debug(temp)
+                            temp[i] = new_rule[i]
+                            logging.debug(
+                                "adding: " + str(temp) + " because of subrange"
+                            )
+                            permutations.append(temp)
+                            logging.debug("Perms: " + str(permutations))
+                            # break
+                            # continue
+                    logging.debug("Perms in loop: " + str(permutations))
+
+                logging.debug("adding: " + str(temp) + " because of *")
+                # permutations.append(temp)
 
                 if rule.count("*") > 1:
                     # Make combine_2d_lists able to take lists * > 0
@@ -135,13 +206,14 @@ class PolicyBuilder:
                     # logging.debug("temparr Before:")
                     # logging.debug(temparr)
 
-                    temparr = self.combine_2d_lists(temparr)
+                    temparr = self.combine_2d_lists(temparr)  # generate combinations
                     # logging.debug("temparr AFTer::")
                     # logging.debug((self.combine_2d_lists(temparr)))
-                    logging.debug(temparr)
+                    # logging.debug(temparr)
 
                 if temparr and currperm:
-                    index_of_digit = self.find_first_digit_index(rule)
+                    # index_of_digit = self.find_first_digit_index(rule)
+                    # logging.debug("index_of digit: " +str(index_of_digit))
 
                     for i, comb in enumerate(temparr):
                         result = rule.copy()
@@ -149,30 +221,47 @@ class PolicyBuilder:
                         for i, value in enumerate(comb):
                             result[wildcard_indices[i]] = value
 
+                        logging.debug("Adding rule: " + str(result))
                         permutations.append(result)
 
+        logging.debug("Final perms: " + str(permutations))
         return permutations
 
     def account_for_new_rule(self, old_rules, new_rule):
+        logging.debug("Accounting for new rule")
         permutations = []
         wildcard_indices = [
             i for i, element in enumerate(new_rule) if element == "*"
         ]  # For new * rule
         currperm = [x for x in new_rule if x.isdigit()]  # Digit value
-        logging.debug("Combinations:")
+        # logging.debug("Combinations:")
+
+        logging.debug(
+            "Wildcard indicies for rule: "
+            + str(new_rule)
+            + "Is: " + str(wildcard_indices)
+            + " currperm is: "
+            + str(currperm)
+        )
 
         if len(old_rules) > 1 and len(wildcard_indices) > 1:
-            index_of_digit = next(
-                (index for index, element in enumerate(new_rule) if element.isdigit())
-            )
-            currperm = [x for x in new_rule if x.isdigit()]
+            # logging.debug("index_of digit: " + str(next((index for index, element in enumerate(new_rule) if element.isdigit()))))
+            # index_of_digit = next((index for index, element in enumerate(new_rule) if element.isdigit()))
+            index_of_digit = next(index for index, element in enumerate(new_rule) if str(element).isdigit() or (('*' in element) and element.split('*')[0].isdigit()))
+            # if index_of_digit is None:
+            #     return None
+            logging.debug("index of digit: " +str(index_of_digit))
+            currperm = [x for x in new_rule if x.isdigit() or (('*' in x) and x.split('*')[0].isdigit())]
+            logging.debug("currperm: " +str(currperm))
 
             combinations = self.combine_2d_lists_insert(old_rules, wildcard_indices)
             for comb in combinations:
                 comb.insert(index_of_digit, currperm[0])
                 comb.append(new_rule[-1])
+                logging.debug("Combination adding: " + str(comb))
                 permutations.append(comb)
 
+        logging.debug("Perms for acc new rule: " + str(permutations))
         return permutations
 
     def insert_stars_in_between(self, old_rules, new_rule):
@@ -182,6 +271,7 @@ class PolicyBuilder:
                 for old_rule in old_rules:
                     temp = new_rule.copy()
                     temp[i] = old_rule[i]
+                    logging.debug("Inserting starts in between: " + str(temp))
                     permutations.append(temp)
         return permutations
 
@@ -196,7 +286,7 @@ class PolicyBuilder:
 
         # logging.debug("from first:")
         # logging.debug(permutations)
-
+        
         permutations.extend(self.account_for_new_rule(old_rules, new_rule))
 
         # logging.debug("From products: ")
@@ -214,7 +304,7 @@ class PolicyBuilder:
 
     def to_binary_if_not_already(self, num):
         if not self.is_binary(num):
-            return bin(int(num))[2:].zfill(self.codewordLength)
+            return bin(int(num))[2:]  # .zfill(self.codewordLength)
         return num
 
     def insertRule(self, rule):

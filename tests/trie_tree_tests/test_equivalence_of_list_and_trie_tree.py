@@ -37,7 +37,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         logging.basicConfig(
             format="%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s",
             datefmt="%d-%m-%Y:%H:%M:%S",
-            level=logging.INFO,
+            level=logging.DEBUG,
             filename="logs.txt",
         )
 
@@ -189,7 +189,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         pr.enable()
         ruleList = []
         random.seed(311415)
-        for _ in range(0, 303):  # NUM RULES
+        for _ in range(0, 103):  # NUM RULES
             rule = ["", "", "", ""]
             for i in range(0, 3):
                 chance = random.randint(0, 100)
@@ -277,65 +277,6 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         pr.disable()
         pr.print_stats(sort="time")
 
-    def test_performance(self):
-        ruleList = []
-        random.seed(311415)
-        for k in range(0, 1000):
-            rule = ["", "", "", ""]
-            for i in range(0, 3):
-                chance = random.randint(0, 100)
-                if chance <= 2:
-                    rule[i] = str(random.randint(0, 25))
-                elif chance > 2 and chance <= 4:
-                    rule[i] = "*"
-                elif chance > 4:
-                    rule[i] = format(random.randint(0, 25), "b") + "*"
-            chance = random.randint(0, 100)
-            if chance < 25:
-                rule[3] = "alpha"
-            elif chance >= 25 and chance <= 50:
-                rule[3] = "beta"
-            elif chance > 50 and chance < 75:
-                rule[3] = "gamma"
-            elif chance >= 75:
-                rule[3] = "hotel"
-            ruleList.append(rule)
-
-        for rule in ruleList:
-            if rule[:3] == ["*", "*", "*"]:
-                logging.debug("Throwing out ***" + str(rule))
-                continue
-            logging.debug("New inserted packet: " + str(rule))
-            # file.write(str(rule)+"\n")
-            self.policyBuilder.insertRule(rule)
-
-        # file.close()
-        self.policyBuilder.insertRule(("*", "*", "*", "delta"))
-
-        # file = open("list_firewall.txt", "w")
-        # file.write(self.listFirewall.getRules())
-        # file.close()
-
-        for rank, rule in enumerate(self.policyBuilder.previousRuleTuple):
-            self.hashTable.insert(rule[1], (rule[0], rank))
-
-        # self.tree0.drawGraph(html = True)
-        packetList = []
-        for i in range(0, 100):
-            packet = (
-                str(random.randint(0, 25)),
-                str(random.randint(0, 25)),
-                str(random.randint(0, 25)),
-            )
-
-            codeword = self.policyBuilder.retriveCodeword(packet)
-            if codeword is None:
-                codeword = self.hashTable.defualtRule[0][3]
-
-            self.policyBuilder.writeCodewords()
-
-            packetList.append(packet)
-            self.policyBuilder.retriveCodeword(packet)
 
     def test_twoTrees(self):
         rule0 = ("5", "12", "alpha")
@@ -401,7 +342,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         pr = cProfile.Profile()
         pr.enable()
 
-        ruleList = self.generate_rule_list(15, tree_count)  # Num of rules!
+        ruleList = self.generate_rule_list(10, tree_count)  # Num of rules!
 
         for rule in ruleList:
             if rule[:tree_count] == ["*"] * tree_count:
@@ -411,8 +352,12 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             self.policyBuilder.insertRule(rule)
             self.listFirewall.insertRule(rule)
 
-        self.policyBuilder.insertRule(("*",) * tree_count + ("delta",))
-        self.listFirewall.insertRule(("*",) * tree_count + ("delta",))
+        self.policyBuilder.insertRule(("*",) * tree_count + ("Zooted",))
+        self.listFirewall.insertRule(("*",) * tree_count + ("Zooted",))
+
+        file = open("list_firewall.txt", "w")
+        file.write(self.listFirewall.getRules())
+        file.close()
 
         for rank, rule in enumerate(self.policyBuilder.previousRuleTuple):
             self.hashTable.insert(rule[1], (rule[0], rank))
@@ -420,10 +365,10 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         # self.tree0.drawGraph(html=True)
         self.policyBuilder.writeCodewords()
         packetList = [
-            self.generate_packet(tree_count) for _ in range(1000)
+            self.generate_packet(tree_count) for _ in range(10000000)
         ]  # Number of packets
         for i, packet in enumerate(packetList):
-            logging.debug("\nNEW PACKET:       packetnum: " + str(i))
+            logging.debug("_____NEW PACKET:       packetnum: " + str(i))
 
             codeword = self.policyBuilder.retriveCodeword(packet)
             if codeword is None:
@@ -465,30 +410,43 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         return ruleList
 
     def generate_rule_element(self, i):
-        range_num = 2**16
-        chance = random.randint(0, 40)
-        if chance <= 2:
+        range_num = 15 #2**16
+        chance = random.randint(0, 50)
+        if chance <= 4:
             return str(random.randint(0, range_num))
-        elif chance <= 4:
+        elif chance <= 16:
             return "*"
         else:
             return format(random.randint(0, range_num), "b") + "*"
 
     def generate_action(self):
         chance = random.randint(0, 100)
-        if chance < 25:
+        if chance < 10:
             return "alpha"
-        elif chance <= 50:
+        elif chance < 20:
             return "beta"
-        elif chance < 75:
+        elif chance < 30:
             return "gamma"
+        elif chance < 40:
+            return "delta"
+        elif chance < 50:
+            return "epsilon"
+        elif chance < 60:
+            return "zeta"
+        elif chance < 70:
+            return "eta"
+        elif chance < 80:
+            return "theta"
+        elif chance < 90:
+            return "iota"
         else:
-            return "hotel"
+            return "kappa"
 
     # The rest of the helper functions remain unchanged
 
     def generate_packet(self, tree_count):
-        return tuple(str(random.randint(0, 2**16)) for _ in range(tree_count))
+        range_num = 15 #2**16
+        return tuple(str(random.randint(0, range_num)) for _ in range(tree_count))
 
     def test_packets(self, packetList, tree_count):
         for i, packet in enumerate(packetList):
@@ -507,7 +465,6 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             logging.debug("looking up hash op: " + str(self.hashTable.lookup(codeword)))
 
             self.policyBuilder.writeCodewords()
-
             logging.debug(
                 "packetnumber: "
                 + str(i)
@@ -515,7 +472,6 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
                 + str(packet)
                 + str(self.listFirewall.lookup(packet))
             )
-
             self.assertEqual(
                 self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[0][3]
             )

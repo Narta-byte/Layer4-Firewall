@@ -23,32 +23,6 @@ class TestErrorCase(unittest.TestCase):
         self.init3Trees()
         self.listFirewall = listFirewall.ListFirewall()
 
-        ruleList = [
-            ["*", "*", "3", "alpha"],
-            ["0", "2", "*", "beta"],
-            ["*", "2", "3", "delta"],
-            ["*", "*", "*", "gamma"],
-        ]
-        self.initListAndTreeFirewalls(ruleList)
-        packet = ["8", "2", "3"]
-
-        codeword = self.policyFactory.retriveCodeword(packet)
-
-        logging.debug("codeword: " + str(codeword) + " for packet " + str(packet))
-        if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
-            self.logDifference(packet, codeword)
-
-        logging.debug(
-            "In firewall: "
-            + str(self.listFirewall.lookup(packet))
-            + " | in hash: "
-            + str(self.hashTable.lookup(codeword)[3])
-        )
-
-        self.assertEqual(
-            self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3]
-        )
-
     def test_permutations(self):
         self.init3Trees()
         self.listFirewall = listFirewall.ListFirewall()
@@ -225,6 +199,8 @@ class TestErrorCase(unittest.TestCase):
             ["*", "*", "0100", "alpha"],
         ]
 
+        logging.debug("Rulelist from test: ")
+        logging.debug(ruleList)
         self.initListAndTreeFirewalls(ruleList)
         packetList = [["0010", "0", "0100"]]  # ,  ['1', '3', '2']]
 
@@ -249,9 +225,9 @@ class TestErrorCase(unittest.TestCase):
         self.listFirewall = listFirewall.ListFirewall()
         ruleList = [
             ["1", "*", "0", "alpha"],
-            ["*", "0", "3", "beta"],
+            ["*", "0", "3", "gaf"],
             ["*", "*", "0", "beta"],
-            # ['*', '*', '*', 'delta']
+            ["*", "*", "*", "delta"],
         ]
         self.initListAndTreeFirewalls(ruleList)
         packetList = [["5", "1", "0"]]  # ,  ['1', '3', '2']]
@@ -327,13 +303,13 @@ class TestErrorCase(unittest.TestCase):
                 self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3]
             )
 
-        # def test_errorcaseTEMP(self):
+    def test_errorcaseTEMP(self):
         self.init3Trees(treeDepth=4)
         self.listFirewall = listFirewall.ListFirewall()
         self.listFirewall.treeDepth = 4
         self.policyFactory.codewordLength = 4
         ruleList = [
-            ["0*", "*", "5", "gamma"],
+            ["0*", "*", "5", "beta"],
             ["3", "0", "101*", "gamma"],
             ["*", "*", "*", "charlie"],
         ]

@@ -2,7 +2,6 @@ import random
 import logging
 import time
 import re
-import itertools
 
 
 class PolicyBuilder:
@@ -14,10 +13,7 @@ class PolicyBuilder:
         self.codewordLength = 16
         self.nextCodeword = 0
         self.treeDepth = 16
-        self.previousRulePrefixes = (
-            set()
-        )  # Add this line to store previous rule prefixes
-        self.tempRules = []
+        self.store_inserted = []
 
     def insertRuleIntoTree(self, rule, tree):
         ruleCodeword = ""
@@ -40,6 +36,13 @@ class PolicyBuilder:
         return intersection_codeword
 
     def combine_2d_lists_insert(self, list_2d, indexes):
+        # result = []
+        # for sublist1 in list_2d:
+        #     first_element = sublist1[indexes[0]]
+        #     for sublist2 in list_2d:
+        #         result.append([first_element, sublist2[indexes[1]]])
+        # return result
+
         result = []
         unique_sublists = set()
         for sublist1 in list_2d:
@@ -54,30 +57,35 @@ class PolicyBuilder:
         return result
 
     def combine_2d_lists(self, list_2d):
+        # if len(list_2d) > 1:
+        # result = [
+        #     [sublist1[0], sublist2[1]] for sublist1 in list_2d for sublist2 in list_2d
+        # ]
+        # return result
+
         logging.info("Combining:")
-        if len(list_2d) > 1:
-            unique_sublists = set()
-            result = []
+        # if len(list_2d) > 1:
+        unique_sublists = set()
+        result = []
 
-            for i, sublist1 in enumerate(list_2d):
-                for sublist2 in list_2d[i:]:
-                    new_sublist = (sublist1[0], sublist2[1])
-                    if new_sublist not in unique_sublists:
-                        unique_sublists.add(new_sublist)
-                        result.append(list(new_sublist))
+        for i, sublist1 in enumerate(list_2d):
+            for sublist2 in list_2d[i:]:
+                new_sublist = (sublist1[0], sublist2[1])
+                if new_sublist not in unique_sublists:
+                    unique_sublists.add(new_sublist)
+                    result.append(list(new_sublist))
 
-            logging.info("Done lists:")
-            logging.debug(result)
-            return result
+        logging.info("Done lists:")
+        logging.debug(result)
+        return result
 
     def remove_duplicate_elements(self, array):
         unique_elements = []
         seen = {}
 
-        logging.debug("Removing duplicate element")
+        logging.debug("Removed elements:")
         for element in array:
             key = tuple(element[:3]) if isinstance(element, list) else element[:3]
-
             if key not in seen:
                 unique_elements.append(element)
                 seen[key] = True
@@ -96,52 +104,62 @@ class PolicyBuilder:
         except StopIteration:
             return None
 
-    def process_old_rules_with_new_rule(self, old_rules, new_rule):
+    def account_for_old_rules(self, old_rules, new_rule):
         permutations = []
         for rule_index, rule in enumerate(old_rules):
             temp = rule.copy()
             temparr = []
+            result = []
             if temp.__contains__("*"):
                 wildcard_indices = [
                     i for i, element in enumerate(temp) if element == "*"
-                ]
+                ]  # For new * rule
 
                 currperm = [x for x in rule if x.isdigit()]
+                # logging.debug("currperm: " + str(currperm))
                 for i, field in enumerate(rule):
                     if field == "*":
                         temp[i] = new_rule[i]
                 permutations.append(temp)
 
-                if (
-                    rule.count("*") > 1
-                ):  # Make combine_2d_lists able to take lists * > 0
+                if rule.count("*") > 1:
+                    # Make combine_2d_lists able to take lists * > 0
                     extended_rules = old_rules + [new_rule]
                     rest_rules_elements = [
                         extended_rules[i][:-1]
                         for i in range(rule_index + 1, len(extended_rules))
                     ]
+
                     for rest in rest_rules_elements:
                         temparr.append([rest[i] for i in wildcard_indices])
+                    # logging.debug("temparr Before:")
+                    # logging.debug(temparr)
 
                     temparr = self.combine_2d_lists(temparr)
+                    # logging.debug("temparr AFTer::")
+                    # logging.debug((self.combine_2d_lists(temparr)))
+                    logging.debug(temparr)
 
                 if temparr and currperm:
                     index_of_digit = self.find_first_digit_index(rule)
+
                     for i, comb in enumerate(temparr):
-                        result = [None] * (len(new_rule) - 1)
+                        result = rule.copy()
 
                         for i, value in enumerate(comb):
                             result[wildcard_indices[i]] = value
 
-                        result[index_of_digit] = currperm[0]
-                        result.append(rule[-1])
                         permutations.append(result)
+
         return permutations
 
-    def process_new_rule_with_wildcards_and_old_rules(self, old_rules, new_rule):
+    def account_for_new_rule(self, old_rules, new_rule):
         permutations = []
-        wildcard_indices = [i for i, element in enumerate(new_rule) if element == "*"]
-        currperm = [x for x in new_rule if x.isdigit()]
+        wildcard_indices = [
+            i for i, element in enumerate(new_rule) if element == "*"
+        ]  # For new * rule
+        currperm = [x for x in new_rule if x.isdigit()]  # Digit value
+        logging.debug("Combinations:")
 
         if len(old_rules) > 1 and len(wildcard_indices) > 1:
             index_of_digit = next(
@@ -157,8 +175,9 @@ class PolicyBuilder:
 
         return permutations
 
-    def process_new_rule_with_wildcards(self, old_rules, new_rule, permutations):
-        for i, value in enumerate(new_rule):  # Inserts eg *19 and 54*
+    def insert_stars_in_between(self, old_rules, new_rule):
+        permutations = []
+        for i, value in enumerate(new_rule):  # Insert eg * 19 and 64 *
             if value == "*":
                 for old_rule in old_rules:
                     temp = new_rule.copy()
@@ -173,77 +192,78 @@ class PolicyBuilder:
             permutations.append(new_rule)
             return permutations
 
-        permutations.extend(self.process_old_rules_with_new_rule(old_rules, new_rule))
+        permutations.extend(self.account_for_old_rules(old_rules, new_rule))
 
-        # for permutation in self.process_old_rules_with_new_rule(old_rules, new_rule):
-        #     permutations.append(permutation)
+        # logging.debug("from first:")
+        # logging.debug(permutations)
 
-        permutations.extend(self.process_old_rules_with_new_rule(old_rules, new_rule))
+        permutations.extend(self.account_for_new_rule(old_rules, new_rule))
 
-        permutations = self.process_new_rule_with_wildcards(
-            old_rules, new_rule, permutations
-        )
+        # logging.debug("From products: ")
+        # logging.debug(permutations)
+
+        permutations.extend(self.insert_stars_in_between(old_rules, new_rule))
 
         permutations.append(new_rule)
 
         permutations = self.remove_duplicate_elements(permutations)  # duplikater
-
         return permutations
 
+    def is_binary(self, num):
+        return all(digit == "0" or digit == "1" for digit in num)
+
+    def to_binary_if_not_already(self, num):
+        if not self.is_binary(num):
+            return bin(int(num))[2:].zfill(self.codewordLength)
+        return num
+
     def insertRule(self, rule):
-        if self.ruleIsSubset(rule):
-            logging.debug("Inserted rule is subset.. Return" + str(rule))
-            return
+        # rule = [self.to_binary_if_not_already(x) if x.isdigit() else x for x in rule]
+        logging.debug("_______ New inserted rule ______" + str(rule))
 
         if rule.count("*") == self.ruleLength - 1:
             rule_codeword = self.insertRuleIntoTree(rule, self.treeList)
             self.previousRuleTuple.append((rule, rule_codeword))
-            # self.tempRules.append(rule)
-            self.previousRulePrefixes.add(tuple(rule))
+            # self.previousRulePrefixes.add(tuple(rule))
             logging.debug("Returned cus default")
-            return
 
-        # logging.debug("Check for subset manually")
+        # elif self.ruleIsSubset(rule):
+        #     logging.debug("Inserted rule is subset.. Return" + str(rule))
+        #     return
+
         # for prevrules in self.previousRuleTuple:
-        #     logging.debug("prevrules: " +str(prevrules[0]))
-        #     if all(prev == '*' or prev == curr for prev, curr in zip(prevrules[0][:-1], rule)):
+        #     logging.debug("prevrules: " + str(prevrules[0]))
+        #     if all(
+        #         prev == "*" or prev == curr
+        #         for prev, curr in zip(prevrules[0][:-1], rule)
+        #     ):
         #         logging.debug("This rules?" + str(rule))
         #         return
+
+        self.store_inserted.append(rule)
 
         rule_codeword = self.insertRuleIntoTree(rule, self.treeList)
 
         if not self.previousRuleTuple:
             self.previousRuleTuple.append((rule, rule_codeword))
-            self.tempRules.append(rule)
-            self.previousRulePrefixes.add(tuple(rule))
             logging.debug("First rule. INSERT. Nothing more")
             return
 
-        # logging.debug("alle temp rules: ")
-        # logging.debug(self.tempRules)
-        rule_permutations = self.generate_permutations(self.tempRules, rule)
+        rule_permutations = self.generate_permutations(self.store_inserted, rule)
 
-        # logging.debug("Output perms: ")
-        # for rules in rule_permutations:
-        #    logging.debug(rules)
-
-        # logging.debug("prevRule tuple!! ")
-        # for perms in self.previousRuleTuple:
-        #     logging.debug(perms)
-
-        logging.debug("Add codewords:")
         for output_rule in rule_permutations:
             intersection_codeword = self.createIntersectionCodeword(output_rule)
             self.previousRuleTuple.append((output_rule, intersection_codeword))
-            self.tempRules.append(output_rule)
 
         logging.debug("prevRule tuple!! ")
         for perms in self.previousRuleTuple:
             logging.debug(perms)
 
-    def ruleIsSubset(self, rule):
-        # logging.debug("self.matches : " + str(self.matches(previousRule, currRule)))
+        logging.debug("Store inserted tuple!! ")
+        for ins in self.store_inserted:
+            logging.debug(ins)
 
+    def ruleIsSubset(self, rule):
         codeword = ""
         logging.debug("rule is subset: " + str(rule))
         rule = rule[: self.ruleLength - 1]
@@ -287,11 +307,6 @@ class PolicyBuilder:
         for rule in self.previousRuleTuple:
             file.write(str(rule[0]) + " " + rule[1] + "\n")
         file.close()
-        # rules_list = [list(rule) for rule in self.previousRulePrefixes]
-        # file = open("codewords2.txt", "w")
-        # for rules in self.previousRulePrefixes:
-        #     file.write(str(rules[0]) + " " + str(rules[1]) + " " + str(rules[2]) + "\n")
-        # file.close
 
     def getRuleTuple(self):
         output = ""
@@ -301,19 +316,3 @@ class PolicyBuilder:
 
     def setSeed(self, seed):
         random.seed(seed)
-
-
-# def remove_duplicate_elements(array):
-#     unique_elements = []
-
-#     for element in array:
-#         duplicate = False
-#         for unique_element in unique_elements:
-#             if element[:3] == unique_element[:3]:
-#                 duplicate = True
-#                 break
-
-#         if not duplicate:
-#             unique_elements.append(element)
-
-#     return unique_elements

@@ -303,35 +303,6 @@ class TestErrorCase(unittest.TestCase):
                 self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3]
             )
 
-    def test_errorcaseTEMP(self):
-        self.init3Trees(treeDepth=4)
-        self.listFirewall = listFirewall.ListFirewall()
-        self.listFirewall.treeDepth = 4
-        self.policyFactory.codewordLength = 4
-        ruleList = [
-            ["0*", "*", "5", "beta"],
-            ["3", "0", "101*", "gamma"],
-            ["*", "*", "*", "charlie"],
-        ]
-        self.initListAndTreeFirewalls(ruleList)
-        packetList = [["3", "4", "5"]]
-
-        for packet in packetList:
-            codeword = self.policyFactory.retriveCodeword(packet)
-
-            logging.debug("codeword: " + str(codeword) + " for packet " + str(packet))
-            if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
-                self.logDifference(packet, codeword)
-            logging.debug(
-                "In firewall : "
-                + str(self.listFirewall.lookup(packet))
-                + ", in hash: "
-                + str(self.hashTable.lookup(codeword)[3])
-            )
-            self.assertEqual(
-                self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3]
-            )
-
     def test_newbug(self):
         self.init3Trees(treeDepth=4)
         self.listFirewall = listFirewall.ListFirewall()
@@ -361,36 +332,6 @@ class TestErrorCase(unittest.TestCase):
                 self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3]
             )
 
-    def test_surprisebug(self):
-        self.init3Trees(treeDepth=16)
-        self.listFirewall = listFirewall.ListFirewall()
-        ruleList = [
-            ["17", "1101*", "1111*", "alpha"],
-            ["*", "10*", "11010*", "alpha"],
-            ["0*", "11100*", "10011*", "hotel"],
-            ["*", "*", "*", "delta"],
-        ]
-
-        self.initListAndTreeFirewalls(ruleList)
-        #        self.initListAndTreeFirewalls(['*', '*', '*', 'delta'])
-
-        packetList = [["17", "10", "38"]]  # ,["1","2","3"]] #['12','1','1']]
-
-        for packet in packetList:
-            codeword = self.policyFactory.retriveCodeword(packet)
-
-            logging.debug("codeword: " + str(codeword) + " for packet " + str(packet))
-            if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
-                self.logDifference(packet, codeword)
-            logging.debug(
-                "different decisions : "
-                + str(self.listFirewall.lookup(packet))
-                + ", "
-                + str(self.hashTable.lookup(codeword)[3])
-            )
-            self.assertEqual(
-                self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3]
-            )
 
     def test_should_never_have_happened(self):
         self.init3Trees()
@@ -906,6 +847,35 @@ class TestErrorCase(unittest.TestCase):
             )
             if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
                 self.logDifference(packet, codeword)
+            logging.debug(
+                "In firewall : "
+                + str(self.listFirewall.lookup(packet))
+                + ", in hash: "
+                + str(self.hashTable.lookup(codeword)[3])
+            )
+            self.assertEqual(
+                self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3]
+            )
+
+    def test_last_test_here(self):
+        self.init3Trees(treeDepth=4)
+        self.listFirewall = listFirewall.ListFirewall()
+        self.listFirewall.treeDepth = 4
+        self.policyFactory.codewordLength = 4
+        ruleList = [
+['*', '*', '3', 'b'],
+['13', '*', '*', 'c'],
+['*', '5', '10*', 'k'],
+('*', '*', '*', 'Zooted')
+
+        ]
+        self.initListAndTreeFirewalls(ruleList)
+        packetList = [["13", "5", "3"]]
+
+        for packet in packetList:
+            codeword = self.policyFactory.retriveCodeword(packet)
+
+            logging.debug("codeword: " + str(codeword) + " for packet " + str(packet))
             logging.debug(
                 "In firewall : "
                 + str(self.listFirewall.lookup(packet))

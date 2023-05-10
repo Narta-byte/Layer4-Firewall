@@ -5,7 +5,10 @@ class ListFirewall:
     def __init__(self):
         self.rules = []
         self.treeDepth = 16
+        self.codewordLength = 4
     def insertRule(self, rule):
+        rule = [element[:-1] if (len(element) == self.codewordLength + 1 and element[-1] == "*" and element[:-1].isdigit())
+        else element for element in rule]
         self.rules.append(rule)
         
     def lookup(self, inputPacket):

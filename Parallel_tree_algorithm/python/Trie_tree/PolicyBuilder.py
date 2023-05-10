@@ -14,6 +14,8 @@ class PolicyBuilder:
         self.nextCodeword = 0
         self.treeDepth = 16
         self.store_inserted = []
+        self.unique_sublists = set()
+        self.store_prev_rules = set()
 
     def insertRuleIntoTree(self, rule, tree):
         ruleCodeword = ""
@@ -62,20 +64,54 @@ class PolicyBuilder:
         #     [sublist1[0], sublist2[1]] for sublist1 in list_2d for sublist2 in list_2d
         # ]
         # return result
-
         logging.info("Combining:")
+        logging.debug("in combine_2d_lsts, list_2d: " + str(len(list_2d)))
         # if len(list_2d) > 1:
+        # unique_sublists = set()
+        # result = []
+
+        # for i, sublist1 in enumerate(list_2d):
+        #     for sublist2 in list_2d[i:]:
+        #         new_sublist = (sublist1[0], sublist2[1])
+        #         if new_sublist not in unique_sublists:
+        #             unique_sublists.add(new_sublist)
+        #             result.append(list(new_sublist))
+
+        # unique_sublists = set()
+        # unique_sublists2 = set()
+        # result = []
+
+        # for i, sublist1 in enumerate(list_2d):
+        #     for sublist2 in list_2d[i:]:
+        #         new_sublist = (sublist1[0], sublist2[1])
+        #         new_sublist2 = (sublist2[0], sublist1[1])
+        #         if new_sublist2 not in unique_sublists:
+        #             self.unique_sublists.add(new_sublist2)
+        #             result.append(list(new_sublist2))
+        #         if new_sublist not in unique_sublists:
+        #             self.unique_sublists.add(new_sublist)
+        #             result.append(list(new_sublist))
+
+    
         unique_sublists = set()
         result = []
 
-        for i, sublist1 in enumerate(list_2d):
+        for i in range(len(list_2d)):
+            sublist1 = list_2d[i]
             for sublist2 in list_2d[i:]:
                 new_sublist = (sublist1[0], sublist2[1])
+                new_sublist2 = (sublist2[0], sublist1[1])
+
+                if new_sublist2 not in unique_sublists:
+                    unique_sublists.add(new_sublist2)
+                    result.append(list(new_sublist2))
+
                 if new_sublist not in unique_sublists:
                     unique_sublists.add(new_sublist)
                     result.append(list(new_sublist))
 
         return result
+
 
     def remove_duplicate_elements(self, array):
         unique_elements = []
@@ -94,16 +130,7 @@ class PolicyBuilder:
 
     def find_first_digit_index(self, sequence):
         try:
-            logging.debug(
-                "find_first_digit_index: "
-                + str(
-                    next(
-                        index
-                        for index, element in enumerate(sequence)
-                        if str(element).isdigit()
-                    )
-                )
-            )
+            logging.debug("find_first_digit_index: "+ str(next(index for index, element in enumerate(sequence) if str(element).isdigit())))
             return next(
                 index
                 for index, element in enumerate(sequence)
@@ -114,16 +141,19 @@ class PolicyBuilder:
             return None
 
     def contains_star_and_digit(self, s):
-        return "*" in s and any(char.isdigit() for char in s)
+        # return "*" in s and any(char.isdigit() for char in s)
+        return bool(re.search(r"\d+\*", s))
 
     def account_for_old_rules(self, old_rules, new_rule):
         logging.debug("acc for old rule ")
         permutations = []
         for rule_index, rule in enumerate(old_rules):
+            logging.debug("New rule is still: " + str(new_rule))
+            logging.debug("_____Curr old rule: " + str(rule) + " rule index: " + str(rule_index))
             temp = rule.copy()
             temparr = []
             result = []
-            if temp.__contains__("*"):
+            if temp.__contains__("*") or any(self.contains_star_and_digit(item) for item in temp):
                 # wildcard_indices = [
                 #     i for i, element in enumerate(temp) if element == "*"
                 # ]  # For new * rule
@@ -132,29 +162,12 @@ class PolicyBuilder:
                 ]  # or self.contains_star_and_digit(element)]
                 # wildcard_indices = [0,1,2]
                 range_indices = [
-                    i
-                    for i, element in enumerate(temp)
-                    if "*" in element and any(char.isdigit() for char in element)
-                ]
+                    i for i, element in enumerate(temp) if "*" in element and any(char.isdigit() for char in element)]
 
-                # currperm = [x for x in rule if x.isdigit()]
-                currperm = [
-                    x
-                    for x in rule
-                    if x.isdigit() or (("*" in x) and x.split("*")[0].isdigit())
-                ]
-                logging.debug(
-                    "Wildcard indicies for rule old rule: "
-                    + str(rule)
-                    + "\nIs: "
-                    + str(wildcard_indices)
-                    + "\nSubrange indecies: "
-                    + str(range_indices)
-                    + "\nwholenum is: "
-                    + str(currperm)
-                )
-                #if len(wildcard_indices) >= 2:
-                min_value, max_value = 0, max(wildcard_indices)
+                currperm = [x for x in rule if x.isdigit() or (("*" in x) and x.split("*")[0].isdigit())]
+                logging.debug("Wildcard indicies for rule old rule: "+ str(rule)+ "\nIs: "+ str(wildcard_indices)+ "\nSubrange indecies: "+ str(range_indices)+ "\nwholenum is: "+ str(currperm))
+                # if len(wildcard_indices) >= 2:
+                min_value, max_value = (0,self.ruleLength - 2,)  # max(wildcard_indices)
 
                 # Create a list of all numbers between the minimum and maximum values
                 all_numbers = list(range(min_value, max_value + 1))
@@ -162,63 +175,48 @@ class PolicyBuilder:
                 # Find the missing numbers using a list comprehension
                 missing_numbers = [num for num in all_numbers if num not in wildcard_indices]
 
-                logging.debug("Missing nums: "  + str(missing_numbers))
+                logging.debug("Missing nums: " + str(missing_numbers))
                 if missing_numbers:
-                    logging.debug(rule[missing_numbers[0]])
-                    if self.contains_star_and_digit(rule[missing_numbers[0]]) and \
-                    new_rule[missing_numbers[0]] != '*' and \
-                        not self.contains_star_and_digit(new_rule[missing_numbers[0]]):
+                    logging.debug("rule[missingnums]: " + str(rule[missing_numbers[0]]))
+                    logging.debug("old rule: " + str(rule))
+                    logging.debug("new rule: " + str(new_rule))
+
+                    if (
+                        self.contains_star_and_digit(rule[missing_numbers[0]])
+                        and new_rule[missing_numbers[0]] != "*"
+                        and not self.contains_star_and_digit(new_rule[missing_numbers[0]])):
                         logging.debug("fields:")
-                        fieldmax = int(rule[missing_numbers[0]].split('*')[0].ljust(self.codewordLength, "1"),2)
-                        fieldmin = int(rule[missing_numbers[0]].split('*')[0].ljust(self.codewordLength, "0"),2)
+                        fieldmax = int(rule[missing_numbers[0]].split("*")[0].ljust(self.codewordLength, "1"),2,)
+                        fieldmin = int(rule[missing_numbers[0]].split("*")[0].ljust(self.codewordLength, "0"),2,)
                         logging.debug("rule missing num: " + str(new_rule[missing_numbers[0]]))
                         logging.debug("fieldmax: " + str(fieldmax) + " min: " + str(fieldmin))
-                        if int(new_rule[missing_numbers[0]]) < fieldmax and int(new_rule[missing_numbers[0]]) > fieldmin:
+                        if (int(new_rule[missing_numbers[0]]) < fieldmax and int(new_rule[missing_numbers[0]]) > fieldmin):
                             wildcard_indices.insert(missing_numbers[0], missing_numbers[0])
-                    
+
                 logging.debug("wildcard indices after if: " + str(wildcard_indices))
                 for i, field in enumerate(rule):
-                    # wildcard_indices = [i for i, element in enumerate(temp) if element == "*" or int(new_rule[i]) < int(element.split("*")[0].ljust(self.codewordLength, "1"),2) and int(new_rule[i]) >= int(field[0].ljust(self.codewordLength, "0"), 2)]
-                    # lst = [0, 2]
-                    # Generate a list of numbers between the elements in lst
-
-
-                    # logging.debug(temp)
-                    # if numbers_between:
-                    #     if i == numbers_between[0]:
-                    #         logging.debug("We here")
-                    #         if self.contains_star_and_digit(rule[i]):
-                    #             if new_rule[i] != "*":
-                    #                 if int(new_rule[i]) <= int(
-                    #                     field.split("*")[0].ljust(
-                    #                         self.codewordLength, "1"
-                    #                     ),
-                    #                     2,
-                    #                 ) and int(new_rule[i]) >= int(
-                    #                     field.split("*")[0].ljust(
-                    #                         self.codewordLength, "0"
-                    #                     ),
-                    #                     2,
-                    #                 ):
-                    #                     logging.debug("we her?")
-
                     temp = rule.copy()
+                    logging.debug("Temp is equal to: " + str(temp))
                     if field == "*":
                         temp[i] = new_rule[i]
                         if temp != rule:
-                            logging.debug("added temp in *: " + str(temp))
-                            permutations.append(temp)
+                            if tuple(temp[:-1]) not in self.store_prev_rules:
+                                logging.debug("added temp in *: " + str(temp))
+                                permutations.append(temp)
                         # continue
                     if self.contains_star_and_digit(field):
                         logging.debug("This contains star and digit: " + str(field))
                         field = field.split("*")
                         logging.debug("This contains digit: " + str(field[0]))
-                        logging.debug("This contains digit max: " + str(int(field[0].ljust(self.codewordLength, "1"), 2)))
+                        logging.debug("This contains digit max: "+ str(int(field[0].ljust(self.codewordLength, "1"), 2)))
                         logging.debug("This contains digit min: "+ str(int(field[0].ljust(self.codewordLength, "0"), 2)))
                         logging.debug("Field is in between range?: " + str(new_rule[i]))
                         logging.debug(int(field[0].ljust(self.codewordLength, "0"), 2))
 
-                        if self.contains_star_and_digit(new_rule[i]):
+                        if (
+                            self.contains_star_and_digit(new_rule[i])
+                            or new_rule[i] == "*"
+                        ):
                             logging.debug("new rule contains star and digit: ")
                             if len(new_rule[i]) != field:
                                 logging.debug("lengths are different")
@@ -240,8 +238,17 @@ class PolicyBuilder:
                             # permutations.append(temp)
                             continue
 
-                        logging.debug(int(new_rule[i]) <= int(field[0].ljust(self.codewordLength, "1"), 2) and int(new_rule[i]) >= int(field[0].ljust(self.codewordLength, "0"), 2))
-                        if int(new_rule[i]) <= int(field[0].ljust(self.codewordLength, "1"), 2) and int(new_rule[i]) >= int(field[0].ljust(self.codewordLength, "0"), 2):
+                        logging.debug(
+                            int(new_rule[i])
+                            <= int(field[0].ljust(self.codewordLength, "1"), 2)
+                            and int(new_rule[i])
+                            >= int(field[0].ljust(self.codewordLength, "0"), 2)
+                        )
+                        if int(new_rule[i]) <= int(
+                            field[0].ljust(self.codewordLength, "1"), 2
+                        ) and int(new_rule[i]) >= int(
+                            field[0].ljust(self.codewordLength, "0"), 2
+                        ):
                             logging.debug("In if at pos: " + str(i))
                             logging.debug(temp)
                             temp[i] = new_rule[i]
@@ -262,14 +269,17 @@ class PolicyBuilder:
                     logging.debug(
                         "count * > 1 before old: " + str(rule) + "new: " + str(new_rule)
                     )
-                    extended_rules = old_rules + [new_rule]
-                    rest_rules_elements = [
-                        extended_rules[i][:-1]
-                        for i in range(rule_index + 1, len(extended_rules))
-                    ]
+                    # extended_rules = old_rules + [new_rule]
+                    # rest_rules_elements = [
+                    #     extended_rules[i][:-1]
+                    #     for i in range(rule_index + 1, len(extended_rules))
+                    # ]
 
-                    for rest in rest_rules_elements:
+                    # for rest in reversed(self.store_inserted): #rest_rules_elements:
+                    for rest in self.store_inserted:  # rest_rules_elements:
+                        # for rest in rest_rules_elements:
                         temparr.append([rest[i] for i in wildcard_indices])
+
                     logging.debug("temparr Before:")
                     logging.debug(temparr)
 
@@ -287,8 +297,10 @@ class PolicyBuilder:
                         for i, value in enumerate(comb):
                             result[wildcard_indices[i]] = value
 
-                        logging.debug("Adding rule: " + str(result))
-                        permutations.append(result)
+                        if tuple(result[:-1]) not in self.store_prev_rules:
+                            logging.debug("Adding rule: " + str(result))
+                            # if result[:-1]
+                            permutations.append(result)
 
         logging.debug("Final perms: " + str(permutations))
         return permutations
@@ -334,8 +346,9 @@ class PolicyBuilder:
             for comb in combinations:
                 comb.insert(index_of_digit, currperm[0])
                 comb.append(new_rule[-1])
-                logging.debug("Combination adding: " + str(comb))
-                permutations.append(comb)
+                if tuple(comb[:-1]) not in self.store_prev_rules:
+                    logging.debug("Combination adding: " + str(comb))
+                    permutations.append(comb)
 
         logging.debug("Perms for acc new rule: " + str(permutations))
         return permutations
@@ -347,8 +360,9 @@ class PolicyBuilder:
                 for old_rule in old_rules:
                     temp = new_rule.copy()
                     temp[i] = old_rule[i]
-                    logging.debug("Inserting starts in between: " + str(temp))
-                    permutations.append(temp)
+                    if tuple(temp[:-1]) not in self.store_prev_rules:
+                        logging.debug("Inserting starts in between: " + str(temp))
+                        permutations.append(temp)
         return permutations
 
     def generate_permutations(self, old_rules, new_rule):
@@ -363,7 +377,7 @@ class PolicyBuilder:
         # logging.debug("from first:")
         # logging.debug(permutations)
 
-        permutations.extend(self.account_for_new_rule(old_rules, new_rule))
+        #permutations.extend(self.account_for_new_rule(old_rules, new_rule))
 
         # logging.debug("From products: ")
         # logging.debug(permutations)
@@ -385,17 +399,15 @@ class PolicyBuilder:
 
     def insertRule(self, rule):
         # rule = [self.to_binary_if_not_already(x) if x.isdigit() else x for x in rule]
-        # rule = [
-        #     element[:-1]
-        #     if (
-        #         len(element) == self.codewordLength + 1
-        #         and element[-1] == "*"
-        #         and element[:-1].isdigit()
-        #     )
-        #     else element
-        #     for element in rule
-        # ]
-        logging.debug("_______ New inserted rule ______" + str(rule))
+        if tuple(rule[:-1]) in self.store_prev_rules:
+            logging.debug("inserted rule in already inserted or a perm")
+            return
+        rule = [
+            str(int(element[:-1], 2)) if (len(element) == self.codewordLength + 1 and element[-1] == "*" and element[:-1].isdigit())
+            else element
+            for element in rule
+        ]
+        logging.debug("_______ New inserted rule ______:" + str(rule))
 
         if rule.count("*") == self.ruleLength - 1:
             logging.debug("rule count * == 3: " + str(rule))
@@ -422,22 +434,32 @@ class PolicyBuilder:
 
         if not self.previousRuleTuple:
             self.previousRuleTuple.append((rule, rule_codeword))
+            self.store_prev_rules.add(tuple(rule[:-1]))
             logging.debug("First rule. INSERT. Nothing more")
             return
 
         rule_permutations = self.generate_permutations(self.store_inserted, rule)
+        # logging.debug("prevrule0: " + str(self.previousRuleTuple))
+        # logging.debug("prev inserted: " + str(self.store_inserted))
+        # rule_permutations = self.generate_permutations(self.previousRuleTuple[0][0], rule)
 
         for output_rule in rule_permutations:
             intersection_codeword = self.createIntersectionCodeword(output_rule)
             self.previousRuleTuple.append((output_rule, intersection_codeword))
+            self.store_prev_rules.add(tuple(output_rule[:-1]))
 
-        # logging.debug("prevRule tuple!! ")
-        # for perms in self.previousRuleTuple:
-        #     logging.debug(perms)
+        logging.debug("prevRule tuple!! ")
+        for perms in self.previousRuleTuple:
+            logging.debug(perms)
+        
+        logging.debug("store prevrule tuple!! ")
+        for perms in self.store_prev_rules:
+            logging.debug(perms)
 
-        # logging.debug("Store inserted tuple!! ")
-        # for ins in self.store_inserted:
-        #     logging.debug(ins)
+
+        logging.debug("Store inserted tuple!! ")
+        for ins in self.store_inserted:
+            logging.debug(ins)
 
     def ruleIsSubset(self, rule):
         codeword = ""

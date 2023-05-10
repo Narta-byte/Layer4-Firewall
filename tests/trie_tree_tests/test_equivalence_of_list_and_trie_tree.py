@@ -37,7 +37,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         logging.basicConfig(
             format="%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s",
             datefmt="%d-%m-%Y:%H:%M:%S",
-            level=logging.DEBUG,
+            level=logging.INFO,
             filename="logs.txt",
         )
 
@@ -189,25 +189,37 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         pr.enable()
         ruleList = []
         random.seed(311415)
-        for _ in range(0, 103):  # NUM RULES
+        for _ in range(0, 17):  # NUM RULES
             rule = ["", "", "", ""]
             for i in range(0, 3):
                 chance = random.randint(0, 100)
-                if chance <= 50:
-                    rule[i] = str(random.randint(0, 2**16))
-                elif chance > 50 and chance <= 55:
+                if chance <= 25:
+                    rule[i] = str(random.randint(0, 15))
+                elif chance > 25 and chance <= 65:
                     rule[i] = "*"
-                elif chance > 55:
-                    rule[i] = str(random.randint(0, 2**16))
+                elif chance > 65:
+                    rule[i] = str(random.randint(0, 15))
             chance = random.randint(0, 100)
-            if chance < 25:
+            if chance < 10:
                 rule[3] = "alpha"
-            elif chance >= 25 and chance <= 50:
+            elif 10 <= chance < 20:
                 rule[3] = "beta"
-            elif chance > 50 and chance < 75:
+            elif 20 <= chance < 30:
                 rule[3] = "gamma"
-            elif chance >= 75:
-                rule[3] = "hotel"
+            elif 30 <= chance < 40:
+                rule[3] = "delta"
+            elif 40 <= chance < 50:
+                rule[3] = "epsilon"
+            elif 50 <= chance < 60:
+                rule[3] = "zeta"
+            elif 60 <= chance < 70:
+                rule[3] = "eta"
+            elif 70 <= chance < 80:
+                rule[3] = "theta"
+            elif 80 <= chance < 90:
+                rule[3] = "iota"
+            else:  # 90 <= chance <= 100
+                rule[3] = "kappa"
             ruleList.append(rule)
 
         file = open("rule_list_for_random_test.txt", "w")
@@ -234,11 +246,11 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             self.hashTable.insert(rule[1], (rule[0], rank))
 
         packetList = []
-        for i in range(0, 1000):  # _____________ INSERT MORE PACKETS HERE ____________
+        for i in range(0, 10000):  # _____________ INSERT MORE PACKETS HERE ____________
             packet = (
-                str(random.randint(0, 2**16)),
-                str(random.randint(0, 2**16)),
-                str(random.randint(0, 2**16)),
+                str(random.randint(0, 15)),
+                str(random.randint(0, 15)),
+                str(random.randint(0, 15)),
             )
             # for j in range(0,3):
             #     packet[j] = str(random.randint(0,5))

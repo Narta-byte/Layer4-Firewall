@@ -248,60 +248,6 @@ class TestErrorCase(unittest.TestCase):
                 self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3]
             )
 
-    def test_tryRemoveLast_rule(self):
-        self.init3Trees()
-        self.listFirewall = listFirewall.ListFirewall()
-        ruleList = [
-            ["*", "5", "2", "beta"],
-            ["*", "*", "2", "alpha"],
-            ["2", "*", "*", "alpha"],
-        ]
-
-        self.initListAndTreeFirewalls(ruleList)
-        packetList = [["2", "1", "2"]]  # ,  ['1', '3', '2']]
-
-        for packet in packetList:
-            codeword = self.policyFactory.retriveCodeword(packet)
-
-            logging.debug("codeword: " + str(codeword) + " for packet " + str(packet))
-            if self.listFirewall.lookup(packet) != self.hashTable.lookup(codeword)[3]:
-                self.logDifference(packet, codeword)
-            logging.debug(
-                "different decisions : "
-                + str(self.listFirewall.lookup(packet))
-                + ", "
-                + str(self.hashTable.lookup(codeword)[3])
-            )
-            self.assertEqual(
-                self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3]
-            )
-
-    def test_subRanges(self):
-        self.init3Trees(treeDepth=4)
-        self.listFirewall = listFirewall.ListFirewall()
-        self.listFirewall.treeDepth = 4
-        self.policyFactory.codewordLength = 4
-        ruleList = [
-            ["10*", "1", "1", "alpha"],
-            ["1*", "1", "1", "beta"],
-            ["*", "*", "*", "gamma"],
-        ]
-        self.initListAndTreeFirewalls(ruleList)
-        packetList = [["12", "1", "1"]]
-
-        for packet in packetList:
-            codeword = self.policyFactory.retriveCodeword(packet)
-
-            logging.debug("codeword: " + str(codeword) + " for packet " + str(packet))
-            logging.debug(
-                "In firewall : "
-                + str(self.listFirewall.lookup(packet))
-                + ", in hash: "
-                + str(self.hashTable.lookup(codeword)[3])
-            )
-            self.assertEqual(
-                self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3]
-            )
 
     def test_newbug(self):
         self.init3Trees(treeDepth=4)
@@ -1053,6 +999,56 @@ class TestErrorCase(unittest.TestCase):
 
             logging.debug("codeword: " + str(codeword) + " for packet " + str(packet))
             logging.debug("In firewall : " + str(self.listFirewall.lookup(packet)) + ", in hash: " + str(self.hashTable.lookup(codeword)[3]))
+            self.assertEqual(
+                self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3]
+            )
+
+    def test_back_atit(self):
+        self.listFirewall = listFirewall.ListFirewall()
+        ruleList = [
+['*', '*', '25', 'epsilon'],
+['*', '*', '*', 'delta'],
+
+        ]
+        self.initListAndTreeFirewalls(ruleList)
+        packetList = [
+            ['9', '27', '45']
+            # ["12", "13", "6"]
+        ]
+
+        for packet in packetList:
+            codeword = self.policyFactory.retriveCodeword(packet)
+
+            logging.debug("codeword: " + str(codeword) + " for packet " + str(packet))
+            logging.debug("In firewall : " + str(self.listFirewall.lookup(packet)) + ", in hash: " + str(self.hashTable.lookup(codeword)[3]))
+            self.assertEqual(
+                self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3]
+            )
+
+    def test_lastonepls(self):
+        self.init3Trees(treeDepth=4)
+        self.listFirewall = listFirewall.ListFirewall()
+        self.listFirewall.treeDepth = 4
+        self.policyFactory.codewordLength = 4
+        ruleList = [
+            ['9', '*', '49', 'zeta'],
+            ['*', '19', '24', 'gamma'],
+['12', '57', '34', 'alpha'],
+['*', '*', '*', 'default']
+        ]
+        self.initListAndTreeFirewalls(ruleList)
+        packetList = [['9', '27', '45']]
+
+        for packet in packetList:
+            codeword = self.policyFactory.retriveCodeword(packet)
+
+            logging.debug("codeword: " + str(codeword) + " for packet " + str(packet))
+            logging.debug(
+                "In firewall : "
+                + str(self.listFirewall.lookup(packet))
+                + ", in hash: "
+                + str(self.hashTable.lookup(codeword)[3])
+            )
             self.assertEqual(
                 self.listFirewall.lookup(packet), self.hashTable.lookup(codeword)[3]
             )

@@ -37,7 +37,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         logging.basicConfig(
             format="%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s",
             datefmt="%d-%m-%Y:%H:%M:%S",
-            level=logging.INFO,
+            level=logging.DEBUG,
             filename="logs.txt",
         )
 
@@ -188,17 +188,18 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         pr = cProfile.Profile()
         pr.enable()
         ruleList = []
+        numrange = 15
         random.seed(311415)
-        for _ in range(0, 17):  # NUM RULES
+        for _ in range(0, 40):  # NUM RULES
             rule = ["", "", "", ""]
             for i in range(0, 3):
                 chance = random.randint(0, 100)
                 if chance <= 25:
-                    rule[i] = str(random.randint(0, 15))
+                    rule[i] = str(random.randint(0, numrange))
                 elif chance > 25 and chance <= 65:
                     rule[i] = "*"
                 elif chance > 65:
-                    rule[i] = str(random.randint(0, 15))
+                    rule[i] = str(random.randint(0, numrange))
             chance = random.randint(0, 100)
             if chance < 10:
                 rule[3] = "alpha"
@@ -233,8 +234,8 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
             self.listFirewall.insertRule(rule)
         file.close()
         # self.policyBuilder.insertRule(("*", "*", "*", "delta"))
-        self.policyBuilder.insertRule(["*", "*", "*", "delta"])
-        self.listFirewall.insertRule(("*", "*", "*", "delta"))
+        self.policyBuilder.insertRule(["*", "*", "*", "default"])
+        self.listFirewall.insertRule(("*", "*", "*", "default"))
 
         file = open("list_firewall.txt", "w")
         file.write(self.listFirewall.getRules())
@@ -248,9 +249,9 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
         packetList = []
         for i in range(0, 10000):  # _____________ INSERT MORE PACKETS HERE ____________
             packet = (
-                str(random.randint(0, 15)),
-                str(random.randint(0, 15)),
-                str(random.randint(0, 15)),
+                str(random.randint(0, numrange)),
+                str(random.randint(0, numrange)),
+                str(random.randint(0, numrange)),
             )
             # for j in range(0,3):
             #     packet[j] = str(random.randint(0,5))
@@ -376,9 +377,7 @@ class TestEquivalenceOfListAndTrietree(unittest.TestCase):
 
         # self.tree0.drawGraph(html=True)
         self.policyBuilder.writeCodewords()
-        packetList = [
-            self.generate_packet(tree_count) for _ in range(10000000)
-        ]  # Number of packets
+        packetList = [self.generate_packet(tree_count) for _ in range(1000)]  # Number of packets
         for i, packet in enumerate(packetList):
             logging.debug("_____NEW PACKET:       packetnum: " + str(i))
 

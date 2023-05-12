@@ -4,7 +4,7 @@ import logging
 class ListFirewall:
     def __init__(self):
         self.rules = []
-        self.treeDepth = 16
+        self.treeDepth = 4 #16
         self.codewordLength = 4
     def insertRule(self, rule):
         rule = [str(int(element[:-1],2)) if (len(element) == self.codewordLength + 1 and element[-1] == "*" and element[:-1].isdigit())
@@ -40,16 +40,17 @@ class ListFirewall:
         if len(thisRule.split('*')) < 2:
             return False
         inputPacketToBin = format(int(inputPacket), "0" + str(self.treeDepth) + 'b') ###
-        # logging.debug("inpitpacket: "+str(inputPacket))
-        # logging.debug("thisrule: " +str(thisRule[0]))
-        # logging.debug("In firewall!: " + str(inputPacketToBin))
-        # logging.debug(len(str(int(thisRule.split('*')[0]))))
+        logging.debug("inpitpacket: "+str(inputPacket))
+        logging.debug("thisrule: " +str(thisRule[0]))
+        logging.debug("thisrule: " +str(thisRule))
+        logging.debug("In firewall!: " + str(inputPacketToBin))
+        logging.debug(len(str(int(thisRule.split('*')[0]))))
 
         for j in thisRule.split('*')[0]:
             j = int(j)
-            # logging.debug("J in in loop: " + str(j))
-            # logging.debug(str(thisRule[j]))
-            # logging.debug(inputPacketToBin[j])
+            logging.debug("J in in loop: " + str(j))
+            logging.debug(str(thisRule[j]))
+            logging.debug(inputPacketToBin[j])
             if thisRule[j] == "*":
                 return True
             if str(thisRule[j]) != str(inputPacketToBin[j]):

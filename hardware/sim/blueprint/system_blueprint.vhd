@@ -41,6 +41,10 @@ entity system_blueprint is
     
     -- rdy_cuckoo_hash : in std_logic;
     -- vld_cuckoo_hash : out std_logic;
+    SoP : in std_logic;
+    Eop : in std_logic;
+    CH_vld : in std_logic;
+    packet_in : in std_logic_vector(10 downto 0);
 
     clk : in std_logic;
     reset : in std_logic
@@ -150,7 +154,122 @@ architecture rtl of system_blueprint is
       rdy_ad_hash : in std_logic
     );
   end component;
+  component Collect_header
+    generic (
+      size : integer
+    );
+      port (
+      clk : in std_logic;
+      reset : in std_logic;
+      fileinput : in std_logic_vector(size downto 0);
+      packet_in : in std_logic_vector(10 downto 0);
+      SoP : in std_logic;
+      EoP : in std_logic;
+      CH_vld : in std_logic;
+      vld_firewall : in std_logic;
+      rdy_FIFO : in std_logic;
+      rdy_hash : in std_logic;
+      rdy_collecthdr : out std_logic;
+      vld_hdr : out std_logic;
+      vld_hdr_FIFO : out std_logic;
+      hdr_SoP : out std_logic;
+      hdr_EoP : out std_logic;
+      packet_forward : out std_logic_vector(10 downto 0);
+      ip_version : out std_logic_vector(3 downto 0);
+      ip_header_len : out std_logic_vector(3 downto 0);
+      ip_TOS : out std_logic_vector (7 downto 0);
+      ip_total_len : out std_logic_vector(15 downto 0);
+      ip_ID : out std_logic_vector(15 downto 0);
+      ip_flags : out std_logic_vector(2 downto 0);
+      ip_fragmt_offst : out std_logic_vector(12 downto 0);
+      ip_ttl : out std_logic_vector(7 downto 0);
+      ip_protocol : out std_logic_vector(7 downto 0);
+      ip_checksum : out std_logic_vector(15 downto 0);
+      ip_src_addr : out std_logic_vector(31 downto 0);
+      ip_dest_addr : out std_logic_vector(31 downto 0);
+      src_port : out std_logic_vector(15 downto 0);
+      dest_port : out std_logic_vector(15 downto 0);
+      tcp_seq_num : out std_logic_vector(31 downto 0);
+      tcp_ack_num : out std_logic_vector(31 downto 0);
+      tcp_data_offset : out std_logic_vector(3 downto 0);
+      tcp_reserved : out std_logic_vector(2 downto 0);
+      tcp_flags : out std_logic_vector(8 downto 0);
+      tcp_window_size : out std_logic_vector(15 downto 0);
+      L4checksum : out std_logic_vector(15 downto 0);
+      tcp_urgent_ptr : out std_logic_vector(15 downto 0);
+      collect_header_key_out_to_tree_collection : out std_logic_vector(103 downto 0);
+      vld_collect_header : out std_logic_vector(4 downto 0);
+      udp_len : out std_logic_vector(15 downto 0)
+    );
+  end component;
 
+  component Accept_Deny
+    port (
+    clk : in std_logic;
+    reset : in std_logic;
+    data_firewall : out std_logic_vector(10 downto 0);
+    ok_cnt : out std_logic_vector(7 downto 0);
+    ko_cnt : out std_logic_vector(7 downto 0);
+    packet_forward_FIFO : in std_logic_vector(10 downto 0);
+    vld_fifo : in std_logic;
+    rdy_ad_FIFO : out std_logic;
+    acc_deny_hash : in std_logic;
+    vld_ad_hash : in std_logic;
+    rdy_ad_hash : out std_logic
+  );
+end component;
+component packet_fifo
+  port (
+  clock : in STD_LOGIC;
+  data : in STD_LOGIC_VECTOR (10 DOWNTO 0);
+  rdreq : in STD_LOGIC;
+  wrreq : in STD_LOGIC;
+  empty : out STD_LOGIC;
+  full : out STD_LOGIC;
+  q : out STD_LOGIC_VECTOR (10 DOWNTO 0);
+  usedw : out STD_LOGIC_VECTOR (7 DOWNTO 0)
+);
+end component;
+
+  constant size : integer := 10000;
+
+  signal fileinput : std_logic_vector(size downto 0);
+
+  signal vld_firewall : std_logic;
+  signal rdy_FIFO : std_logic:='1';
+  -- signal rdy_hash : std_logic;
+  signal rdy_collecthdr : std_logic;
+  -- signal vld_hdr : std_logic;
+  signal vld_hdr_FIFO : std_logic:='0';
+  signal hdr_SoP : std_logic;
+  signal hdr_EoP : std_logic;
+  signal packet_forward : std_logic_vector(10 downto 0);
+  signal ip_version : std_logic_vector(3 downto 0);
+  signal ip_header_len : std_logic_vector(3 downto 0);
+  signal ip_TOS : std_logic_vector (7 downto 0);
+  signal ip_total_len : std_logic_vector(15 downto 0);
+  signal ip_ID : std_logic_vector(15 downto 0);
+  signal ip_flags : std_logic_vector(2 downto 0);
+  signal ip_fragmt_offst : std_logic_vector(12 downto 0);
+  signal ip_ttl : std_logic_vector(7 downto 0);
+  signal ip_protocol : std_logic_vector(7 downto 0);
+  signal ip_checksum : std_logic_vector(15 downto 0);
+  signal ip_src_addr : std_logic_vector(31 downto 0);
+  signal ip_dest_addr : std_logic_vector(31 downto 0);
+  signal src_port : std_logic_vector(15 downto 0);
+  signal dest_port : std_logic_vector(15 downto 0);
+  signal tcp_seq_num : std_logic_vector(31 downto 0);
+  signal tcp_ack_num : std_logic_vector(31 downto 0);
+  signal tcp_data_offset : std_logic_vector(3 downto 0);
+  signal tcp_reserved : std_logic_vector(2 downto 0);
+  signal tcp_flags : std_logic_vector(8 downto 0);
+  signal tcp_window_size : std_logic_vector(15 downto 0);
+  signal L4checksum : std_logic_vector(15 downto 0);
+  signal tcp_urgent_ptr : std_logic_vector(15 downto 0);
+  signal udp_len : std_logic_vector(15 downto 0);
+
+  signal collect_header_key_out_to_tree_collection : std_logic_vector(103 downto 0);
+  signal vld_collect_header_wire : std_logic_vector(4 downto 0);
 
   signal set_rule : std_logic;
   signal header_data : std_logic_vector(codeword_sum - 1 downto 0);
@@ -181,6 +300,23 @@ architecture rtl of system_blueprint is
 
   signal trees_to_cuckoo_hash_vld : std_logic;
   signal trees_to_cuckoo_hash_rdy : std_logic;
+
+  signal data_firewall : std_logic_vector(10 downto 0);
+  signal ok_cnt : std_logic_vector(7 downto 0);
+  signal ko_cnt : std_logic_vector(7 downto 0);
+  signal packet_forward_FIFO : std_logic_vector(10 downto 0);
+  signal vld_fifo : std_logic;
+  signal rdy_ad_FIFO : std_logic := '0';
+
+  signal data : STD_LOGIC_VECTOR (10 DOWNTO 0);
+  signal rdreq : STD_LOGIC;
+  signal wrreq : STD_LOGIC := '0';
+  signal empty : STD_LOGIC;
+  signal full : STD_LOGIC;
+  signal q : STD_LOGIC_VECTOR (10 DOWNTO 0);
+  signal usedw : STD_LOGIC_VECTOR (7 DOWNTO 0);
+
+
 
 begin
 
@@ -236,14 +372,14 @@ begin
     largest_codeword => largest_codeword
   )
   port map (
-    key_in => key_in,
+    key_in => collect_header_key_out_to_tree_collection,
     codeword_in => codeword_out,
     zero_pointer => zero_pointer_out,
     one_pointer => one_pointer_out,
     address => address,
     RW => RW,
     rdy_collect_header => rdy_collect_header,
-    vld_collect_header => vld_collect_header,
+    vld_collect_header => vld_collect_header_wire,
     codeword_out => codeword_to_concat,
     cuckoo_codeword => cuckoo_codeword,
     rdy_cuckoo_hash => trees_to_cuckoo_hash_rdy,
@@ -281,10 +417,87 @@ begin
       vld_ad_hash => vld_ad_hash,
       rdy_ad_hash => rdy_ad_hash
     );
+    Collect_header_inst : Collect_header
+    generic map (
+      size => size
+    )
+    port map (
+      clk => clk,
+      reset => reset,
+      fileinput => fileinput,
+      packet_in => packet_in,
+      SoP => SoP,
+      EoP => EoP,
+      CH_vld => CH_vld,
+      vld_firewall => vld_firewall,
+      rdy_FIFO => rdy_FIFO,
+      rdy_hash => rdy_hash,
+      rdy_collecthdr => rdy_collecthdr,
+      vld_hdr => vld_hdr,
+      vld_hdr_FIFO => vld_hdr_FIFO,
+      hdr_SoP => hdr_SoP,
+      hdr_EoP => hdr_EoP,
+      packet_forward => packet_forward,
+      ip_version => ip_version,
+      ip_header_len => ip_header_len,
+      ip_TOS => ip_TOS,
+      ip_total_len => ip_total_len,
+      ip_ID => ip_ID,
+      ip_flags => ip_flags,
+      ip_fragmt_offst => ip_fragmt_offst,
+      ip_ttl => ip_ttl,
+      ip_protocol => ip_protocol,
+      ip_checksum => ip_checksum,
+      ip_src_addr => ip_src_addr,
+      ip_dest_addr => ip_dest_addr,
+      src_port => src_port,
+      dest_port => dest_port,
+      tcp_seq_num => tcp_seq_num,
+      tcp_ack_num => tcp_ack_num,
+      tcp_data_offset => tcp_data_offset,
+      tcp_reserved => tcp_reserved,
+      tcp_flags => tcp_flags,
+      tcp_window_size => tcp_window_size,
+      L4checksum => L4checksum,
+      tcp_urgent_ptr => tcp_urgent_ptr,
+      collect_header_key_out_to_tree_collection => collect_header_key_out_to_tree_collection,
+      vld_collect_header => vld_collect_header_wire,
+      udp_len => udp_len
+    );
 
+    Accept_Deny_inst : Accept_Deny
+    port map (
+      clk => clk,
+      reset => reset,
+      data_firewall => data_firewall,
+      ok_cnt => ok_cnt,
+      ko_cnt => ko_cnt,
+      packet_forward_FIFO => packet_forward_FIFO,
+      vld_fifo => vld_fifo,
+      rdy_ad_FIFO => rdy_ad_FIFO,
+      acc_deny_hash => acc_deny_hash,
+      vld_ad_hash => vld_ad_hash,
+      rdy_ad_hash => rdy_ad_hash
+    );
+    packet_fifo_inst : packet_fifo
+    port map (
+      clock => clk,
+      data => packet_forward,
+      rdreq => rdreq,
+      wrreq => wrreq,
+      empty => empty,
+      full => full,
+      q => packet_forward_FIFO,
+      usedw => usedw
+    );
 
+    -- rdreq <= rdy_ad_FIFO and (not empty);
+    -- wrreq <= vld_hdr_FIFO and (not full);
+    -- rdy_FIFO <= '1'
 
-
+    vld_fifo <= not full;
+    rdreq <= rdy_ad_FIFO and (not empty);
+    wrreq <= vld_hdr_FIFO and (not full);
+    rdy_collecthdr <= not full;
+    data <= packet_forward;
 end;
-
-

@@ -22,9 +22,10 @@ architecture arch_Collect_header_tb of Collect_header_tb is
      -- payload         : out std_logic_vector(size -224 downto 0);
       --readprotocol    : in std_logic_vector(7 downto 0);
 
-    packet_in       : in std_logic_vector(9 downto 0);
+    packet_in       : in std_logic_vector(10 downto 0);
     SoP             : in std_logic;
     EoP             : in std_logic;
+    CH_vld          : in std_logic;
     vld_firewall    : in std_logic;
     rdy_FIFO        : in std_logic;
     rdy_hash        : in std_logic;
@@ -60,13 +61,9 @@ architecture arch_Collect_header_tb of Collect_header_tb is
       L4checksum      : out std_logic_vector(15 downto 0);
       tcp_urgent_ptr  : out std_logic_vector(15 downto 0);
       
-      udp_len         : out std_logic_vector(15 downto 0)
+      udp_len         : out std_logic_vector(15 downto 0);
 
-
-      -- new!
-      
-
-
+      collect_header_key_out_to_tree_collection : out std_logic_vector(103 downto 0)
     );
   end component;
 
@@ -78,7 +75,7 @@ architecture arch_Collect_header_tb of Collect_header_tb is
   signal reset : std_logic;
 
   signal fileinput        : std_logic_vector(size downto 0) := (others => '0');
-  -- signal readprotocol     : std_logic_vector(7 downto 0) := (others => '0');
+  -- signal readprotocol     : std_logic_vector(7 downto 0) := (others  '0');
 
   signal ip_version       : std_logic_vector(3 downto 0) := (others => '0');
   signal ip_header_len    : std_logic_vector(3 downto 0) := (others => '0');
@@ -106,20 +103,23 @@ architecture arch_Collect_header_tb of Collect_header_tb is
   signal tcp_urgent_ptr   : std_logic_vector(15 downto 0) := (others => '0');
  
   signal udp_len          : std_logic_vector(15 downto 0);
+
+  signal collect_header_key_out_to_tree_collection : std_logic_vector(103 downto 0) := (others => '0');
+
   
   -- Payload signal
   --signal payload : std_logic_vector(size -224 downto 0) := (others => '0');
 
 
   -- New version!
-  signal packet_in : std_logic_vector (9 downto 0);
+  signal packet_in : std_logic_vector (10 downto 0);
   signal packet_start : std_logic := '0';
   signal bytenm : integer := 0;
 
 
   signal SoP : std_logic;
   signal EoP : std_logic;
-
+  signal CH_vld : std_logic;
   signal packet_data : std_logic_vector(7 downto 0);
 
 
@@ -144,6 +144,7 @@ begin
     packet_in => packet_in,
     SoP             => SoP,
     EoP             => EoP,
+    CH_vld          => CH_vld,
     vld_firewall    => vld_firewall,
     rdy_FIFO        =>rdy_FIFO,
     rdy_hash        => rdy_hash,
@@ -174,13 +175,14 @@ begin
     L4checksum      => L4checksum,
     tcp_urgent_ptr  => tcp_urgent_ptr,
 
-    udp_len         => udp_len
-
+    udp_len         => udp_len,
+    collect_header_key_out_to_tree_collection => collect_header_key_out_to_tree_collection
   );
 
   Read_file :  process (clk)
-    file input : TEXT open READ_MODE is "C:/Users/Asger/OneDrive/Skrivebord/Layer4-Firewall/collect_header/input_packets.txt";
-
+    --file input : TEXT open READ_MODE is "C:/Users/Asger/OneDrive/Skrivebord/Layer4-Firewall-1/collect_header/input_packets.txt";
+    --file input : TEXT open READ_MODE is "C:\Users\Asger\OneDrive\Skrivebord\Layer4-Firewall-1\hardware\sim\blueprint\collect_header\input_packets.txt";
+    file input : TEXT open READ_MODE is "C:\Users\Asger\OneDrive\Skrivebord\Layer4-Firewall-1\hardware\sim\blueprint\collect_header\output_packets.txt";
     variable current_read_line : line;
     variable current_read_field	: std_logic_vector (7 downto 0);
     variable current_write_line : std_logic;
@@ -204,12 +206,16 @@ begin
         
 
             read(current_read_line, current_write_line);
+            CH_vld <= current_write_line;
+
+            read(current_read_line, current_write_line);
             SoP <= current_write_line;
         
             read(current_read_line, current_write_line);
             EoP <= current_write_line;
 
-            packet_in <= packet_data & SoP & EoP;
+            -- packet_in <= packet_data & SoP & EoP;
+            packet_in <= packet_data & CH_vld & SoP & EoP;
 
           else
             filedone <= '1';
@@ -223,8 +229,6 @@ begin
 
   --readprotocol <= fileinput(size-72 downto size-79);
   --payload    <= fileinput(size-316 downto 0); --rest is paylaod
-
-
 
   TestInputs : process 
   begin

@@ -38,7 +38,7 @@ class ACLBuilder():
        
         return (self.bfs(tree)[-1][0], self.bfs(tree))
     
-    def treeToVHDL(self, tree, addressLength = '04X', dataLength = '04X'):
+    def treeToVHDL(self, tree, addressLength = '04X', dataLength = '08X'):
         vhdlString = ""
         list = self.bfs(tree)
         # file = open("tree/tree_data_tb.txt", "w")

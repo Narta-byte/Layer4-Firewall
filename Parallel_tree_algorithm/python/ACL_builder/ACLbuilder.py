@@ -19,9 +19,6 @@ class ACLBuilder():
         self.policyBuilder = policyBuilder
         self.hashTable = hashTable
         
-
-
-
     def buildACL(self):
         self.arrayTree = []
         for tree in self.treeList:
@@ -31,6 +28,7 @@ class ACLBuilder():
         for i, tree in enumerate(self.treeList):
             # file.write(self.treeToVHDL(self.treeList[i])[0])
             file.write(self.treeToVHDL(self.treeList[i])[0])
+        file.write((str(format(0, '08X')) + str(format(0, '04X')) + str(format(0, '04X'))+"\n"))
         file.close()
 
 
@@ -70,7 +68,7 @@ class ACLBuilder():
 
             logging.debug("codeword: " + str(codeword) + " zeroPointer: " + str(zeroPointer) + " onePointer: " + str(onePointer))
             vhdlString += (codeword + zeroPointer + onePointer+"\n")
-        vhdlString += (str(format(0, dataLength)) + str(format(0, addressLength)) + str(format(0, addressLength))+"\n")
+        # vhdlString += (str(format(0, dataLength)) + str(format(0, addressLength)) + str(format(0, addressLength))+"\n")
         return vhdlString, length
         # file.close()
 
@@ -140,7 +138,14 @@ class ACLBuilder():
         # for rep in repList:
         #     logging.debug(rep)
 
-
+    def programCuckooHashTable(self, table):
+        file = open("hardware/sim/blueprint/cuckoo_hash/cuckoo_sram_data.txt", "w")
+        logging.debug("table.dictionary: " + str(table.dictionary))
+        for element in table.dictionary:
+            logging.debug("element: " + str(element))
+            file.write(element + "\n")
+            # file.write(format(element, '080b')+"\n")
+        file.close()
       
        
        

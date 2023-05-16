@@ -24,6 +24,7 @@ class TestRuleFile(unittest.TestCase):
         for _ in range(self.numberOfTrees):
             self.treeList.append(policyTrieTree.PolicyTrieTree())
 
+        self.treeList[0].treeDepth = 8
         self.policyBuilder = PolicyBuilder.PolicyBuilder(self.treeList)
         self.hashTable = CuckooHashTable.CuckooHashTable()
 
@@ -77,4 +78,47 @@ class TestRuleFile(unittest.TestCase):
         self.aclBuilder.buildACL()
 
         self.aclBuilder.treeToVHDL(self.aclBuilder.treeList[0])
+        self.aclBuilder.programCuckooHashTable(self.hashTable)
         self.assertTrue(True)
+    
+    def test_specificRuleList(self):
+        self.treeList = []
+        self.numberOfTrees = 5
+        for _ in range(self.numberOfTrees):
+            self.treeList.append(policyTrieTree.PolicyTrieTree())
+        # self.treeList[0].treeDepth = 8
+        # self.treeList[1].treeDepth = 16
+        # self.treeList[2].treeDepth = 16
+        # self.treeList[3].treeDepth = 32
+        # self.treeList[4].treeDepth = 32
+
+        self.policyBuilder = PolicyBuilder.PolicyBuilder(self.treeList)
+        self.hashTable = CuckooHashTable.CuckooHashTable()
+
+        ruleList =[
+            ["*","1111001111011101","*","*","*","PERMIT"],
+            ["*","*","*","*","*","DENY"],
+        ]
+
+        # ruleList =[
+        #     ["00000010","*","*","*","*","PERMIT"],
+        #     ["*","*","*","*","*","DENY"],
+        # ]
+        logging.debug("Rule list: " + str(ruleList))
+
+
+
+        for rule in ruleList:
+           logging.debug("Rule in for loop: " + str(rule))
+           self.policyBuilder.insertRule(rule)
+        
+        for rule in self.policyBuilder.previousRuleTuple:
+            self.hashTable.insert(rule[1], rule[0])
+        self.policyBuilder.writeCodewords()
+        
+        self.hashTable.defualtRule = (["*"]*self.numberOfTrees) + ["default"]
+        
+        self.aclBuilder = ACLbuilder.ACLBuilder(self.treeList, self.policyBuilder,  self.hashTable)
+        self.aclBuilder.buildACL()
+        self.aclBuilder.treeToVHDL(self.aclBuilder.treeList[0])
+        self.aclBuilder.programCuckooHashTable(self.hashTable)

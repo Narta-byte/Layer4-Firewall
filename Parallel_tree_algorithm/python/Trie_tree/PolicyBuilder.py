@@ -11,7 +11,7 @@ class PolicyBuilder:
         self.ruleLength = len(treeList) + 1
         self.previousRuleTuple = []
         self.ruleCodeWord = ""
-        self.codewordLength = 4 #16
+        self.codewordLength = 32 #16
         self.nextCodeword = 0
         self.treeDepth = 16
         self.store_inserted = []
@@ -24,7 +24,7 @@ class PolicyBuilder:
         for i, tree in enumerate(self.treeList):
             exists, codeword = tree.getCodeword(rule[i])
             if not exists:
-                codeword = self.generateCodeword(self.codewordLength +2) #Maybe +2???
+                codeword = self.generateCodeword(self.codewordLength) 
             logging.debug(f"codeword: {codeword} rule: {rule[i]} exists: {exists} ")
             ruleCodeword += codeword
             tree.insert(rule[i], codeword)
@@ -35,7 +35,7 @@ class PolicyBuilder:
         for i, tree in enumerate(self.treeList):
             exists, temp_codeword = tree.getCodeword(output_rule[i])
             if not exists:
-                intersection_codeword += self.generateCodeword(self.codewordLength +2)
+                intersection_codeword += self.generateCodeword(self.codewordLength)
             intersection_codeword += temp_codeword
         return intersection_codeword
 

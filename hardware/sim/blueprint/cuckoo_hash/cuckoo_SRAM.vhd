@@ -37,7 +37,7 @@ end cuckoo_SRAM;
 architecture cuckoo_SRAM_arch of cuckoo_SRAM is
 
   type WE_type is array (0 to 2** 9) of std_logic_vector(codeword_sum - 1 + 1 downto 0); --occupied and key  
-  signal WE : WE_type := (others => (others => 'U'));
+  signal WE : WE_type := (others => (others => '0'));
 
 begin
  

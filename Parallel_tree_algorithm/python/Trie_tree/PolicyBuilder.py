@@ -13,7 +13,7 @@ class PolicyBuilder:
         self.ruleCodeWord = ""
         self.codewordLength = 4 #16
         self.nextCodeword = 0
-        self.treeDepth = 4 #16
+        self.treeDepth = 16
         self.store_inserted = []
         self.unique_sublists = set()
         self.store_prev_rules = set()
@@ -24,7 +24,7 @@ class PolicyBuilder:
         for i, tree in enumerate(self.treeList):
             exists, codeword = tree.getCodeword(rule[i])
             if not exists:
-                codeword = self.generateCodeword(self.codewordLength)
+                codeword = self.generateCodeword(self.codewordLength +2) #Maybe +2???
             logging.debug(f"codeword: {codeword} rule: {rule[i]} exists: {exists} ")
             ruleCodeword += codeword
             tree.insert(rule[i], codeword)
@@ -35,7 +35,7 @@ class PolicyBuilder:
         for i, tree in enumerate(self.treeList):
             exists, temp_codeword = tree.getCodeword(output_rule[i])
             if not exists:
-                intersection_codeword += self.generateCodeword(self.codewordLength)
+                intersection_codeword += self.generateCodeword(self.codewordLength +2)
             intersection_codeword += temp_codeword
         return intersection_codeword
 
@@ -105,10 +105,7 @@ class PolicyBuilder:
             all_possibility.append(elem)
         for selecting_index in select_from:
             selected = [inlist[i] for i in selecting_index]
-            cases = list(
-                [selected[k][i] for i, k in enumerate(comb)]
-                for comb in permutation_cases
-            )
+            cases = list([selected[k][i] for i, k in enumerate(comb)]for comb in permutation_cases)
             for item in cases:
                 all_possibility.append(item)
         # print(all_possibility)
@@ -146,11 +143,7 @@ class PolicyBuilder:
             if temp.__contains__("*") or any(
                 self.contains_star_and_digit(item) for item in temp
             ):
-                currperm = [
-                    x
-                    for x in rule
-                    if x.isdigit() or (("*" in x) and x.split("*")[0].isdigit())
-                ]
+                currperm = [x for x in rule if x.isdigit() or (("*" in x) and x.split("*")[0].isdigit())]
 
                 for i, field in enumerate(rule):
                     temp = rule.copy()
@@ -351,7 +344,7 @@ class PolicyBuilder:
                         for i, value in enumerate(comb):
                             result[wildcard_indices[i]] = value
                             if result2:
-                                #if value != '*':
+                                # if value != '*':
                                 result2[wildcard_indices[i]] = value
 
                         if tuple(result[:-1]) not in self.store_prev_rules:
@@ -359,7 +352,7 @@ class PolicyBuilder:
                             # if result[:-1]
                             permutations.append(result)
                             if result2:
-                                if result2[:-1] != ['*', '*', '*']:
+                                if result2[:-1] != ["*", "*", "*"]:
                                     logging.debug("Adding rule2: " + str(result2))
                                     permutations.append(result2)
 
@@ -404,7 +397,10 @@ class PolicyBuilder:
 
     def subset(self, rule):
         for prevrules in self.store_inserted:
-            if all(prev == "*" or prev == curr for prev, curr in zip(prevrules[:-1], rule[:-1])):
+            if all(
+                prev == "*" or prev == curr
+                for prev, curr in zip(prevrules[:-1], rule[:-1])
+            ):
                 logging.debug("prevrule: " + str(prevrules))
                 logging.debug("This is subset?" + str(rule))
                 return True
@@ -447,7 +443,7 @@ class PolicyBuilder:
             # if prev == "*" and curr != "*":
             #     logging.debug("Prev is super since it is *")
             #     return True
-            if (not self.contains_star_and_digit(prev) and self.contains_star_and_digit(curr)and curr != "*" and prev != '*'):
+            if (not self.contains_star_and_digit(prev) and self.contains_star_and_digit(curr) and curr != "*" and prev != "*"):
                 logging.debug("in first if prev: " + str(prev) + " curr: " + str(curr))
                 fieldmax = int(curr.split("*")[0].ljust(self.codewordLength, "1"),2,)
                 fieldmin = int(curr.split("*")[0].ljust(self.codewordLength, "0"),2,)

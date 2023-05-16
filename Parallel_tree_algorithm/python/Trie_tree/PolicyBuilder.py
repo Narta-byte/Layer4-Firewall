@@ -407,6 +407,7 @@ class PolicyBuilder:
 
     def subsetw_ranges(self, rule):
         ruels = []
+        temp = []
         logging.debug("printing pre_rules in subranges: " + str(self.store_rules))
         # for elem in self.store_rules:
         for prevrules in self.store_rules:
@@ -417,7 +418,9 @@ class PolicyBuilder:
             #     return
             if self.subsetwrange_helper(prevrules, rule):
                 prevrules[-1] = rule[-1]
-                ruels.append(prevrules)
+                temp = rule
+                #ruels.append(prevrules)
+                ruels.append(temp)
                 logging.debug("We return in subwrange: " + str(ruels))
             # logging.debug("This possibly subset w range. Prevrule: " + str(prevrules))
             # if prevrules == rule:

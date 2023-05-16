@@ -20,6 +20,6 @@ class CuckooHashTable:
         try:
             return self.dictionary[codeword]
         except:
-            logging.debug("No match for codeword: "+str(codeword))
+            logging.debug("No match for codeword in hash: " +str(codeword))
             return self.defualtRule
     

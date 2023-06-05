@@ -37,7 +37,7 @@ entity system_blueprint is
     rdy_collect_header : out std_logic_vector(number_of_trees - 1 downto 0);
     vld_collect_header : in std_logic_vector(number_of_trees -1 downto 0);
 
-    cuckoo_key_in : in std_logic_vector(codeword_sum - 1 downto 0);
+    cuckoo_key_in : in std_logic_vector(codeword_sum +8- 1 downto 0);
     
     -- rdy_cuckoo_hash : in std_logic;
     -- vld_cuckoo_hash : out std_logic;
@@ -102,7 +102,7 @@ architecture rtl of system_blueprint is
     );
       port (
       cmd_in : in std_logic_vector(4 downto 0);
-      codeword_in : in std_logic_vector(largest_codeword - 1 downto 0);
+      codeword_in : in std_logic_vector(largest_codeword  - 1 downto 0);
       zero_pointer_in : in std_logic_vector(largest_address_width - 1 downto 0);
       one_pointer_in : in std_logic_vector(largest_address_width - 1 downto 0);
       codeword_out : out std_logic_vector(largest_codeword - 1 downto 0);
@@ -114,8 +114,8 @@ architecture rtl of system_blueprint is
       vld_driver : in std_logic;
       cuckoo_select : out std_logic;
       cuckoo_cmd : out std_logic_vector(1 downto 0);
-      cuckoo_key_out : out std_logic_vector(codeword_sum - 1 downto 0);
-      cuckoo_key_in : in std_logic_vector(codeword_sum - 1 downto 0);
+      cuckoo_key_out : out std_logic_vector(codeword_sum + 8 - 1 downto 0);
+      cuckoo_key_in : in std_logic_vector(codeword_sum + 8 - 1 downto 0);
       cuckoo_rdy : in std_logic;
       cuckoo_vld : out std_logic;
       cuckoo_set_rule : out std_logic;
@@ -151,7 +151,8 @@ architecture rtl of system_blueprint is
       rdy_firewall_hash : out std_logic;
       acc_deny_hash : out std_logic;
       vld_ad_hash : out std_logic;
-      rdy_ad_hash : in std_logic
+      rdy_ad_hash : in std_logic;
+      decision_ad : out std_logic_vector(7 downto 0)
     );
   end component;
   component Collect_header
@@ -215,7 +216,8 @@ architecture rtl of system_blueprint is
     rdy_ad_FIFO : out std_logic;
     acc_deny_hash : in std_logic;
     vld_ad_hash : in std_logic;
-    rdy_ad_hash : out std_logic
+    rdy_ad_hash : out std_logic;
+    decision_ad : in std_logic_vector(7 downto 0)
   );
 end component;
 component packet_fifo
@@ -284,7 +286,7 @@ end component;
   signal address : std_logic_vector(largest_address_width - 1 downto 0);
   signal RW : std_logic_vector(number_of_trees - 1 downto 0);
 
-  signal codeword_out : std_logic_vector(largest_codeword - 1 downto 0);
+  signal codeword_out : std_logic_vector(largest_codeword  - 1 downto 0);
   signal zero_pointer_out : std_logic_vector(largest_address_width - 1 downto 0);
   signal one_pointer_out : std_logic_vector(largest_address_width - 1 downto 0);
 
@@ -293,10 +295,11 @@ end component;
   signal cuckoo_codeword : std_logic_vector(largest_codeword * number_of_trees - 1 downto 0);
   signal cuckoo_select : std_logic;
   signal cuckoo_cmd : std_logic_vector(1 downto 0);
-  signal cuckoo_key_out: std_logic_vector(codeword_sum - 1 downto 0);
+  signal cuckoo_key_out: std_logic_vector(codeword_sum + 8- 1 downto 0);
   signal rule_cuckoo_rdy : std_logic;
   signal rule_cuckoo_vld : std_logic;
-
+  signal decision_ad : std_logic_vector(7 downto 0);
+  
 
   signal trees_to_cuckoo_hash_vld : std_logic;
   signal trees_to_cuckoo_hash_rdy : std_logic;
@@ -415,7 +418,8 @@ begin
       rdy_firewall_hash => rule_cuckoo_rdy,
       acc_deny_hash => acc_deny_hash,
       vld_ad_hash => vld_ad_hash,
-      rdy_ad_hash => rdy_ad_hash
+      rdy_ad_hash => rdy_ad_hash,
+      decision_ad => decision_ad
     );
     Collect_header_inst : Collect_header
     generic map (
@@ -477,7 +481,8 @@ begin
       rdy_ad_FIFO => rdy_ad_FIFO,
       acc_deny_hash => acc_deny_hash,
       vld_ad_hash => vld_ad_hash,
-      rdy_ad_hash => rdy_ad_hash
+      rdy_ad_hash => rdy_ad_hash,
+      decision_ad => decision_ad
     );
     packet_fifo_inst : packet_fifo
     port map (

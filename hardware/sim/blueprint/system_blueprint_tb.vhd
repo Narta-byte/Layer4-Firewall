@@ -27,7 +27,7 @@ architecture bench of system_blueprint_tb is
     port (
       cmd_in : in std_logic_vector(4 downto 0);
       key_in : in std_logic_vector(total_key_in_length - 1 downto 0);
-      codeword_in : in std_logic_vector(largest_codeword - 1 downto 0);
+      codeword_in : in std_logic_vector(largest_codeword  - 1 downto 0);
       zero_pointer_in : in std_logic_vector(largest_address_width - 1 downto 0);
       one_pointer_in : in std_logic_vector(largest_address_width - 1 downto 0);
       rdy_driver : out std_logic;
@@ -86,7 +86,7 @@ architecture bench of system_blueprint_tb is
   signal rdy_collect_header : std_logic_vector(number_of_trees - 1 downto 0);
   signal vld_collect_header : std_logic_vector(number_of_trees - 1 downto 0);
   signal cuckoo_codeword : std_logic_vector(largest_codeword * number_of_trees - 1 downto 0);
-  signal cuckoo_key_in : std_logic_vector(codeword_sum - 1 downto 0);
+  signal cuckoo_key_in : std_logic_vector(codeword_sum+8- 1 downto 0);
   signal rdy_cuckoo_hash : std_logic;
   signal vld_cuckoo_hash : std_logic;
   signal clk : std_logic;
@@ -156,7 +156,7 @@ begin
     -- file input1 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/blueprint/cuckoo_hash/large_input_file_increment.txt";
     file input1 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/blueprint/cuckoo_hash/cuckoo_sram_data.txt";
     variable current_read_line1 : line;
-    variable hex_reader1 : std_logic_vector(codeword_sum - 1 downto 0);
+    variable hex_reader1 : std_logic_vector(codeword_sum + 8 - 1 downto 0);
 
 
     file packet_file : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/blueprint/collect_header/input_packets.txt";

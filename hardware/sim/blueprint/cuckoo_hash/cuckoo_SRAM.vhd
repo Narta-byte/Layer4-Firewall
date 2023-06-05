@@ -29,14 +29,14 @@ entity cuckoo_SRAM is
     occupied : in std_logic;
     RW : in std_logic;
     address : in std_logic_vector(8 downto 0);
-    data_in : in std_logic_vector(codeword_sum - 1 downto 0);
-    data_out : out std_logic_vector(codeword_sum - 1 + 1 downto 0)
+    data_in : in std_logic_vector(codeword_sum + 8 - 1 downto 0);
+    data_out : out std_logic_vector(codeword_sum + 8 - 1 + 1 downto 0)
   );
 end cuckoo_SRAM;
 
 architecture cuckoo_SRAM_arch of cuckoo_SRAM is
 
-  type WE_type is array (0 to 2** 9) of std_logic_vector(codeword_sum - 1 + 1 downto 0); --occupied and key  
+  type WE_type is array (0 to 2** 9) of std_logic_vector(codeword_sum + 8 - 1 + 1 downto 0); 
   signal WE : WE_type := (others => (others => '0'));
 
 begin

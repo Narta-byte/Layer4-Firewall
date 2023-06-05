@@ -25,7 +25,8 @@ entity Accept_Deny is
     -- Cuckoo interface 
     acc_deny_hash : in std_logic;
     vld_ad_hash : in std_logic;
-    rdy_ad_hash : out std_logic
+    rdy_ad_hash : out std_logic;
+    decision_ad : in std_logic_vector(7 downto 0)
     );
 end entity;
 
@@ -45,6 +46,17 @@ architecture arch_Accept_Deny of Accept_Deny is
   signal first_time_cnt_next : std_logic;
   signal rdy_ad_FIFO_next : std_logic:= '0';
   signal rdy_ad_FIFO_read : std_logic:='1';
+
+
+  signal DEBUG_decision0 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision1 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision2 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision3 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision4 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision5 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision6 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision7 : natural range 0 to 2**16 := 0;
+  
 
 begin
 
@@ -133,21 +145,58 @@ begin
       rdy_ad_hash <= '1';
       first_time_cnt_next <= '0';
 
+      
+
+
       when accept_and_forward =>
+      
+
       data_firewall <= packet_forward_FIFO;
       rdy_ad_FIFO_next <= '1';
       rdy_ad_hash <= '0';
       if first_time_cnt = '0' then
         ok_cnt_firewall_next <= ok_cnt_firewall + 1;
         first_time_cnt_next <= '1';
+
+
+        case decision_ad is
+          when "00000000" => DEBUG_decision0<=DEBUG_decision0+1;
+          when "00000001" => DEBUG_decision1<=DEBUG_decision1+1;
+          when "00000010" => DEBUG_decision2<=DEBUG_decision2+1;
+          when "00000011" => DEBUG_decision3<=DEBUG_decision3+1;
+          when "00000100" => DEBUG_decision4<=DEBUG_decision4+1;
+          when "00000101" => DEBUG_decision5<=DEBUG_decision5+1;
+          when "00000110" => DEBUG_decision6<=DEBUG_decision6+1;
+          when "00000111" => DEBUG_decision7<=DEBUG_decision7+1;
+          when others =>
+            null;
+        end case;
+
       end if;
 
       when deny_and_delete =>
+    
+
       rdy_ad_FIFO_next <= '1';
       rdy_ad_hash <= '0';
       if first_time_cnt = '0' then
         ko_cnt_firewall_next <= ko_cnt_firewall + 1;
         first_time_cnt_next <= '1';
+
+
+        case decision_ad is
+          when "00000000" => DEBUG_decision0<=DEBUG_decision0+1;
+          when "00000001" => DEBUG_decision1<=DEBUG_decision1+1;
+          when "00000010" => DEBUG_decision2<=DEBUG_decision2+1;
+          when "00000011" => DEBUG_decision3<=DEBUG_decision3+1;
+          when "00000100" => DEBUG_decision4<=DEBUG_decision4+1;
+          when "00000101" => DEBUG_decision5<=DEBUG_decision5+1;
+          when "00000110" => DEBUG_decision6<=DEBUG_decision6+1;
+          when "00000111" => DEBUG_decision7<=DEBUG_decision7+1;
+          when others =>
+            null;
+        end case;
+
       end if;
 
       when others => report "ERROR IN OUTPUT LOGIC" severity failure;

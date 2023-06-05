@@ -44,8 +44,10 @@ architecture rtl of trie_tree_logic is
     alias onePointer : std_logic_vector is data_from_memory(address_width - 1 downto 0);
     -- alias DEBUG_seq0 : std_logic_vector is data_from_memory(1 downto 0);
     
+    signal codeword_zeros : std_logic_vector(codeword_length -1 downto 0) := (others => '0') ;
     
-    
+    signal best_codeword, final_codeword : std_logic_vector(codeword_length -1 downto 0);
+    signal DEBUG_bool : boolean;
 begin
     STATE_MEMORY_LOGIC : process (clk, reset, RW)
     begin
@@ -71,14 +73,17 @@ begin
         end if;
   
       when read_state =>
+      if eof_key_flag_next = '1' then
+        next_state <= idle_state;
+      else
         next_state <= fetch_state;
-  
-      when fetch_state =>
-        if eof_key_flag_next = '1' then
-          next_state <= idle_state;
-        else
-          next_state <= read_state;
         end if;
+      when fetch_state =>
+        -- if eof_key_flag_next = '1' then
+        --   next_state <= idle_state;
+        -- else
+          next_state <= read_state;
+        -- end if;
         
       when others => next_state <= idle_state;
   
@@ -97,26 +102,48 @@ begin
           address <= (others => '0');
           key_cnt <= 0;
           vld_codeword_concatinator <= '0';
+          best_codeword <= codeword_from_memory;
+
+
         when read_state =>
           rdy_collect_header <= '0';
+          eof_key_flag_next <= eof_key_flag_next;
           
-          -- codeword <= (others => '0');
-    
+          
+          DEBUG_bool <= (codeword_from_memory /= best_codeword) and ((codeword_from_memory = codeword_zeros));
+          if ((codeword_from_memory /= best_codeword) and ((codeword_from_memory /= codeword_zeros)))   then
+            best_codeword <= codeword_from_memory;
+          end if; 
+          
+          if  eof_key_flag_next = '1' then
+            codeword <= codeword_from_memory;
+        
+          end if; 
         when fetch_state =>
           rdy_collect_header <= '0';
-          key_cnt <= key_cnt + 1;
+          codeword <= best_codeword;
+          if key_cnt = key_length - 1 then
+            eof_key_flag_next <= '1';
+            vld_codeword_concatinator <= '1';
+            key_cnt <= key_cnt;
+          
+          else
+            key_cnt <= key_cnt +1; 
+          end if;
+          
           -- report "key_in(key_cnt) = " & std_logic'image(key_in(key_cnt));
+          
           if key_in(key_cnt) = '0' then
             address <= zeroPointer;
             if zeroPointer = zeros then
-              codeword <= codeword_from_memory;
+              -- codeword <= best_codeword;
               vld_codeword_concatinator <= '1';
               eof_key_flag_next <= '1';
             end if;
           else
             address <= onePointer;
             if onePointer = zeros then
-              codeword <= codeword_from_memory;
+              -- codeword <= best_codeword;
               vld_codeword_concatinator <= '1';
               eof_key_flag_next <= '1';
             end if;

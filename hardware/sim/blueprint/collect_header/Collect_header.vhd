@@ -56,7 +56,7 @@ entity Collect_header is
 
     collect_header_key_out_to_tree_collection : out std_logic_vector(103 downto 0);
     vld_collect_header : out std_logic_vector(4 downto 0);
-
+    rdy_collecthdr_to_tree_collection : in std_logic_vector(4 downto 0);
     udp_len         : out std_logic_vector(15 downto 0)
 
     );

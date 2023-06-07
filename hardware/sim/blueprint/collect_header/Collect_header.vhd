@@ -2,6 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.textio.all;
+use ieee.std_logic_misc.and_reduce;
+use IEEE.std_logic_textio.all;
+
 
 entity Collect_header is
   generic (
@@ -74,12 +77,13 @@ architecture arch_Collect_header of Collect_header is
   signal vld_collect_header_reg : std_logic_vector(4 downto 0) := (others => '0');
   signal sig_collect_header_key_out_to_tree_collection : std_logic_vector(103 downto 0) := (others => '0');
   signal CH_key_sent : std_logic := '0';
-  
+  signal debug_bool : boolean := false;
 
   constant lenpack : integer := 10;
   constant zpack : integer := lenpack -7;
   
-
+  signal i, number_of_packets : integer := 0;
+  signal lock : std_logic := '0';
 begin
 
   vld_collect_header <= vld_collect_header_reg;
@@ -94,191 +98,172 @@ begin
   -- end process;
 
   packet_forward <= packet_in;
-  logic_proc : process (clk, bytenum, CH_vld, SoP, packet_in, vld_collect_header_reg, CH_key_sent)
-  begin
-    if rising_edge(clk) then
-
-      if reset = '1' then -- RESET
-        ip_version      <= (others => '0');
-        ip_header_len   <= (others => '0');
-        ip_TOS          <= (others => '0');
-        ip_total_len    <= (others => '0');
-        ip_ID           <= (others => '0');
-        ip_flags        <= (others => '0');
-        ip_fragmt_offst <= (others => '0');
-        ip_ttl          <= (others => '0');
-        ip_protocol     <= (others => '0');
-        ip_checksum     <= (others => '0');
-        ip_src_addr     <= (others => '0');
-        ip_dest_addr    <= (others => '0');
-        src_port        <= (others => '0');
-        dest_port       <= (others => '0');
-
-        tcp_seq_num     <= (others => '0');
-        tcp_ack_num     <= (others => '0');
-        tcp_data_offset <= (others => '0');
-        tcp_reserved    <= (others => '0');
-        tcp_flags       <= (others => '0');
-        tcp_window_size <= (others => '0');
-        L4checksum      <= (others => '0');
-        tcp_urgent_ptr  <= (others => '0');
-
-        udp_len         <= (others => '0');
-
-        tcp_flag <= '0';
-        udp_flag <= '0';
-        collect_header_key_out_to_tree_collection <= (others => '0');
-
-      else -- IF RESET = '0'
-        if wait_start <= '0' then
-          bytenum <= 0;
-        else
-          if CH_vld <= '1' then
-            bytenum <= bytenum +1;
-            -- packet_forward <= packet_in;
-          end if;
-          if vld_collect_header_reg = "11111" and CH_key_sent = '0' then
-            collect_header_key_out_to_tree_collection <= sig_collect_header_key_out_to_tree_collection;
-            CH_key_sent <= '1';
-          end if;
-        end if;
-        if EoP = '1' then
-          wait_start <= '1';
-          
-        end if;
-        if SoP = '1' then
-          bytenum <= 0;
-          ip_version      <= (others => '0');
-          ip_header_len   <= (others => '0');
-          ip_TOS          <= (others => '0');
-          ip_total_len    <= (others => '0');
-          ip_ID           <= (others => '0');
-          ip_flags        <= (others => '0');
-          ip_fragmt_offst <= (others => '0');
-          ip_ttl          <= (others => '0');
-          ip_protocol     <= (others => '0');
-          ip_checksum     <= (others => '0');
-          ip_src_addr     <= (others => '0');
-          ip_dest_addr    <= (others => '0');
-          src_port        <= (others => '0');
-          dest_port       <= (others => '0');
+  collect_header_key_out_to_tree_collection <= sig_collect_header_key_out_to_tree_collection;
   
-          tcp_seq_num     <= (others => '0');
-          tcp_ack_num     <= (others => '0');
-          tcp_data_offset <= (others => '0');
-          tcp_reserved    <= (others => '0');
-          tcp_flags       <= (others => '0');
-          tcp_window_size <= (others => '0');
-          L4checksum      <= (others => '0');
-          tcp_urgent_ptr  <= (others => '0');
-          tcp_flag   <= '0';
-          udp_flag   <= '0';
-          collect_header_key_out_to_tree_collection <= (others => '0');
-          sig_collect_header_key_out_to_tree_collection <= (others => '0');
-          vld_collect_header_reg <= (others => '0');
-          CH_key_sent <= '0';
-        end if;
+  process (clk)
+    file input0 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/blueprint/protocol.txt";
+    variable protocol_line : line;
+    variable protocol_reader : std_logic_vector(7 downto 0);
 
+    file input1 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/blueprint/dstport.txt";
+    variable dstport_line : line;
+    variable dstport_reader : std_logic_vector(15 downto 0);
 
-        case bytenum is
-          when 0 =>
-            ip_version                  <= packet_in(lenpack downto 7);
-            ip_header_len               <= packet_in(5 downto 2);
-          when 1 =>   ip_TOS            <= packet_in(lenpack downto zpack);
-          when 2 =>   storebyte         <= packet_in(lenpack downto zpack);
-          when 3 =>   ip_total_len      <= storebyte & packet_in(lenpack downto zpack);
-          when 4 =>   storebyte         <= packet_in(lenpack downto zpack);
-          when 5 =>   ip_ID             <= storebyte & packet_in(lenpack downto zpack);
-          when 6 =>
-            ip_flags                    <= packet_in(lenpack downto 8);
-            storebyte                   <= packet_in(7 downto 3) & "000";
-          when 7 => ip_fragmt_offst     <= storebyte(7 downto 3) & packet_in(lenpack downto zpack);
-          when 8 => ip_ttl              <= packet_in(lenpack downto zpack);
-          when 9 => ip_protocol         <= packet_in(lenpack downto zpack);
-          sig_collect_header_key_out_to_tree_collection(103 downto 96) <= packet_in(lenpack downto zpack);
-          vld_collect_header_reg(4 downto 4)<= "1";
-          case packet_in(lenpack downto zpack) is -- ADD CASES FOR DIFFERENT PROTOCOLS
-            when x"06" => tcp_flag<= '1';
-            when x"11" => udp_flag<= '1';
-            when others => null;
-          end case;
-          when 10 =>    storebyte       <= packet_in(lenpack downto zpack);
-          when 11 =>    ip_checksum     <= storebyte & packet_in(lenpack downto zpack);
-          when 12 =>    storebyte       <= packet_in(lenpack downto zpack);
-          when 13 =>    storebyte2      <= packet_in(lenpack downto zpack);
-          when 14 =>    storebyte3      <= packet_in(lenpack downto zpack);
-          when 15 =>    ip_src_addr     <= storebyte & storebyte2 & storebyte3 & packet_in(lenpack downto zpack);
-          sig_collect_header_key_out_to_tree_collection(95 downto 64) <= storebyte & storebyte2 & storebyte3 & packet_in(lenpack downto zpack);
-          vld_collect_header_reg(3 downto 3)<= "1";
-          when 16 =>    storebyte       <= packet_in(lenpack downto zpack);
-          when 17 =>    storebyte2      <= packet_in(lenpack downto zpack);
-          when 18 =>    storebyte3      <= packet_in(lenpack downto zpack);
-          when 19 =>    ip_dest_addr    <= storebyte & storebyte2 & storebyte3 & packet_in(lenpack downto zpack);
-          sig_collect_header_key_out_to_tree_collection(63 downto 32) <= storebyte & storebyte2 & storebyte3 & packet_in(lenpack downto zpack);
-          vld_collect_header_reg(2 downto 2)<= "1";
-          when others =>  null;
-        end case;
+    file input2 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/blueprint/srcport.txt";
+    variable srcport_line : line;
+    variable srcport_reader : std_logic_vector(15 downto 0);
     
-        if tcp_flag <= '0' then
-        else
-          case bytenum is
-            when 20 =>  storebyte       <= packet_in(lenpack downto zpack);
-            when 21 =>  src_port        <= storebyte & packet_in(lenpack downto zpack);
-            sig_collect_header_key_out_to_tree_collection(31 downto 16) <= storebyte & packet_in(lenpack downto zpack);
-            vld_collect_header_reg(1 downto 1)<= "1";
-            when 22 =>  storebyte       <= packet_in(lenpack downto zpack);
-            when 23 =>  dest_port       <= storebyte & packet_in(lenpack downto zpack);
-            sig_collect_header_key_out_to_tree_collection(15 downto 0) <= storebyte & packet_in(lenpack downto zpack);
-            vld_collect_header_reg(0 downto 0)<= "1";
-            when 24 =>  storebyte       <= packet_in(lenpack downto zpack);
-            when 25 =>  storebyte2      <= packet_in(lenpack downto zpack);
-            when 26 =>  storebyte3      <= packet_in(lenpack downto zpack);
-            when 27 =>  tcp_seq_num     <= storebyte & storebyte2 & storebyte3 & packet_in(lenpack downto zpack);
-            when 28 =>  storebyte       <= packet_in(lenpack downto zpack);
-            when 29 =>  storebyte2      <= packet_in(lenpack downto zpack);
-            when 30 =>  storebyte3      <= packet_in(lenpack downto zpack);
-            when 31 =>  tcp_ack_num     <= storebyte & storebyte2 & storebyte3 & packet_in(lenpack downto zpack);
-            when 32 =>
-              tcp_data_offset           <= packet_in(lenpack downto 7);
-              tcp_reserved              <= packet_in(6 downto 4);
-              storebyte                 <= packet_in(3) & "0000000";
-            when 33 =>  tcp_flags       <= storebyte (7) & packet_in(lenpack downto zpack);
-            when 34 =>  storebyte       <= packet_in(lenpack downto zpack);
-            when 35 =>  tcp_window_size <= storebyte & packet_in(lenpack downto zpack);
-            when 36 =>  storebyte       <= packet_in(lenpack downto zpack);
-            when 37 =>  L4checksum      <= storebyte & packet_in(lenpack downto zpack);
-            when 38 =>  storebyte       <= packet_in(lenpack downto zpack);
-            when 39 =>  tcp_urgent_ptr  <= storebyte & packet_in(lenpack downto zpack);
-            when others =>
-            --packet_forward              <= packet_in;
-            -- do nothing
-          end case;
-        end if; --TCP flag
+    file input4 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/blueprint/srcip.txt";
+    variable srcip_line : line;
+    variable srcip_reader : std_logic_vector(31 downto 0);
 
-        if udp_flag <= '0' then
-        else
-          case bytenum is
-            when 20 =>  storebyte       <= packet_in(lenpack downto zpack);
-            when 21 =>  src_port        <= storebyte & packet_in(lenpack downto zpack);
-            sig_collect_header_key_out_to_tree_collection(31 downto 16) <= storebyte & packet_in(lenpack downto zpack);
-            vld_collect_header_reg(1 downto 1)<= "1";
-            when 22 =>  storebyte       <= packet_in(lenpack downto zpack);
-            when 23 =>  dest_port       <= storebyte & packet_in(lenpack downto zpack);
-            sig_collect_header_key_out_to_tree_collection(15 downto 0) <= storebyte & packet_in(lenpack downto zpack);
-            vld_collect_header_reg(0 downto 0)<= "1";
-            when 24 =>  storebyte       <= packet_in(lenpack downto zpack);
-            --collect_header_key_out_to_tree_collection <= src_port & dest_port & ip_src_addr & ip_dest_addr;
-            when 25 =>  udp_len         <= storebyte & packet_in(lenpack downto zpack);
-            when 26 =>  storebyte       <= packet_in(lenpack downto zpack);
-            when 27 =>  L4checksum      <= storebyte & packet_in(lenpack downto zpack);
-            when others =>
-            -- do nothing
-          end case;
-        end if; --UDP flag
+    file input3 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/blueprint/dstip.txt";
+    variable dstip_line : line;
+    variable dstip_reader : std_logic_vector(31 downto 0);
 
-      end if;
+    
+  begin
+    if rising_edge(clk) and CH_vld = '1' then
+
+      
+      i <= i + 1;
+      -- if rdy_collecthdr_to_tree_collection(0) = '1' and vld_collect_header_reg(0) <= '1' then
+      --   if not ENDFILE(input0) then
+      --     readline(input0, protocol_line);
+      --     hread(protocol_line, protocol_reader);
+  
+      --     sig_collect_header_key_out_to_tree_collection(103 downto 96) <= protocol_reader(7 downto 0);
+
+      --   end if;
+
+      --   vld_collect_header_reg(0) <= '0';
+      -- end if;
+
+      -- if rdy_collecthdr_to_tree_collection(1) = '1' and vld_collect_header_reg(1) <= '1' then
+      --   if not ENDFILE(input2) then
+
+      --     readline(input2, srcport_line);
+      --     hread(srcport_line, srcport_reader);
+
+      --     sig_collect_header_key_out_to_tree_collection(95 downto 80) <= srcport_reader(15 downto 0); 
+      --   end if;
+
+      --   vld_collect_header_reg(1) <= '0';
+      -- end if;
+
+      -- if rdy_collecthdr_to_tree_collection(2) = '1' and vld_collect_header_reg(2) <= '1' then
+
+      --   if not ENDFILE(input1) then
+          
+      --     readline(input1, dstport_line);
+      --     hread(dstport_line, dstport_reader);
+  
+      --     sig_collect_header_key_out_to_tree_collection(79 downto 64) <= dstport_reader(15 downto 0);
+
+      --   end if;
+
+
+      --   vld_collect_header_reg(2) <= '0';
+      -- end if;
+
+      -- if rdy_collecthdr_to_tree_collection(3) = '1' and vld_collect_header_reg(3) <= '1' then
+      --   if not ENDFILE(input4) then
+      --     readline(input4, srcip_line);
+      --     hread(srcip_line, srcip_reader);
+  
+      --     sig_collect_header_key_out_to_tree_collection(63 downto 32) <= srcip_reader(31 downto 0);
+
+      --   end if;
+
+      --   vld_collect_header_reg(3) <= '0';
+      -- end if;
+      -- -- MANGLER AT MAN IKKE TÆLLER DOPPELT 
+
+      -- if rdy_collecthdr_to_tree_collection(4) = '1' and vld_collect_header_reg(4) <= '1' then
+      --   if not ENDFILE(input3) then
+      --     readline(input3, dstip_line);
+      --     hread(dstip_line, dstip_reader);
+
+      --     sig_collect_header_key_out_to_tree_collection(31 downto 0) <= dstip_reader(31 downto 0);
+      --   end if;
+      --   vld_collect_header_reg(4) <= '0';
+      -- end if;
+      -- if rdy_collecthdr_to_tree_collection = "11111" then
+      --   vld_collect_header_reg <= (others => '1');
+      -- end if;
+
+
+      if rdy_collecthdr_to_tree_collection = "11111" and lock = '0' then --
+        lock <= '1';
+        -- vld_collect_header_reg <= (others => '0');
+        number_of_packets <= number_of_packets + 1;
+        if not ENDFILE(input0) then
+              readline(input0, protocol_line);
+              hread(protocol_line, protocol_reader);
+      
+              sig_collect_header_key_out_to_tree_collection(103 downto 96) <= protocol_reader(7 downto 0);
+    
+            end if;
+            if not ENDFILE(input2) then
+
+              readline(input2, srcport_line);
+              hread(srcport_line, srcport_reader);
+    
+              sig_collect_header_key_out_to_tree_collection(95 downto 80) <= srcport_reader(15 downto 0); 
+            end if;
+            if not ENDFILE(input1) then
+          
+              readline(input1, dstport_line);
+              hread(dstport_line, dstport_reader);
+      
+              sig_collect_header_key_out_to_tree_collection(79 downto 64) <= dstport_reader(15 downto 0);
+    
+            end if;
+            if not ENDFILE(input4) then
+              readline(input4, srcip_line);
+              hread(srcip_line, srcip_reader);
+      
+              sig_collect_header_key_out_to_tree_collection(63 downto 32) <= srcip_reader(31 downto 0);
+    
+            end if;
+            if not ENDFILE(input3) then
+              readline(input3, dstip_line);
+              hread(dstip_line, dstip_reader);
+    
+              sig_collect_header_key_out_to_tree_collection(31 downto 0) <= dstip_reader(31 downto 0);
+            end if;
+            
+            
+          end if;
+          if lock ='1' then
+            lock <= '0';
+          end if;
+          -- if rdy_collecthdr_to_tree_collection = "00000" then --maybe nor gate
+          --   lock <= '0';
+          -- end if;
+        vld_collect_header_reg <= (others => '1');
+        debug_bool <= rdy_collecthdr_to_tree_collection = "11111";
+      -- debug_bool <=  rdy_collecthdr_to_tree_collection = "11111" and vld_collect_header_reg = "00000";
+      -- if rdy_collecthdr_to_tree_collection = "11111" and vld_collect_header_reg = "00000" then
+      --   vld_collect_header_reg <= (others => '1');
+      -- end if;
+
+
+    --   for j in 0 to 4 loop
+    --     if rdy_collecthdr_to_tree_collection(j) = '1' then
+    --       readline(packet_file, current_read_line2);
+
+    --     end if;
+    -- end loop;
+      
+
 
     end if;
   end process;
+
+
+    
+
+
 
 end architecture;

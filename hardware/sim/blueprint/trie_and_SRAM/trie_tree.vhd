@@ -7,7 +7,8 @@ entity trie_tree_logic is
     generic (
         key_length : integer := 16;
         address_width : integer := 8;
-        codeword_length : integer := 16
+        codeword_length : integer := 16;
+        max_iterations : integer := 1
     );
 
     port (
@@ -31,6 +32,7 @@ end entity trie_tree_logic;
 architecture rtl of trie_tree_logic is
     type State_type is (
         idle_state,
+        buffer_read_state,
         read_state,
         fetch_state);
 
@@ -48,7 +50,14 @@ architecture rtl of trie_tree_logic is
     
     signal best_codeword, final_codeword : std_logic_vector(codeword_length -1 downto 0);
     signal DEBUG_bool : boolean;
+
+    signal debug_key_in : std_logic;
+    signal lock,lock_next : std_logic:= '0';
+
 begin
+
+
+  debug_key_in <= key_in(key_cnt);
     STATE_MEMORY_LOGIC : process (clk, reset, RW)
     begin
       
@@ -62,19 +71,28 @@ begin
       end if;
     end process;
   
-    NEXT_STATE_LOGIC : process (current_state, vld_collect_header, rdy_codeword_concatinator, eof_key_flag_next)
+    NEXT_STATE_LOGIC : process (current_state, vld_collect_header, rdy_codeword_concatinator, eof_key_flag_next,lock)
     begin
       next_state <= current_state;
+      lock_next <= lock;
       case(current_state) is
   
       when idle_state =>
-        if vld_collect_header = '1' and rdy_codeword_concatinator = '1' then
-          next_state <= fetch_state;
+        if (vld_collect_header = '1') and lock_next = '0' then
+          next_state <= buffer_read_state;
+          lock<= '0';
+        -- elsif (vld_collect_header = '1') and lock_next = '1' then
+        --   next_state <= idle_state;
+
+        --   lock<= '1';
         end if;
-  
+      when buffer_read_state =>next_state <= fetch_state;
       when read_state =>
-      if eof_key_flag_next = '1' then
+      if eof_key_flag_next = '1' and rdy_codeword_concatinator = '1' then
         next_state <= idle_state;
+        -- rdy_collect_header <= '1';
+      elsif  eof_key_flag_next = '1' and rdy_codeword_concatinator = '0' then
+        next_state <= read_state;
       else
         next_state <= fetch_state;
         end if;
@@ -96,7 +114,13 @@ begin
     
       case(current_state) is
         when idle_state => 
+          -- if rdy_codeword_concatinator = '1' then
+          --   rdy_collect_header <= '1';
+          -- else
+          --   rdy_collect_header <= '0';
+          -- end if;
           rdy_collect_header <= '1';
+
           -- codeword <= (others => '0');
           eof_key_flag <= '0';
           address <= (others => '0');
@@ -104,7 +128,8 @@ begin
           vld_codeword_concatinator <= '0';
           best_codeword <= codeword_from_memory;
 
-
+          
+        when buffer_read_state => rdy_collect_header <= '0';
         when read_state =>
           rdy_collect_header <= '0';
           eof_key_flag_next <= eof_key_flag_next;

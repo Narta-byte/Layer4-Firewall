@@ -21,30 +21,30 @@ class TestRuleFile(unittest.TestCase):
             filename="logs.txt",
         )
         random.seed(31415)
-        self.treeList = []
+        # self.treeList = []
         self.numberOfTrees = 5
-        for _ in range(self.numberOfTrees):
-            self.treeList.append(policyTrieTree.PolicyTrieTree())
+        # for _ in range(self.numberOfTrees):
+        #     self.treeList.append(policyTrieTree.PolicyTrieTree())
 
-        self.treeList[0].treeDepth = 8
-        self.policyBuilder = PolicyBuilder.PolicyBuilder(self.treeList)
-        self.hashTable = CuckooHashTable.CuckooHashTable()
+        # self.treeList[0].treeDepth = 8
+        # self.policyBuilder = PolicyBuilder.PolicyBuilder(self.treeList)
+        # self.hashTable = CuckooHashTable.CuckooHashTable()
 
-        ruleList = self.createRuleList(10)
-        logging.debug("Rule list: " + str(ruleList))
-        for rule in ruleList:
-            logging.debug("Rule in for loop: " + str(rule))
-            self.policyBuilder.insertRule(rule)
+        # ruleList = self.createRuleList(10)
+        # logging.debug("Rule list: " + str(ruleList))
+        # for rule in ruleList:
+        #    logging.debug("Rule in for loop: " + str(rule))
+        #    self.policyBuilder.insertRule(rule)
 
-        for rule in self.policyBuilder.previousRuleTuple:
-            self.hashTable.insert(rule[1], rule[0])
-        self.policyBuilder.writeCodewords()
+        # for rule in self.policyBuilder.previousRuleTuple:
+        #     self.hashTable.insert(rule[1], rule[0])
+        # self.policyBuilder.writeCodewords()
 
-        self.hashTable.defualtRule = (["*"] * self.numberOfTrees) + ["default"]
+        # self.hashTable.defualtRule = (["*"] * self.numberOfTrees) + ["default"]
 
-        self.aclBuilder = ACLbuilder.ACLBuilder(
-            self.treeList, self.policyBuilder, self.hashTable
-        )
+        # self.aclBuilder = ACLbuilder.ACLBuilder(
+        #     self.treeList, self.policyBuilder, self.hashTable
+        # )
 
     def createRuleList(self, numberOfRules=10):
         ruleList = []
@@ -140,9 +140,23 @@ class TestRuleFile(unittest.TestCase):
 
         # Protocol       #Src port           #Dst Port           #SrcIP                              #dstIP
         ruleList = [
-            ["*", "00000001101110*", "0*", "*", "00100011101110101110000000011001", "flip_bits"],
+            [
+                "*",
+                "00000001101110*",
+                "0*",
+                "*",
+                "00100011101110101110000000011001",
+                "flip_bits",
+            ],
             ["*", "00000001101110*", "0*", "*", "*", "not_flip_bits"],
-            ["00000110*", "*", "*", "00001010110100011110110010101010*", "*", "TCP_with_from_somewhere"],
+            [
+                "00000110*",
+                "*",
+                "*",
+                "00001010110100011110110010101010*",
+                "*",
+                "TCP_with_from_somewhere",
+            ],
             ["*", "*", "*", "*", "*", "DENY"],
         ]
 
@@ -164,6 +178,118 @@ class TestRuleFile(unittest.TestCase):
         self.aclBuilder.buildACL()
         self.aclBuilder.treeToVHDL(self.aclBuilder.treeList[0])
         self.aclBuilder.programCuckooHashTable(self.hashTable)
+
+    def test_RulelistforTest(self):
+        self.treeList = []
+        self.init3Trees(5, [8, 16, 16, 32, 32])
+
+        self.policyBuilder = PolicyBuilder.PolicyBuilder(self.treeList)
+        self.hashTable = CuckooHashTable.CuckooHashTable()
+
+        # Protocol       #Src port           #Dst Port           #SrcIP                              #dstIP
+        ruleList = [self.rules() for _ in range(5)]
+        ruleList = [
+            ["11111111*", "1111111111111111*", "1111111111111111*", "11111111111111111111111111111111*", "11111111111111111111111111111111*", "A"],
+            # ["00000000*", "0000000000000000*", "0000000000000000*", "0000000000000000*", "0000000000000000*", "B"],
+            # ["00000000*", "*", "*", "*", "*", "B"],
+            # ["10101010*", "1010101010101010*", "1010101010101010*", "10101010101010101010101010101010*", "10101010101010101010101010101010*", "C"],
+            ["*", "*", "*", "*", "*", "default"],
+        ]
+
+        # packetList = [self.packets() for _ in range(100)]
+        packetList = [
+            # ["11111111", "1111111111111111", "1111111111111111", "11111111111111111111111111111111", "11111111111111111111111111111111"],
+            ["00000000", "0000000000000000", "0000000000000000", "00000000000000000000000000000000", "00000000000000000000000000000000"],
+            # ["11111100", "1111111111111100", "1111111111111100", "11111111111111111111111111111100", "11111111111111111111111111111100"],
+            # ["10100101", "1101111010101101", "1011101010111110", "11000000111111111110111000000000", "00001111111100011100111000000000"],
+            # ["11111111", "1111111111111111", "1111111111111111", "11111111111111111111111111111111", "11111111111111111111111111111111"],
+            # ["00000001", "0000000000000010", "0000000000000011", "00000000000000000000000000000100", "00000000000000000000000000000101"],
+            # ["10101010", "1010101010101010", "1010101010101010", "10101010101010101010101010101010", "10101010101010101010101010101010"],
+        ]
+        temp_packetList = []
+
+        for i in range(100):
+            temp_packetList.append(packetList[i % len(packetList)])
+
+        packetList = temp_packetList
+        logging.debug("Rule list: " + str(packetList))
+
+        logging.debug("Rule list: ")
+        file = open("hardware/sim/blueprint/cuckoo_hash/rule_list.txt", "w")
+        for rule in ruleList:
+            logging.debug("Rule in for loop: " + str(rule))
+            self.policyBuilder.insertRule(rule)
+            file.write(str(rule) + "\n")
+        file.close()
+
+        for rule in ruleList:
+            logging.debug("Rule in for loop: " + str(rule))
+            self.policyBuilder.insertRule(rule)
+
+        file_names = [
+            "hardware/sim/blueprint/protocol.txt",
+            "hardware/sim/blueprint/srcport.txt",
+            "hardware/sim/blueprint/dstport.txt",
+            "hardware/sim/blueprint/srcip.txt",
+            "hardware/sim/blueprint/dstip.txt",
+        ]
+        length_list = ["02X", "04X", "04X", "08X", "08X"]
+
+        for length, filename in enumerate(file_names):
+            file = open(filename, "w")
+            for packet in packetList:
+                file.write(format(int(packet[length], 2), length_list[length]) + "\n")
+            file.close()
+        # ((str(format(0, '02X')) + str(format(0, '04X')) + str(format(0, '08X'))+"\n"))
+
+        for rule in self.policyBuilder.previousRuleTuple:
+            self.hashTable.insert(rule[1], rule[0])
+        self.policyBuilder.writeCodewords()
+
+        self.hashTable.defualtRule = (["*"] * self.numberOfTrees) + ["default"]
+
+
+        self.aclBuilder = ACLbuilder.ACLBuilder(
+            self.treeList, self.policyBuilder, self.hashTable
+        )
+        self.aclBuilder.buildACL()
+        self.aclBuilder.treeToVHDL(self.aclBuilder.treeList[0])
+        self.aclBuilder.programCuckooHashTable(self.hashTable)
+
+    def rules(self):
+        decision = ["alpha", "beta", "gamma", "iota", "jota", "kappa", "zeta", "eta"]
+        entry = [
+            self.random_bits_for_rule(8),
+            self.random_bits_for_rule(16),
+            self.random_bits_for_rule(16),
+            self.random_bits_for_rule(32),
+            self.random_bits_for_rule(32),
+        ]
+        entry.append(random.choice(decision))
+        return entry
+
+    def packets(self):
+        entry = [
+            self.random_bits(8),
+            self.random_bits(16),
+            self.random_bits(16),
+            self.random_bits(32),
+            self.random_bits(32),
+        ]
+        return entry
+
+
+    def random_bits_for_rule(self, length):
+        if random.random() < 0.5:
+            return "*"
+        else:
+            return bin(random.randint(0, 2**length - 1))[2:].zfill(length)
+
+    def random_bits(self, length):
+        if random.random() < 0:  # 0.1
+            return "*"
+        else:
+            return bin(random.randint(0, 2**length - 1))[2:].zfill(length)
 
     def init3Trees(self, tree_count=3, treeDepths=[16, 16, 16]):
         if len(treeDepths) != tree_count:

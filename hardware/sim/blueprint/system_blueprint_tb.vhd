@@ -232,7 +232,8 @@ begin
               
       
                   read(current_read_line2, current_write_line);
-                  CH_vld <= current_write_line;
+                  -- CH_vld <= current_write_line;
+                  CH_vld <= '1';
       
                   read(current_read_line2, current_write_line);
                   SoP <= current_write_line;

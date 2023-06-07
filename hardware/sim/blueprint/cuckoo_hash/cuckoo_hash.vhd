@@ -154,7 +154,15 @@ architecture Cuckoo_Hashing_tb of Cuckoo_Hashing is
   signal DEBUG_crc1 : std_logic_vector(8 downto 0);
   signal DEBUG_BOOL : boolean;
   
-
+  signal DEBUG_decision0 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision1 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision2 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision3 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision4 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision5 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision6 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision7 : natural range 0 to 2**16 := 0;
+  
   alias decision_ki : std_logic_vector(7 downto 0) is key_in(7 downto 0);
   alias alias_key_ki : std_logic_vector(codeword_sum -1 +8 downto 7) is key_in(codeword_sum - 1 + 8 downto 7);
   
@@ -494,6 +502,9 @@ begin
     previous_search_next <= '0';
     RW <= '0';
     occupied_next <= '0';
+    
+
+
 
     when find_hashfun1 =>
     rdy_firewall_hash_next <= '0';
@@ -524,4 +535,23 @@ begin
   end case;
 
 end process;
+
+process (vld_ad_hash_next)
+  begin
+    if vld_ad_hash_next = '1' then
+      case decision_do is
+        when "00000000" => DEBUG_decision0<=DEBUG_decision0+1;
+        when "00000001" => DEBUG_decision1<=DEBUG_decision1+1;
+        when "00000010" => DEBUG_decision2<=DEBUG_decision2+1;
+        when "00000011" => DEBUG_decision3<=DEBUG_decision3+1;
+        when "00000100" => DEBUG_decision4<=DEBUG_decision4+1;
+        when "00000101" => DEBUG_decision5<=DEBUG_decision5+1;
+        when "00000110" => DEBUG_decision6<=DEBUG_decision6+1;
+        when "00000111" => DEBUG_decision7<=DEBUG_decision7+1;
+        when others =>
+          null;
+      end case;
+    end if;
+end process;
+
 end architecture; -- Cuckoo_Hashing

@@ -153,7 +153,9 @@ begin
 
       data_firewall <= packet_forward_FIFO;
       rdy_ad_FIFO_next <= '1';
-      rdy_ad_hash <= '0';
+      --rdy_ad_hash <= '0'; // testing change
+      rdy_ad_hash <= '1';
+
       if first_time_cnt = '0' then
         ok_cnt_firewall_next <= ok_cnt_firewall + 1;
         first_time_cnt_next <= '1';
@@ -178,7 +180,9 @@ begin
     
 
       rdy_ad_FIFO_next <= '1';
-      rdy_ad_hash <= '0';
+      -- rdy_ad_hash <= '0'; // testing change
+      rdy_ad_hash <= '1';
+
       if first_time_cnt = '0' then
         ko_cnt_firewall_next <= ko_cnt_firewall + 1;
         first_time_cnt_next <= '1';

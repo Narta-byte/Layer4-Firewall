@@ -1,13 +1,15 @@
 library ieee;
 use ieee.std_logic_1164.all;
-
+use work.my_types_pkg.all;
 
 entity tree_and_sram is
     generic (
         key_length : integer := 32;
         address_width : integer := 8;
         codeword_length : integer := 16;
-        tree_depth : integer := 16
+        tree_depth : integer := 16;
+        max_iterations : integer := 1;
+        tree_config : integer
     );
     port (
         key_in : in std_logic_vector(key_length - 1 downto 0);
@@ -39,7 +41,8 @@ architecture rtl of tree_and_sram is
         generic (
           key_length : integer;
           address_width : integer;
-          codeword_length : integer
+          codeword_length : integer;
+          max_iterations : integer
         );
           port (
           key_in : in std_logic_vector(key_length - 1 downto 0);
@@ -99,7 +102,8 @@ begin
     generic map (
       key_length => key_length,
       address_width => address_width,
-      codeword_length => codeword_length
+      codeword_length => codeword_length,
+      max_iterations => max_iterations
     )
     port map (
       key_in => key_in,

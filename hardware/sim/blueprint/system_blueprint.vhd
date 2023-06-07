@@ -20,7 +20,9 @@ entity system_blueprint is
     tree_cumsum : tree_array;
     codeword_length : tree_array;
     largest_codeword : integer;
-    codeword_sum : integer
+    codeword_sum : integer;
+    max_iterations : tree_array := (1,1,1,1,1);
+    tree_config : tree_array    := (1,1,1,1,1)
   );
   port (
     cmd_in : in std_logic_vector(4 downto 0);
@@ -65,7 +67,9 @@ architecture rtl of system_blueprint is
       total_key_in_length : integer;
       tree_cumsum : tree_array;
       codeword_length : tree_array;
-      largest_codeword : integer
+      largest_codeword : integer;
+      max_iterations : tree_array ;
+      tree_config : tree_array 
     );
       port (
       key_in : in std_logic_vector(total_key_in_length - 1 downto 0);
@@ -200,6 +204,7 @@ architecture rtl of system_blueprint is
       tcp_urgent_ptr : out std_logic_vector(15 downto 0);
       collect_header_key_out_to_tree_collection : out std_logic_vector(103 downto 0);
       vld_collect_header : out std_logic_vector(4 downto 0);
+      rdy_collecthdr_to_tree_collection : in std_logic_vector(4 downto 0);
       udp_len : out std_logic_vector(15 downto 0)
     );
   end component;
@@ -272,6 +277,7 @@ end component;
 
   signal collect_header_key_out_to_tree_collection : std_logic_vector(103 downto 0);
   signal vld_collect_header_wire : std_logic_vector(4 downto 0);
+  signal rdy_collect_header_wire : std_logic_vector(4 downto 0);
 
   signal set_rule : std_logic;
   signal header_data : std_logic_vector(codeword_sum - 1 downto 0);
@@ -372,7 +378,9 @@ begin
     total_key_in_length => total_key_in_length,
     tree_cumsum => tree_cumsum,
     codeword_length => codeword_length,
-    largest_codeword => largest_codeword
+    largest_codeword => largest_codeword,
+    max_iterations => max_iterations,
+    tree_config => tree_config
   )
   port map (
     key_in => collect_header_key_out_to_tree_collection,
@@ -381,7 +389,7 @@ begin
     one_pointer => one_pointer_out,
     address => address,
     RW => RW,
-    rdy_collect_header => rdy_collect_header,
+    rdy_collect_header => rdy_collect_header_wire,
     vld_collect_header => vld_collect_header_wire,
     codeword_out => codeword_to_concat,
     cuckoo_codeword => cuckoo_codeword,
@@ -466,6 +474,7 @@ begin
       tcp_urgent_ptr => tcp_urgent_ptr,
       collect_header_key_out_to_tree_collection => collect_header_key_out_to_tree_collection,
       vld_collect_header => vld_collect_header_wire,
+      rdy_collecthdr_to_tree_collection=> rdy_collect_header_wire,
       udp_len => udp_len
     );
 

@@ -24,8 +24,10 @@ entity tree_collection is
         -- total_tree_address : integer := number_of_trees * address_width ;
 
         codeword_length : tree_array := (16,16,16,16,16);
-        largest_codeword : integer := 16
+        largest_codeword : integer := 16;
 
+        max_iterations : tree_array := (1,1,1,1,1);
+        tree_config : tree_array    := (1,1,1,1,1)
 
     );
     port (
@@ -58,7 +60,9 @@ architecture rtl of tree_collection is
       key_length : integer;
       address_width : integer;
       codeword_length : integer;
-      tree_depth : integer
+      tree_depth : integer;
+      max_iterations : integer;
+      tree_config : integer
     );
       port (
       key_in : in std_logic_vector(key_length - 1 downto 0);
@@ -119,7 +123,9 @@ architecture rtl of tree_collection is
             key_length => key_in_lengths(i),
             address_width => address_width(i),
             codeword_length => codeword_length(i),
-            tree_depth => tree_depth
+            tree_depth => tree_depth,
+            max_iterations => max_iterations(i),
+            tree_config => tree_config(i)
           )
           port map (
             key_in => key_in(total_key_in_length - tree_cumsum(i) - 1 downto total_key_in_length - tree_cumsum(i + 1)),

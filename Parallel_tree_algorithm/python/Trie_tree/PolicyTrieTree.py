@@ -18,11 +18,11 @@ class PolicyTrieTree(trieTree.TrieTree):
     def __init__(self, key=""):
         self.root = PolicyTrieNode(key)
         self.root.color = "#123456"
-        self.treeDepth = 32
+        self.treeDepth = 16
 
     def insert(self, key, codeword):
         if not "*" in key:
-            key = format(int(key), "0" + str(self.treeDepth) + "b")
+            # key = format(int(key), "0" + str(self.treeDepth) + "b")
             length = len(key)
         elif key == "*":
             self.root.codeword = codeword
@@ -100,6 +100,7 @@ class PolicyTrieTree(trieTree.TrieTree):
     def getCodeword(self, key):
         if not "*" in key:
             key = format(int(key), "0" + str(self.treeDepth) + "b")
+            pass
         else:
             key = key.split("*")[0]
 

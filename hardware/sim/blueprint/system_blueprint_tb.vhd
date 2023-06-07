@@ -22,7 +22,9 @@ architecture bench of system_blueprint_tb is
       tree_cumsum : tree_array;
       codeword_length : tree_array;
       largest_codeword : integer;
-      codeword_sum : integer
+      codeword_sum : integer;
+      max_iterations : tree_array ;
+      tree_config : tree_array    
     );
     port (
       cmd_in : in std_logic_vector(4 downto 0);
@@ -74,6 +76,9 @@ architecture bench of system_blueprint_tb is
   constant codeword_length : tree_array := (32, 32, 32, 32, 32);
   constant largest_codeword : integer := 32;
   constant codeword_sum : integer := 160;
+  constant max_iterations : tree_array := (1, 1, 1, 1, 1);
+  constant tree_config : tree_array := (1, 1, 1, 1, 1);
+
 
   -- Ports
   signal cmd_in : std_logic_vector(4 downto 0);
@@ -117,7 +122,9 @@ begin
     tree_cumsum => tree_cumsum,
     codeword_length => codeword_length,
     largest_codeword => largest_codeword,
-    codeword_sum => codeword_sum
+    codeword_sum => codeword_sum,
+    max_iterations => max_iterations,
+    tree_config => tree_config
   )
   port map(
     cmd_in => cmd_in,
@@ -226,23 +233,23 @@ begin
 
                   packet_start <= '1';
                   bytenm <= bytenm + 1;
-                  readline(packet_file, current_read_line2);
-                  hread(current_read_line2, current_read_field);
-                  packet_data <= current_read_field;
+                  -- readline(packet_file, current_read_line2);
+                  -- hread(current_read_line2, current_read_field);
+                  -- packet_data <= current_read_field;
               
       
-                  read(current_read_line2, current_write_line);
-                  -- CH_vld <= current_write_line;
+                  -- read(current_read_line2, current_write_line);
+                  -- -- CH_vld <= current_write_line;
                   CH_vld <= '1';
       
-                  read(current_read_line2, current_write_line);
-                  SoP <= current_write_line;
+                  -- read(current_read_line2, current_write_line);
+                  -- SoP <= current_write_line;
               
-                  read(current_read_line2, current_write_line);
-                  EoP <= current_write_line;
+                  -- read(current_read_line2, current_write_line);
+                  -- EoP <= current_write_line;
       
-                  -- packet_in <= packet_data & SoP & EoP;
-                  packet_in <= packet_data & CH_vld & SoP & EoP;
+                  -- -- packet_in <= packet_data & SoP & EoP;
+                  -- packet_in <= packet_data & CH_vld & SoP & EoP;
                 else
                   filedone <= '1';
                 end if;

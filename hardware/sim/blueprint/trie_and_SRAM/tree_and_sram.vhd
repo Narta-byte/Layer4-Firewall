@@ -56,6 +56,12 @@ architecture rtl of tree_and_sram is
           rdy_codeword_concatinator : in std_logic;
           vld_codeword_concatinator : out std_logic;
 
+          input_address : in std_logic_vector(address_width - 1 downto 0);
+          output_address : out std_logic_vector(address_width - 1 downto 0);
+  
+          input_codeword : in std_logic_vector(codeword_length - 1 downto 0);
+          key_out : out std_logic_vector(0 to key_length - 1);
+
           clk : in std_logic;
           reset : in std_logic
         );
@@ -82,7 +88,20 @@ architecture rtl of tree_and_sram is
   signal data_from_memory : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
 
   signal this_data_in : std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
-  
+  signal junk_a,junk_aa : std_logic_vector(address_width - 1 downto 0);
+  signal junk_k : std_logic_vector(key_length - 1 downto 0);
+
+
+  signal tawire0, tawire1, tawire2, tawire3 : std_logic_vector(address_width - 1 downto 0):= (others => '0');
+  signal tcwire0, tcwire1, tcwire2, junk_c : std_logic_vector(codeword_length - 1 downto 0);
+
+  signal trwire0, trwire1, trwire2 : std_logic;
+  signal tvwire0, tvwire1, tvwire2 : std_logic;
+
+  signal tkwire0, tkwire1, tkwire2 : std_logic_vector(key_length - 1 downto 0);
+
+  signal swire0, swire1, swire2, swire3 : std_logic_vector(codeword_length + address_width * 2  - 1 downto 0);
+  signal sawire0, sawire1, sawire2, sawire3 : std_logic_vector(address_width - 1 downto 0);
 
 begin
 
@@ -92,11 +111,207 @@ begin
     begin
         if RW = '1' then
           wire1 <= address;
+          sawire0 <= address;
+          sawire1 <= address;
+          sawire2 <= address;
+          sawire3 <= address;
         elsif RW = '0' then
           wire1 <= wire0;
+          sawire0 <= tawire0;
+          sawire1 <= tawire1;
+          sawire2 <= tawire2;
+          sawire3 <= tawire3;
+          
+
+
         end if;
       
     end process;
+
+
+    -- tree_gen : for i in 0 to tree_config generate
+    --   if i = 0 generate
+        
+    --   elsif i /= 0 and i /= tree_config generate
+
+    --   elsif i = tree_config generate
+
+     
+    --   end if;
+
+
+
+
+
+    -- end generate;
+
+    
+    -- t0 : trie_tree_logic
+    -- generic map (
+    --   key_length => key_length,
+    --   address_width => address_width,
+    --   codeword_length => codeword_length,
+    --   max_iterations => max_iterations
+    -- )
+    -- port map (
+    --   key_in => key_in,
+    --   codeword => tcwire0,
+    --   address => tawire0,
+    --   data_from_memory => swire0,
+    --   RW => RW,
+    --   rdy_collect_header => rdy_collect_header,
+    --   vld_collect_header => vld_collect_header,
+    --   rdy_codeword_concatinator => trwire0,
+    --   vld_codeword_concatinator => tvwire0,
+    --   input_address => junk_a,
+    --   output_address => tawire0,
+    --   input_codeword => junk_c,
+    --   key_out => tkwire0,
+    --   clk => clk,
+    --   reset => reset
+    -- );
+
+    -- t1 : trie_tree_logic
+    -- generic map (
+    --   key_length => key_length,
+    --   address_width => address_width,
+    --   codeword_length => codeword_length,
+    --   max_iterations => max_iterations
+    -- )
+    -- port map (
+    --   key_in => tkwire0,
+    --   codeword => tcwire1,
+    --   address => tawire1,
+    --   data_from_memory => swire1,
+    --   RW => RW,
+    --   rdy_collect_header => trwire0,
+    --   vld_collect_header => tvwire0,
+    --   rdy_codeword_concatinator => trwire1,
+    --   vld_codeword_concatinator => tvwire1,
+    --   input_address => tawire0,
+    --   output_address => tawire1,
+    --   input_codeword => tcwire0,
+    --   key_out => tkwire1,
+
+    --   clk => clk,
+    --   reset => reset
+    -- );
+
+    -- t2 : trie_tree_logic
+    -- generic map (
+    --   key_length => key_length,
+    --   address_width => address_width,
+    --   codeword_length => codeword_length,
+    --   max_iterations => max_iterations
+    -- )
+    -- port map (
+    --   key_in => tkwire1,
+    --   codeword => tcwire2,
+    --   address => tawire2,
+    --   data_from_memory => swire2,
+    --   RW => RW,
+    --   rdy_collect_header => trwire1,
+    --   vld_collect_header => tvwire1,
+    --   rdy_codeword_concatinator => trwire2,
+    --   vld_codeword_concatinator => tvwire2,
+    --   input_address => tawire1,
+    --   output_address => tawire2,
+    --   input_codeword => tcwire1,
+    --   key_out => tkwire2,
+
+    --   clk => clk,
+    --   reset => reset
+    -- );
+
+    -- t3 :  trie_tree_logic
+    -- generic map (
+    --   key_length => key_length,
+    --   address_width => address_width,
+    --   codeword_length => codeword_length,
+    --   max_iterations => max_iterations
+    -- )
+    -- port map (
+    --   key_in => tkwire2,
+    --   codeword => codeword,
+    --   address => tawire3,
+    --   data_from_memory => swire3,
+    --   RW => RW,
+    --   rdy_collect_header => trwire2,
+    --   vld_collect_header => tvwire2,
+    --   rdy_codeword_concatinator => rdy_codeword_concatinator,
+    --   vld_codeword_concatinator => vld_codeword_concatinator,
+    --   input_address => tawire2,
+    --   output_address => junk_aa,
+    --   input_codeword => tcwire2,
+    --   clk => clk,
+    --   reset => reset
+    -- );
+
+     
+        
+    -- s0 : SRAM
+    -- generic map (
+    --   tree_depth => tree_depth,
+    --   codeword_length => codeword_length,
+    --   address_width => address_width
+    -- )
+    -- port map (
+    --   clk => clk,
+    --   reset => reset,
+    --   RW => RW,
+    --   address => sawire0,
+    --   data_in => this_data_in,
+    --   data_out => swire0
+    -- );
+    -- s1 : SRAM
+    -- generic map (
+    --   tree_depth => tree_depth,
+    --   codeword_length => codeword_length,
+    --   address_width => address_width
+    -- )
+    -- port map (
+    --   clk => clk,
+    --   reset => reset,
+    --   RW => RW,
+    --   address => sawire1,
+    --   data_in => this_data_in,
+    --   data_out => swire1
+    -- );
+    -- s2 : SRAM
+    -- generic map (
+    --   tree_depth => tree_depth,
+    --   codeword_length => codeword_length,
+    --   address_width => address_width
+    -- )
+    -- port map (
+    --   clk => clk,
+    --   reset => reset,
+    --   RW => RW,
+    --   address => sawire2,
+    --   data_in => this_data_in,
+    --   data_out => swire2
+    -- );
+    -- s3 : SRAM
+    -- generic map (
+    --   tree_depth => tree_depth,
+    --   codeword_length => codeword_length,
+    --   address_width => address_width
+    -- )
+    -- port map (
+    --   clk => clk,
+    --   reset => reset,
+    --   RW => RW,
+    --   address => sawire3,
+    --   data_in => this_data_in,
+    --   data_out => swire3
+    -- );
+
+
+
+
+
+
+
 
     trie_tree_logic_inst : trie_tree_logic
     generic map (
@@ -115,6 +330,9 @@ begin
       vld_collect_header => vld_collect_header,
       rdy_codeword_concatinator => rdy_codeword_concatinator,
       vld_codeword_concatinator => vld_codeword_concatinator,
+      input_address => junk_a,
+      output_address => junk_aa,
+      input_codeword => junk_c,
       clk => clk,
       reset => reset
     );

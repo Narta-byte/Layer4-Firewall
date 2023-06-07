@@ -10,11 +10,9 @@ class PolicyBuilder:
         self.treeList = treeList
         self.ruleLength = len(treeList) + 1
         self.previousRuleTuple = []
-        self.ruleCodeWord = ""
         self.codewordLength = 32
         self.codewordLength_for_tree = 32
         self.nextCodeword = 0
-        self.treeDepth = 4
         self.store_inserted = []
         self.store_prev_rules = set()
 
@@ -77,11 +75,11 @@ class PolicyBuilder:
         return []
     
     def remove_empty_indices(self, list_2d):
-        return [[item for i, item in enumerate(sublist) if any(list_2d[j][i] for j in range(len(list_2d)))] for sublist in list_2d]
+        return [[item for i, item in enumerate(sublist) if any(list_2d[j][i] for j in range(len(list_2d)))] for sublist in list_2d] #FOR SUBRANGES
 
-        non_empty_indices = {i for i in range(len(list_2d[0])) if any(sublist[i] != '' for sublist in list_2d)}
-        # only keep these indices in all sublists
-        return [[item for i, item in enumerate(sublist) if i in non_empty_indices] for sublist in list_2d]
+        # non_empty_indices = {i for i in range(len(list_2d[0])) if any(sublist[i] != '' for sublist in list_2d)}
+        # # only keep these indices in all sublists
+        # return [[item for i, item in enumerate(sublist) if i in non_empty_indices] for sublist in list_2d]
 
 
     def account_for_old_rules(self, old_rules, new_rule):
@@ -104,10 +102,9 @@ class PolicyBuilder:
                     temp = rule.copy()
                     if field == "*":
                         temp[i] = new_rule[i]
-                        if temp != rule:
-                            if tuple(temp[:-1]) not in self.store_prev_rules:
-                                logging.debug("added temp in *: " + str(temp))
-                                permutations.append(temp)  # needed for a single test
+                        if tuple(temp[:-1]) not in self.store_prev_rules:
+                            logging.debug("added temp in *: " + str(temp))
+                            permutations.append(temp)  # needed for a single test
                         continue  # idk
                     if new_rule[i] == "*":
                         continue  # Maybe faster?
@@ -120,7 +117,7 @@ class PolicyBuilder:
                     logging.debug("this is curr temp: " + str(temp))
                     logging.debug("This is curr rest: " + str(rest))
 
-                    wildcard_indices = [i for i, element in enumerate(temp) if element == "*"or (element[-1] == "*" and (element[0] == "1" or element[0] == "0") and rest[i].startswith(element[:-1]))]
+                    wildcard_indices = [i for i, element in enumerate(temp) if element == "*" and rest[i] != "*" or (element[-1] == "*" and (element[0] == "1" or element[0] == "0") and rest[i].startswith(element[:-1]))]
                     if wildcard_indices == []:
                         continue
 
@@ -208,7 +205,7 @@ class PolicyBuilder:
             logging.debug("inserted rule in already inserted or a perm")
             return
 
-        rule = [str(bin(int(element[:-1], 2))[2:]) if (len(element) == self.codewordLength + 1 and element[-1] == "*" and element[:-1].isdigit()) else element for element in rule]
+        #rule = [str(bin(int(element[:-1], 2))[2:]) if (len(element) == self.codewordLength + 1 and element[-1] == "*" and element[:-1].isdigit()) else element for element in rule]
         logging.debug("_______ New inserted rule ______:" + str(rule))
 
         if self.is_subset(rule):
@@ -275,7 +272,7 @@ class PolicyBuilder:
 
     def generateCodeword(self, length):
         self.nextCodeword += 1
-        return format(self.nextCodeword, f"0{length}b")
+        return format(random.randint(0,2**(self.codewordLength-1)), f"0{length}b")
 
     def writeCodewords(self):  # Writing to "codewords.txt"
         file = open("codewords.txt", "w")

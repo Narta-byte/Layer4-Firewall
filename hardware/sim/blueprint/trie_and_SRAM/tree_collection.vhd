@@ -76,6 +76,7 @@ architecture rtl of tree_collection is
       vld_collect_header : in std_logic;
       rdy_codeword_concatinator : in std_logic;
       vld_codeword_concatinator : out std_logic;
+      
       clk : in std_logic;
       reset : in std_logic
     );

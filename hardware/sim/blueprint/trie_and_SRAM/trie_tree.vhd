@@ -14,7 +14,7 @@ entity trie_tree_logic is
     port (
         key_in : in std_logic_vector(0 to key_length - 1);
         codeword : out std_logic_vector(codeword_length - 1 downto 0);
-        address : out std_logic_vector(address_width - 1 downto 0);
+        address : out std_logic_vector(address_width - 1 downto 0):= (others => '0') ;
         data_from_memory : in std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
         RW : in std_logic;
         
@@ -23,6 +23,14 @@ entity trie_tree_logic is
 
         rdy_codeword_concatinator : in std_logic;
         vld_codeword_concatinator : out std_logic;
+
+        input_address : in std_logic_vector(address_width - 1 downto 0);
+        output_address : out std_logic_vector(address_width - 1 downto 0):= (others => '0');
+
+        input_codeword : in std_logic_vector(codeword_length - 1 downto 0);
+
+        key_out : out std_logic_vector(0 to key_length - 1);
+
 
         clk   : in std_logic;
         reset : in std_logic
@@ -53,7 +61,7 @@ architecture rtl of trie_tree_logic is
 
     signal debug_key_in : std_logic;
     signal lock,lock_next : std_logic:= '0';
-
+    signal output_codeword : std_logic_vector(codeword_length -1 downto 0);
 begin
 
 
@@ -127,7 +135,8 @@ begin
           key_cnt <= 0;
           vld_codeword_concatinator <= '0';
           best_codeword <= codeword_from_memory;
-
+          codeword <= best_codeword;
+          -- output_codeword <= codeword_from_memory;
           
         when buffer_read_state => rdy_collect_header <= '0';
         when read_state =>
@@ -135,9 +144,11 @@ begin
           eof_key_flag_next <= eof_key_flag_next;
           
           
-          DEBUG_bool <= (codeword_from_memory /= best_codeword) and ((codeword_from_memory = codeword_zeros));
-          if ((codeword_from_memory /= best_codeword) and ((codeword_from_memory /= codeword_zeros)))   then
+          DEBUG_bool <= ((codeword_from_memory /= best_codeword) and ((codeword_from_memory /= codeword_zeros)) );
+          if ((codeword_from_memory /= best_codeword) and ((codeword_from_memory /= codeword_zeros)))  then
             best_codeword <= codeword_from_memory;
+          else 
+            best_codeword <= best_codeword;
           end if; 
           
           if  eof_key_flag_next = '1' then
@@ -147,6 +158,8 @@ begin
         when fetch_state =>
           rdy_collect_header <= '0';
           codeword <= best_codeword;
+          -- output_codeword <= best_codeword; -- jeg tror at hvis man tilføjer et delay så virker det
+
           if key_cnt = key_length - 1 then
             eof_key_flag_next <= '1';
             vld_codeword_concatinator <= '1';
@@ -157,15 +170,18 @@ begin
           end if;
           
           -- report "key_in(key_cnt) = " & std_logic'image(key_in(key_cnt));
-          
-          if key_in(key_cnt) = '0' then
+          if zeroPointer = zeros and onePointer = zeros then
+            -- codeword <= best_codeword;
+            vld_codeword_concatinator <= '1';
+            eof_key_flag_next <= '1';
+          elsif key_in(key_cnt) = '0'  then
             address <= zeroPointer;
             if zeroPointer = zeros then
               -- codeword <= best_codeword;
               vld_codeword_concatinator <= '1';
               eof_key_flag_next <= '1';
             end if;
-          else
+          elsif key_in(key_cnt) = '1' then
             address <= onePointer;
             if onePointer = zeros then
               -- codeword <= best_codeword;

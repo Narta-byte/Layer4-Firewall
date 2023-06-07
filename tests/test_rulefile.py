@@ -179,7 +179,7 @@ class TestRuleFile(unittest.TestCase):
         self.aclBuilder.treeToVHDL(self.aclBuilder.treeList[0])
         self.aclBuilder.programCuckooHashTable(self.hashTable)
 
-    def test_RulelistforTest(self):
+    def test_RulelistManualTest(self):
         self.treeList = []
         self.init3Trees(5, [8, 16, 16, 32, 32])
 
@@ -187,33 +187,118 @@ class TestRuleFile(unittest.TestCase):
         self.hashTable = CuckooHashTable.CuckooHashTable()
 
         # Protocol       #Src port           #Dst Port           #SrcIP                              #dstIP
-        ruleList = [self.rules() for _ in range(5)]
+        # ruleList = [self.rules() for _ in range(5)]
         ruleList = [
-            ["11111111*", "1111111111111111*", "1111111111111111*", "11111111111111111111111111111111*", "11111111111111111111111111111111*", "A"],
-            # ["00000000*", "0000000000000000*", "0000000000000000*", "0000000000000000*", "0000000000000000*", "B"],
+            # ["11111111*", "1111111111111111*", "1111111111111111*", "11111111111111111111111111111111*", "11111111111111111111111111111111*", "Aa"],
+            # ["00000000*", "0000000000000000*", "0000000000000000*", "00000000000000000000000000000000*", "00000000000000000000000000000000*", "Bb"],
             # ["00000000*", "*", "*", "*", "*", "B"],
+            # ["11111100*", "1111111111111100*", "1111111111111100*", "*", "*","Ace"],
+            ["0000*", "*", "*", "*", "*", "A"],
+            ["0001*", "*", "*", "*", "*", "B"],
+            ["0010*", "*", "*", "*", "*", "C"],
+            ["0011*", "*", "*", "*", "*", "D"],
+            ["0100*", "*", "*", "*", "*", "E"],
+            ["0101*", "*", "*", "*", "*", "F"],
+            ["0110*", "*", "*", "*", "*", "G"],
+            ["0111*", "*", "*", "*", "*", "H"],
+            ["1111*", "*", "*", "*", "*", "I"],
+            # ["0*", "1*", "*", "*", "*", "C"],
             # ["10101010*", "1010101010101010*", "1010101010101010*", "10101010101010101010101010101010*", "10101010101010101010101010101010*", "C"],
             ["*", "*", "*", "*", "*", "default"],
         ]
+        random.seed(31417)
+        packetList = [self.packets() for _ in range(10000)]
+        # packetList = [
+        #     ["11111111", "1111111111111111", "1111111111111111", "11111111111111111111111111111111", "11111111111111111111111111111111"],
+        #     ["00000000", "0000000000000000", "0000000000000000", "00000000000000000000000000000000", "00000000000000000000000000000000"],
+        #     # ["11111100", "1111111111111100", "1111111111111100", "11111111111111111111111111111100", "11111111111111111111111111111100"],
+        #     ["10100101", "1101111010101101", "1011101010111110", "11000000111111111110111000000000", "00001111111100011100111000000000"],
+        #     # ["11111111", "1111111111111111", "1111111111111111", "11111111111111111111111111111111", "11111111111111111111111111111111"],
+        #     # ["00000001", "0000000000000010", "0000000000000011", "00000000000000000000000000000100", "00000000000000000000000000000101"],
+        #     # ["10101010", "1010101010101010", "1010101010101010", "10101010101010101010101010101010", "10101010101010101010101010101010"],
+        # ]
+        # temp_packetList = []
 
-        # packetList = [self.packets() for _ in range(100)]
-        packetList = [
-            # ["11111111", "1111111111111111", "1111111111111111", "11111111111111111111111111111111", "11111111111111111111111111111111"],
-            ["00000000", "0000000000000000", "0000000000000000", "00000000000000000000000000000000", "00000000000000000000000000000000"],
-            # ["11111100", "1111111111111100", "1111111111111100", "11111111111111111111111111111100", "11111111111111111111111111111100"],
-            # ["10100101", "1101111010101101", "1011101010111110", "11000000111111111110111000000000", "00001111111100011100111000000000"],
-            # ["11111111", "1111111111111111", "1111111111111111", "11111111111111111111111111111111", "11111111111111111111111111111111"],
-            # ["00000001", "0000000000000010", "0000000000000011", "00000000000000000000000000000100", "00000000000000000000000000000101"],
-            # ["10101010", "1010101010101010", "1010101010101010", "10101010101010101010101010101010", "10101010101010101010101010101010"],
+        # for i in range(100):
+        #     temp_packetList.append(packetList[i % len(packetList)])
+
+        # packetList = temp_packetList
+        # logging.debug("Rule list: " + str(packetList))
+
+        logging.debug("Rule list: ")
+        file = open("hardware/sim/blueprint/cuckoo_hash/rule_list.txt", "w")
+        for rule in ruleList:
+            logging.debug("Rule in for loop: " + str(rule))
+            self.policyBuilder.insertRule(rule)
+            file.write(str(rule) + "\n")
+        file.close()
+
+        for rule in ruleList:
+            logging.debug("Rule in for loop: " + str(rule))
+            self.policyBuilder.insertRule(rule)
+
+        file_names = [
+            "hardware/sim/blueprint/protocol.txt",
+            "hardware/sim/blueprint/srcport.txt",
+            "hardware/sim/blueprint/dstport.txt",
+            "hardware/sim/blueprint/srcip.txt",
+            "hardware/sim/blueprint/dstip.txt",
         ]
-        temp_packetList = []
+        length_list = ["02X", "04X", "04X", "08X", "08X"]
 
-        for i in range(100):
-            temp_packetList.append(packetList[i % len(packetList)])
+        for length, filename in enumerate(file_names):
+            file = open(filename, "w")
+            for packet in packetList:
+                file.write(format(int(packet[length], 2), length_list[length]) + "\n")
+            file.close()
+        # ((str(format(0, '02X')) + str(format(0, '04X')) + str(format(0, '08X'))+"\n"))
+        # self.treeList[4].drawGraph(html=True)
+        for rule in self.policyBuilder.previousRuleTuple:
+            self.hashTable.insert(rule[1], rule[0])
+        self.policyBuilder.writeCodewords()
 
-        packetList = temp_packetList
+        self.hashTable.defualtRule = (["*"] * self.numberOfTrees) + ["default"]
+
+        self.aclBuilder = ACLbuilder.ACLBuilder(
+            self.treeList, self.policyBuilder, self.hashTable
+        )
+        self.aclBuilder.buildACL()
+        self.aclBuilder.treeToVHDL(self.aclBuilder.treeList[0])
+        self.aclBuilder.programCuckooHashTable(self.hashTable)
+
+    def test_RulelistforRandomTest(self):
+        self.treeList = []
+        self.init3Trees(5, [8, 16, 16, 32, 32])
+
+        self.policyBuilder = PolicyBuilder.PolicyBuilder(self.treeList)
+        self.hashTable = CuckooHashTable.CuckooHashTable()
+        random.seed(31416)
+        # Protocol       #Src port           #Dst Port           #SrcIP                              #dstIP
+       
+        # ruleList = [self.rules() for _ in range(4)]
+        # ruleList.append(["*", "*", "*", "*", "*", "default"])
+        
+        
+        packetList = [self.packets() for _ in range(10000)]
+
+        ruleList = [
+            ["1*", "*", "*", "*", "*", "A"],
+            ["0*", "*", "*", "*", "*", "B"],
+            # ["00000000*", "0000000000000000*", "0000000000000000*", "0000000000000000*", "0000000000000000*", "B"],
+            # ["10101010*", "1010101010101010*", "1010101010101010*", "10101010101010101010101010101010*", "10101010101010101010101010101010*", "C"],
+            ["*", "*", "*", "*", "*", "default"],
+        ]
+        # logging.debug("Rule list: ")
+        # for rule in ruleList:
+        #     logging.debug(rule)
+
+        # logging.debug("Packet List: ")
+        # for rule in packetList:
+        #     logging.debug(rule)
+
+
+
         logging.debug("Rule list: " + str(packetList))
-
         logging.debug("Rule list: ")
         file = open("hardware/sim/blueprint/cuckoo_hash/rule_list.txt", "w")
         for rule in ruleList:
@@ -248,6 +333,100 @@ class TestRuleFile(unittest.TestCase):
 
         self.hashTable.defualtRule = (["*"] * self.numberOfTrees) + ["default"]
 
+        self.aclBuilder = ACLbuilder.ACLBuilder(
+            self.treeList, self.policyBuilder, self.hashTable
+        )
+        self.aclBuilder.buildACL()
+        self.aclBuilder.treeToVHDL(self.aclBuilder.treeList[0])
+        self.aclBuilder.programCuckooHashTable(self.hashTable)
+
+        for packet in packetList:
+            logging.debug(self.hashTable.lookup(self.policyBuilder.retriveCodeword(packet)))
+
+    def test_RulelistforRandomTest(self):
+        self.treeList = []
+        self.init3Trees(5, [8, 16, 16, 32, 32])
+
+        self.policyBuilder = PolicyBuilder.PolicyBuilder(self.treeList)
+        self.hashTable = CuckooHashTable.CuckooHashTable()
+        random.seed(31416)
+        # Protocol       #Src port           #Dst Port           #SrcIP                              #dstIP
+       
+        # ruleList = [self.rules() for _ in range(4)]
+        # ruleList.append(["*", "*", "*", "*", "*", "default"])
+        
+        
+        # packetList = [self.packets() for _ in range(10000)]
+
+        ruleList = [
+            # ["11111111*", "*", "*", "*", "*", "A"],
+            # ["00000000*", "*", "*", "*", "*", "B"],
+            ["11111111*", "1111111111111111*", "1111111111111111*", "11111111111111111111111111111111*", "11111111111111111111111111111111*", "A"],
+
+            ["00000000*", "0000000000000000*", "0000000000000000*", "00000000000000000000000000000000*", "00000000000000000000000000000000*", "B"],
+            # ["10101010*", "1010101010101010*", "1010101010101010*", "10101010101010101010101010101010*", "10101010101010101010101010101010*", "C"],
+            ["*", "*", "*", "*", "*", "default"],
+        ]
+        # logging.debug("Rule list: ")
+        # for rule in ruleList:
+        #     logging.debug(rule)
+
+        # logging.debug("Packet List: ")
+        # for rule in packetList:
+        #     logging.debug(rule)
+
+
+        packetList = [
+            ["11111111", "1111111111111111", "1111111111111111", "11111111111111111111111111111111", "11111111111111111111111111111111"],
+            ["00000000", "0000000000000000", "0000000000000000", "00000000000000000000000000000000", "00000000000000000000000000000000"],
+            # ["01000000", "0000000000000000", "0000000000000000", "00000000000000000000000000000000", "00000000000000000000000000000000"],
+            # ["10000000", "0000000000000000", "0000000000000000", "00000000000000000000000000000000", "00000000000000000000000000000000"],
+            # ["10100101", "1101111010101101", "1011101010111110", "11000000111111111110111000000000", "00001111111100011100111000000000"],
+            # ["11111111", "1111111111111111", "1111111111111111", "11111111111111111111111111111111", "11111111111111111111111111111111"],
+            # ["00000001", "0000000000000010", "0000000000000011", "00000000000000000000000000000100", "00000000000000000000000000000101"],
+            # ["10101010", "1010101010101010", "1010101010101010", "10101010101010101010101010101010", "10101010101010101010101010101010"],
+        ]
+        temp_packetList = []
+
+        for i in range(100):
+            temp_packetList.append(packetList[i % len(packetList)])
+
+        logging.debug("Rule list: " + str(packetList))
+        logging.debug("Rule list: ")
+        file = open("hardware/sim/blueprint/cuckoo_hash/rule_list.txt", "w")
+        for rule in ruleList:
+            logging.debug("Rule in for loop: " + str(rule))
+            self.policyBuilder.insertRule(rule)
+            file.write(str(rule) + "\n")
+        file.close()
+
+        for rule in ruleList:
+            logging.debug("Rule in for loop: " + str(rule))
+            self.policyBuilder.insertRule(rule)
+
+        file_names = [
+            "hardware/sim/blueprint/protocol.txt",
+            "hardware/sim/blueprint/srcport.txt",
+            "hardware/sim/blueprint/dstport.txt",
+            "hardware/sim/blueprint/srcip.txt",
+            "hardware/sim/blueprint/dstip.txt",
+        ]
+        length_list = ["02X", "04X", "04X", "08X", "08X"]
+
+        for length, filename in enumerate(file_names):
+            file = open(filename, "w")
+            for packet in packetList:
+                file.write(format(int(packet[length], 2), length_list[length]) + "\n")
+            file.close()
+        # ((str(format(0, '02X')) + str(format(0, '04X')) + str(format(0, '08X'))+"\n"))
+
+        
+
+        for rule in self.policyBuilder.previousRuleTuple:
+            self.hashTable.insert(rule[1], rule[0])
+        self.policyBuilder.writeCodewords()
+
+        self.hashTable.defualtRule = (["*"] * self.numberOfTrees) + ["default"]
 
         self.aclBuilder = ACLbuilder.ACLBuilder(
             self.treeList, self.policyBuilder, self.hashTable
@@ -256,14 +435,20 @@ class TestRuleFile(unittest.TestCase):
         self.aclBuilder.treeToVHDL(self.aclBuilder.treeList[0])
         self.aclBuilder.programCuckooHashTable(self.hashTable)
 
+        for packet in packetList:
+            logging.debug(self.hashTable.lookup(self.policyBuilder.retriveCodeword(packet)))
+
+
+
+
     def rules(self):
         decision = ["alpha", "beta", "gamma", "iota", "jota", "kappa", "zeta", "eta"]
         entry = [
-            self.random_bits_for_rule(8),
-            self.random_bits_for_rule(16),
-            self.random_bits_for_rule(16),
-            self.random_bits_for_rule(32),
-            self.random_bits_for_rule(32),
+            self.random_bits_for_rule(8) + "*",
+            self.random_bits_for_rule(16) + "*",
+            self.random_bits_for_rule(16) + "*",
+            self.random_bits_for_rule(32) + "*",
+            self.random_bits_for_rule(32) + "*",
         ]
         entry.append(random.choice(decision))
         return entry
@@ -280,8 +465,9 @@ class TestRuleFile(unittest.TestCase):
 
 
     def random_bits_for_rule(self, length):
-        if random.random() < 0.5:
-            return "*"
+        if random.random() < 0.2:
+            return ""
+            # return "*"
         else:
             return bin(random.randint(0, 2**length - 1))[2:].zfill(length)
 
@@ -296,8 +482,8 @@ class TestRuleFile(unittest.TestCase):
             raise ValueError("Length of treeDepths must match tree_count")
 
         self.treeList = [self.create_tree(depth) for depth in treeDepths]
-        self.policyFactory = PolicyBuilder.PolicyBuilder(self.treeList)
-        self.policyFactory.setSeed(311415)
+        self.policyBuilder = PolicyBuilder.PolicyBuilder(self.treeList)
+        self.policyBuilder.setSeed(311415)
 
     def create_tree(self, tree_depth):
         tree = policyTrieTree.PolicyTrieTree()

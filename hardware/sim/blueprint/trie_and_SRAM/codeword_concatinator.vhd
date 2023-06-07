@@ -40,6 +40,8 @@ architecture rtl of codeword_concatinator is
     signal flag : std_logic_vector(number_of_trees - 1 downto 0) := (others => '0');
     constant total_code_word_length : integer := largest_codeword * number_of_trees;
     constant ones : std_logic_vector(number_of_trees - 1 downto 0) := (others => '1');
+
+    signal lock : std_logic := '0';
 begin
     -- codeword_out <= codeword_seg;
 
@@ -48,17 +50,22 @@ begin
         if rising_edge(clk) then
             for i in 0 to number_of_trees - 1 loop
                 if vld_tree(i) = '1' then
+                    if lock = '1' then
+                        flag(i) <= '1';
+                    end if;
+                    lock <= '1';
                     rdy_tree(i) <= '0';
-                    flag(i) <= '1';
+                    -- flag(i) <= '1';
                     vld_cuckoo_hash <= '0';
                     codeword_out(total_code_word_length - largest_codeword * i - 1 downto total_code_word_length - largest_codeword*(i+1)) <= 
                     codeword_in (total_code_word_length - largest_codeword * i - 1 downto total_code_word_length - largest_codeword*(i+1));
                 end if;
             end loop;
-            if and_reduce(flag) = '1' and rdy_cuckoo_hash = '1'  then
+            if and_reduce(flag) = '1' and rdy_cuckoo_hash = '1' then
                 flag <= (others => '0');
                 rdy_tree <= (others => '1');
                 vld_cuckoo_hash <= '1';
+                lock <= '0';
             end if;
 
         elsif reset = '1' then

@@ -8,11 +8,12 @@ entity trie_tree_logic is
         key_length : integer := 16;
         address_width : integer := 8;
         codeword_length : integer := 16;
-        max_iterations : integer := 1
+        max_iterations : integer := 1;
+        address_offset : integer := 4
     );
 
     port (
-        key_in : in std_logic_vector(0 to key_length - 1);
+        key_in : in std_logic_vector(key_length - 1 downto  0); -- Maybe flip?
         codeword : out std_logic_vector(codeword_length - 1 downto 0);
         address : out std_logic_vector(address_width - 1 downto 0):= (others => '0') ;
         data_from_memory : in std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
@@ -29,8 +30,11 @@ entity trie_tree_logic is
 
         input_codeword : in std_logic_vector(codeword_length - 1 downto 0);
 
-        key_out : out std_logic_vector(0 to key_length - 1);
-
+        key_out : out std_logic_vector(key_length - 1 downto 0);
+        
+        key_cnt_out : out std_logic_vector(4 downto 0 );
+        
+        key_cnt_in : in std_logic_vector(4 downto 0);
 
         clk   : in std_logic;
         reset : in std_logic
@@ -47,7 +51,7 @@ architecture rtl of trie_tree_logic is
     signal current_state, next_state : State_type;
 
     signal eof_key_flag, eof_key_flag_next : std_logic:= '0';
-    signal key_cnt : integer range 0 to key_length - 1 := 0;
+    signal key_cnt : natural range 0 to key_length - 1 := 0;
     signal zeros : std_logic_vector(address_width - 1 downto 0) := (others => '0');
     alias codeword_from_memory : std_logic_vector is data_from_memory(codeword_length + address_width*2 - 1 downto address_width*2);
     alias zeroPointer : std_logic_vector is data_from_memory(address_width*2 - 1 downto address_width);
@@ -57,11 +61,13 @@ architecture rtl of trie_tree_logic is
     signal codeword_zeros : std_logic_vector(codeword_length -1 downto 0) := (others => '0') ;
     
     signal best_codeword, final_codeword : std_logic_vector(codeword_length -1 downto 0);
-    signal DEBUG_bool : boolean;
-
+    signal DEBUG_bool, DEBUG_bool_max_iter : boolean;
+    signal DEBUG_bool_00, DEBUG_bool_01, DEBUG_bool_02 : std_logic;
     signal debug_key_in : std_logic;
     signal lock,lock_next : std_logic:= '0';
     signal output_codeword : std_logic_vector(codeword_length -1 downto 0);
+
+    -- signal iterations : integer range 0 to max_iterations := 0;
 begin
 
 
@@ -96,10 +102,10 @@ begin
         end if;
       when buffer_read_state =>next_state <= fetch_state;
       when read_state =>
-      if eof_key_flag_next = '1' and rdy_codeword_concatinator = '1' then
+      if (eof_key_flag_next = '1' ) and rdy_codeword_concatinator = '1' then
         next_state <= idle_state;
         -- rdy_collect_header <= '1';
-      elsif  eof_key_flag_next = '1' and rdy_codeword_concatinator = '0' then
+      elsif  (eof_key_flag_next = '1' ) and rdy_codeword_concatinator = '0' then
         next_state <= read_state;
       else
         next_state <= fetch_state;
@@ -116,7 +122,7 @@ begin
     end case;
   
     end process;
-    OUTPUT_LOGIC : process (current_state, data_from_memory, eof_key_flag)
+    OUTPUT_LOGIC : process (current_state, data_from_memory, eof_key_flag, key_cnt_in, input_address)
     begin
       eof_key_flag_next <= eof_key_flag;
     
@@ -131,14 +137,30 @@ begin
 
           -- codeword <= (others => '0');
           eof_key_flag <= '0';
-          address <= (others => '0');
-          key_cnt <= 0;
+          address <= input_address; -- address get transfered incorrectly 
+          key_cnt <= to_integer(unsigned(key_cnt_in));
+
+          -- address <= (others => '0');
+          -- key_cnt <= 0;
+
           vld_codeword_concatinator <= '0';
-          best_codeword <= codeword_from_memory;
-          codeword <= best_codeword;
-          -- output_codeword <= codeword_from_memory;
+
+          if codeword_from_memory /= codeword_zeros then
+            best_codeword <= codeword_from_memory;
+            codeword <= best_codeword;
+          else
+            best_codeword <= best_codeword;
+            codeword <= best_codeword;
+
+          end if;
           
-        when buffer_read_state => rdy_collect_header <= '0';
+
+
+          -- output_codeword <= codeword_from_memory;
+          -- iterations <= 0;
+        when buffer_read_state => 
+          rdy_collect_header <= '0';
+          
         when read_state =>
           rdy_collect_header <= '0';
           eof_key_flag_next <= eof_key_flag_next;
@@ -152,36 +174,59 @@ begin
           end if; 
           
           if  eof_key_flag_next = '1' then
-            codeword <= codeword_from_memory;
-        
-          end if; 
+            vld_codeword_concatinator <= '1';
+            codeword <= best_codeword;
+            key_out <= key_in;
+            -- key_cnt <= key_cnt;
+            output_codeword <= best_codeword;
+          -- elsif (iterations = max_iterations - 1) then
+          --   codeword <= best_codeword;
+          --   key_out <= key_in;
+            
+
+          end if;   
+
+
         when fetch_state =>
+          -- iterations <= iterations + 1; -- why not just reuse keycount?
+
           rdy_collect_header <= '0';
           codeword <= best_codeword;
           -- output_codeword <= best_codeword; -- jeg tror at hvis man tilføjer et delay så virker det
 
-          if key_cnt = key_length - 1 then
+          DEBUG_bool_max_iter <= key_cnt = key_length - 1 or key_cnt = max_iterations -1;
+          if key_cnt = key_length - 1 or key_cnt = max_iterations -1 then
+            -- report "max iterations reached";
             eof_key_flag_next <= '1';
-            vld_codeword_concatinator <= '1';
-            key_cnt <= key_cnt;
-          
+            -- vld_codeword_concatinator <= '1';
+
+            -- output_address
+            key_cnt_out <= std_logic_vector(to_unsigned(key_cnt, 5)); -- this could be improved
+            report "key_cnt_out = " & integer'image(key_cnt);
+
           else
+
             key_cnt <= key_cnt +1; 
           end if;
-          
+          DEBUG_bool_00 <= '0';
+          DEBUG_bool_01 <= '0';
+          DEBUG_bool_02 <= '0';
           -- report "key_in(key_cnt) = " & std_logic'image(key_in(key_cnt));
           if zeroPointer = zeros and onePointer = zeros then
+            DEBUG_bool_00 <= '1';
             -- codeword <= best_codeword;
             vld_codeword_concatinator <= '1';
             eof_key_flag_next <= '1';
           elsif key_in(key_cnt) = '0'  then
             address <= zeroPointer;
             if zeroPointer = zeros then
+              DEBUG_bool_01 <= '1';
               -- codeword <= best_codeword;
               vld_codeword_concatinator <= '1';
               eof_key_flag_next <= '1';
             end if;
           elsif key_in(key_cnt) = '1' then
+            DEBUG_bool_02 <= '1';
             address <= onePointer;
             if onePointer = zeros then
               -- codeword <= best_codeword;

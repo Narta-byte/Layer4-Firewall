@@ -9,7 +9,9 @@ entity trie_tree_logic is
         address_width : integer := 8;
         codeword_length : integer := 16;
         max_iterations : integer := 1;
-        address_offset : integer := 4
+        address_offset : integer := 4;
+        ismiddle : boolean := false;
+        islast : boolean := false
     );
 
     port (
@@ -45,6 +47,7 @@ architecture rtl of trie_tree_logic is
     type State_type is (
         idle_state,
         buffer_read_state,
+        output_state,
         read_state,
         fetch_state);
 
@@ -66,7 +69,10 @@ architecture rtl of trie_tree_logic is
     signal debug_key_in : std_logic;
     signal lock,lock_next : std_logic:= '0';
     signal output_codeword : std_logic_vector(codeword_length -1 downto 0);
-
+    
+    signal key_reg : std_logic_vector(key_length - 1 downto 0);
+    signal address_reg : std_logic_vector(address_width - 1 downto 0);
+    signal reg, reg_next : std_logic := '0';
     -- signal iterations : integer range 0 to max_iterations := 0;
 begin
 
@@ -85,7 +91,7 @@ begin
       end if;
     end process;
   
-    NEXT_STATE_LOGIC : process (current_state, vld_collect_header, rdy_codeword_concatinator, eof_key_flag_next,lock)
+    NEXT_STATE_LOGIC : process (current_state, vld_collect_header, rdy_codeword_concatinator, eof_key_flag_next,lock, reg)
     begin
       next_state <= current_state;
       lock_next <= lock;
@@ -101,12 +107,22 @@ begin
         --   lock<= '1';
         end if;
       when buffer_read_state =>next_state <= fetch_state;
-      when read_state =>
-      if (eof_key_flag_next = '1' ) and rdy_codeword_concatinator = '1' then
+      when output_state => 
+      if rdy_codeword_concatinator = '1'  then
         next_state <= idle_state;
+      -- elsif rdy_codeword_concatinator = '1'  then
+      --   next_state <= output_state;
+      else
+        next_state <= output_state;
+      end if;
+
+
+      when read_state =>
+      if (eof_key_flag_next = '1' ) then--and rdy_codeword_concatinator = '1' then
+        -- next_state <= idle_state;
         -- rdy_collect_header <= '1';
-      elsif  (eof_key_flag_next = '1' ) and rdy_codeword_concatinator = '0' then
-        next_state <= read_state;
+      -- elsif (eof_key_flag_next = '1' ) and rdy_codeword_concatinator = '0' then
+        next_state <= output_state;
       else
         next_state <= fetch_state;
         end if;
@@ -122,7 +138,7 @@ begin
     end case;
   
     end process;
-    OUTPUT_LOGIC : process (current_state, data_from_memory, eof_key_flag, key_cnt_in, input_address)
+    OUTPUT_LOGIC : process (current_state, data_from_memory, eof_key_flag, key_cnt_in, input_address, key_in)
     begin
       eof_key_flag_next <= eof_key_flag;
     
@@ -134,25 +150,33 @@ begin
           --   rdy_collect_header <= '0';
           -- end if;
           rdy_collect_header <= '1';
-
+          reg <= '0';
           -- codeword <= (others => '0');
           eof_key_flag <= '0';
+          -- address_reg <= input_address;
           address <= input_address; -- address get transfered incorrectly 
-          key_cnt <= to_integer(unsigned(key_cnt_in));
-
           -- address <= (others => '0');
           -- key_cnt <= 0;
-
+          
           vld_codeword_concatinator <= '0';
-
-          if codeword_from_memory /= codeword_zeros then
-            best_codeword <= codeword_from_memory;
-            codeword <= best_codeword;
+          
+          if ismiddle then
+              key_cnt <= to_integer(unsigned(key_cnt_in));
+              best_codeword <= input_codeword;
+              codeword <= input_codeword;            
           else
-            best_codeword <= best_codeword;
-            codeword <= best_codeword;
+            key_cnt <= 0;
 
+            if codeword_from_memory /= codeword_zeros then
+              best_codeword <= codeword_from_memory;
+              codeword <= best_codeword;
+            else
+              best_codeword <= best_codeword;
+              codeword <= best_codeword;
+  
+            end if;
           end if;
+
           
 
 
@@ -160,25 +184,52 @@ begin
           -- iterations <= 0;
         when buffer_read_state => 
           rdy_collect_header <= '0';
+          -- address <= address_reg;
+          key_reg <= key_in;
           
+        when output_state => 
+        vld_codeword_concatinator <= '1';
+        codeword <= best_codeword;
+        -- key_cnt <= key_cnt;
+        output_codeword <= best_codeword;
+        key_out <= key_reg;
+        output_address <= address_reg;
+        -- rdy_collect_header <= '1'; -- maybe this should be here
+        reg <= reg_next;
+        if islast then
+          reg_next <= '0';
+        end if;
+
         when read_state =>
+        eof_key_flag_next <= eof_key_flag_next;
+        if islast then
+          reg <= '1';
+          reg_next <= '1';
+        else
+          reg <= '0';
+          reg_next <= '0';
+        end if;
+
+
+
+        
+        DEBUG_bool <= ((codeword_from_memory /= best_codeword) and ((codeword_from_memory /= codeword_zeros)) );
+        if ((codeword_from_memory /= best_codeword) and ((codeword_from_memory /= codeword_zeros)))  then
+          best_codeword <= codeword_from_memory;
+        else 
+          best_codeword <= best_codeword;
+        end if; 
+        
+        if  eof_key_flag_next = '1' then
+          -- vld_codeword_concatinator <= '1';
+          -- codeword <= best_codeword;
+          -- -- key_cnt <= key_cnt;
+          -- output_codeword <= best_codeword;
+          -- key_out <= key_reg;
+          -- rdy_collect_header <= '1';
+          -- address_reg <= address;
+        else
           rdy_collect_header <= '0';
-          eof_key_flag_next <= eof_key_flag_next;
-          
-          
-          DEBUG_bool <= ((codeword_from_memory /= best_codeword) and ((codeword_from_memory /= codeword_zeros)) );
-          if ((codeword_from_memory /= best_codeword) and ((codeword_from_memory /= codeword_zeros)))  then
-            best_codeword <= codeword_from_memory;
-          else 
-            best_codeword <= best_codeword;
-          end if; 
-          
-          if  eof_key_flag_next = '1' then
-            vld_codeword_concatinator <= '1';
-            codeword <= best_codeword;
-            key_out <= key_in;
-            -- key_cnt <= key_cnt;
-            output_codeword <= best_codeword;
           -- elsif (iterations = max_iterations - 1) then
           --   codeword <= best_codeword;
           --   key_out <= key_in;
@@ -213,24 +264,27 @@ begin
           DEBUG_bool_02 <= '0';
           -- report "key_in(key_cnt) = " & std_logic'image(key_in(key_cnt));
           if zeroPointer = zeros and onePointer = zeros then
+            address_reg <= zeroPointer;
             DEBUG_bool_00 <= '1';
             -- codeword <= best_codeword;
-            vld_codeword_concatinator <= '1';
+            -- vld_codeword_concatinator <= '1';
             eof_key_flag_next <= '1';
           elsif key_in(key_cnt) = '0'  then
             address <= zeroPointer;
+            address_reg <= zeroPointer;
             if zeroPointer = zeros then
               DEBUG_bool_01 <= '1';
               -- codeword <= best_codeword;
-              vld_codeword_concatinator <= '1';
+              -- vld_codeword_concatinator <= '1';
               eof_key_flag_next <= '1';
             end if;
           elsif key_in(key_cnt) = '1' then
             DEBUG_bool_02 <= '1';
             address <= onePointer;
+            address_reg <= onePointer;
             if onePointer = zeros then
               -- codeword <= best_codeword;
-              vld_codeword_concatinator <= '1';
+              -- vld_codeword_concatinator <= '1';
               eof_key_flag_next <= '1';
             end if;
           end if;

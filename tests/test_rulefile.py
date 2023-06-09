@@ -219,7 +219,7 @@ class TestRuleFile(unittest.TestCase):
         ]
         temp_packetList = []
 
-        for i in range(100):
+        for i in range(10000):
             temp_packetList.append(packetList[i % len(packetList)])
 
         packetList = temp_packetList

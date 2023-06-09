@@ -83,7 +83,7 @@ architecture arch_Collect_header of Collect_header is
   constant zpack : integer := lenpack -7;
   
   signal i, number_of_packets : integer := 0;
-  signal lock : std_logic := '0';
+  signal lock, go : std_logic := '0';
 begin
 
   vld_collect_header <= vld_collect_header_reg;
@@ -193,7 +193,7 @@ begin
       -- end if;
 
 
-      if rdy_collecthdr_to_tree_collection = "11111" and lock = '0' then --
+      if go = '1' and lock = '0' then --
         lock <= '1';
         -- vld_collect_header_reg <= (others => '0');
         number_of_packets <= number_of_packets + 1;
@@ -241,8 +241,18 @@ begin
           -- if rdy_collecthdr_to_tree_collection = "00000" then --maybe nor gate
           --   lock <= '0';
           -- end if;
-        vld_collect_header_reg <= (others => '1');
-        debug_bool <= rdy_collecthdr_to_tree_collection = "11111";
+        
+
+
+        if rdy_collecthdr_to_tree_collection = "11111" then
+          vld_collect_header_reg <= (others => '1');
+          go <= '1';
+        else 
+          vld_collect_header_reg <= (others => '0');
+          go <= '0';
+        end if;
+
+        debug_bool <= rdy_collecthdr_to_tree_collection = "11111"; --find ud af vld logic
       -- debug_bool <=  rdy_collecthdr_to_tree_collection = "11111" and vld_collect_header_reg = "00000";
       -- if rdy_collecthdr_to_tree_collection = "11111" and vld_collect_header_reg = "00000" then
       --   vld_collect_header_reg <= (others => '1');

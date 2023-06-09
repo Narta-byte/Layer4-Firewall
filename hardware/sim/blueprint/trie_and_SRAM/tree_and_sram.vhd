@@ -43,7 +43,9 @@ architecture rtl of tree_and_sram is
           address_width : integer;
           codeword_length : integer;
           max_iterations : integer;
-          address_offset : integer
+          address_offset : integer;
+          ismiddle : boolean;
+          islast : boolean
         );
           port (
           key_in : in std_logic_vector(key_length - 1 downto 0);
@@ -97,6 +99,8 @@ architecture rtl of tree_and_sram is
   signal zero_input : std_logic_vector(address_width - 1 downto 0) := (others => '0');  
 
   signal tawire0, tawire1, tawire2, tawire3 : std_logic_vector(address_width - 1 downto 0);
+  signal taowire0, taowire1, taowire2, taowire3 : std_logic_vector(address_width - 1 downto 0);
+
   signal tcwire0, tcwire1, tcwire2, junk_c : std_logic_vector(codeword_length - 1 downto 0);
 
   signal trwire0, trwire1, trwire2 : std_logic;
@@ -159,7 +163,9 @@ begin
       address_width => address_width,
       codeword_length => codeword_length,
       max_iterations => 8,
-      address_offset => 0
+      address_offset => 0,
+      ismiddle => false,
+      islast => false
     )
     port map (
       key_in => key_in,
@@ -172,7 +178,7 @@ begin
       rdy_codeword_concatinator => trwire0,
       vld_codeword_concatinator => tvwire0,
       input_address => zero_input,
-      output_address => junk_aa,
+      output_address => taowire0,
       input_codeword => junk_c,
       key_out => tkwire0,
       key_cnt_out => tkcwire0,
@@ -187,7 +193,9 @@ begin
       address_width => address_width,
       codeword_length => codeword_length,
       max_iterations => 16,
-      address_offset => 8
+      address_offset => 8,
+      ismiddle => true,
+      islast => false
     )
     port map (
       key_in => tkwire0,
@@ -199,8 +207,8 @@ begin
       vld_collect_header => tvwire0,
       rdy_codeword_concatinator => trwire1,
       vld_codeword_concatinator => tvwire1,
-      input_address => tawire0,
-      output_address => junk_a,
+      input_address => taowire0,
+      output_address => taowire1,
       input_codeword => tcwire1, -- THIS SHOULD BE TCWIRE0
       key_out => tkwire1,
       key_cnt_out => tkcwire1,
@@ -216,7 +224,9 @@ begin
       address_width => address_width,
       codeword_length => codeword_length,
       max_iterations => 24,
-      address_offset => 16
+      address_offset => 16,
+      ismiddle => true,
+      islast => false
     )
     port map (
       key_in => tkwire1,
@@ -228,8 +238,8 @@ begin
       vld_collect_header => tvwire1,
       rdy_codeword_concatinator => trwire2,
       vld_codeword_concatinator => tvwire2,
-      input_address => tawire1,
-      output_address => junk_a,
+      input_address => taowire1,
+      output_address => taowire2,
       input_codeword => tcwire1,
       key_out => tkwire2,
       key_cnt_out => tkcwire2,
@@ -245,7 +255,9 @@ begin
       address_width => address_width,
       codeword_length => codeword_length,
       max_iterations => 32,
-      address_offset => 24
+      address_offset => 24,
+      ismiddle => true,
+      islast => true
     )
     port map (
       key_in => tkwire2,
@@ -257,7 +269,7 @@ begin
       vld_collect_header => tvwire2,
       rdy_codeword_concatinator => rdy_codeword_concatinator,
       vld_codeword_concatinator => vld_codeword_concatinator,
-      input_address => tawire2,
+      input_address => taowire2,
       output_address => junk_a,
       input_codeword => tcwire2,
       key_out => junk_k,

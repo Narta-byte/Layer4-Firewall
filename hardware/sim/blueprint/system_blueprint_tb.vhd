@@ -50,7 +50,7 @@ architecture bench of system_blueprint_tb is
   end component;
 
   -- Clock period
-  constant clk_period : time := 5 ns;
+  constant clk_period : time := 8 ns;
   -- Generics
   -- constant number_of_trees : integer := 5;
   -- constant tree_depth : integer := 16;

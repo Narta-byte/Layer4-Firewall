@@ -29,7 +29,7 @@ class ListFirewall:
                 continue
             elif thisRule[i] == "*":
                 continue 
-            elif self.lpm(thisRule[i], inputPacket[i]):
+            elif thisRule[i][0] != '*' and thisRule[i][-1] == '*' and inputPacket[i].startswith(thisRule[i][:-1]):
                continue
             else:
                 # logging.debug("return false")

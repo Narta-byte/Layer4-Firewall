@@ -21,11 +21,12 @@ entity trie_tree_logic is
         data_from_memory : in std_logic_vector(codeword_length + address_width * 2 - 1 downto 0);
         RW : in std_logic;
         
-        rdy_north : out std_logic;
-        vld_north : in std_logic;
+        rdy_collect_header : out std_logic;
+        vld_collect_header : in std_logic;
 
-        rdy_south : in std_logic;
-        vld_south : out std_logic;  
+        rdy_codeword_concatinator : in std_logic;
+        vld_codeword_concatinator : out std_logic;  
+
 
         input_address : in std_logic_vector(address_width - 1 downto 0);
         output_address : out std_logic_vector(address_width - 1 downto 0):= (others => '0');
@@ -88,20 +89,20 @@ begin
       end if;
     end process;
   
-    NEXT_STATE_LOGIC : process (current_state, vld_north, rdy_south, eof_key_flag_next,lock, reg)
+    NEXT_STATE_LOGIC : process (current_state, vld_collect_header, rdy_codeword_concatinator, eof_key_flag_next,lock, reg)
     begin
       next_state <= current_state;
       lock_next <= lock;
       case(current_state) is
   
       when idle_state =>
-        if (vld_north = '1') and lock_next = '0' then
+        if (vld_collect_header = '1') and lock_next = '0' then
           next_state <= buffer_read_state;
           lock<= '0';
         end if;
       when buffer_read_state =>next_state <= fetch_state;
       when output_state => 
-      if rdy_south = '1'  then
+      if rdy_codeword_concatinator = '1'  then
         next_state <= idle_state;
       else
         next_state <= output_state;
@@ -128,12 +129,12 @@ begin
     
       case(current_state) is
         when idle_state => 
-          rdy_north <= '1';
+          rdy_collect_header <= '1';
           reg <= '0';
           eof_key_flag <= '0';
           address <= input_address; 
           
-          vld_south <= '0';
+          vld_codeword_concatinator <= '0';
           
           if ismiddle then
               key_cnt <= to_integer(unsigned(key_cnt_in));
@@ -156,11 +157,11 @@ begin
 
 
         when buffer_read_state => 
-          rdy_north <= '0';
+          rdy_collect_header <= '0';
           key_reg <= key_in;
           
         when output_state => 
-        vld_south <= '1';
+        vld_codeword_concatinator <= '1';
         codeword <= best_codeword;
         output_codeword <= best_codeword;
         key_out <= key_reg;
@@ -192,7 +193,7 @@ begin
         
         if  eof_key_flag_next = '1' then
         else
-          rdy_north <= '0';
+          rdy_collect_header <= '0';
             
 
           end if;   
@@ -200,7 +201,7 @@ begin
 
         when fetch_state =>
 
-          rdy_north <= '0';
+          rdy_collect_header <= '0';
           codeword <= best_codeword;
 
           DEBUG_bool_max_iter <= key_cnt = key_length - 1 or key_cnt = max_iterations -1;

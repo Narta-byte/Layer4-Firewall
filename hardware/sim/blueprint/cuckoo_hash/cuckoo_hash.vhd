@@ -30,7 +30,7 @@ entity Cuckoo_Hashing is
 
     set_rule : in std_logic;
     cmd_in : in std_logic_vector(1 downto 0);
-    key_in : in std_logic_vector(codeword_sum - 1 downto 0);
+    key_in : in std_logic_vector(codeword_sum + 8 - 1 downto 0);
 
     header_data : in std_logic_vector(codeword_sum - 1 downto 0);
     vld_hdr : in std_logic;
@@ -41,7 +41,8 @@ entity Cuckoo_Hashing is
 
     acc_deny_hash : out std_logic := '0';
     vld_ad_hash : out std_logic;
-    rdy_ad_hash : in std_logic
+    rdy_ad_hash : in std_logic;
+    decision_ad : out std_logic_vector(7 downto 0)
   );
 end Cuckoo_Hashing;
 
@@ -83,7 +84,7 @@ architecture Cuckoo_Hashing_tb of Cuckoo_Hashing is
 
   -- Hash matching signals
   signal exits_matching, previous_search : std_logic := '0';
-  signal insertion_key : std_logic_vector(codeword_sum - 1 downto 0) := (others => '0');
+  signal insertion_key : std_logic_vector(codeword_sum + 8 - 1 downto 0) := (others => '0');
 
   component cuckoo_SRAM
     generic (
@@ -107,8 +108,8 @@ architecture Cuckoo_Hashing_tb of Cuckoo_Hashing is
       occupied : in std_logic;
       RW : in std_logic;
       address : in std_logic_vector(8 downto 0);
-      data_in : in std_logic_vector(codeword_sum -1 downto 0);
-      data_out : out std_logic_vector(codeword_sum + 1 downto 0)
+      data_in : in std_logic_vector(codeword_sum  + 8 -1 downto 0);
+      data_out : out std_logic_vector(codeword_sum + 8 + 1 downto 0)
     );
   end component;
 
@@ -116,8 +117,8 @@ architecture Cuckoo_Hashing_tb of Cuckoo_Hashing is
   signal occupied : std_logic := '0';
   signal RW : std_logic := '0';
   signal address : std_logic_vector(8 downto 0) := (others => '0');
-  signal data_in : std_logic_vector(codeword_sum - 1 downto 0) := (others => '0');
-  signal data_out : std_logic_vector(codeword_sum - 1 + 1 downto 0) := (others => '0');
+  signal data_in : std_logic_vector(codeword_sum + 8 - 1 downto 0) := (others => '0');
+  signal data_out : std_logic_vector(codeword_sum + 8 - 1 + 1 downto 0) := (others => '0');
 
   --debug
 
@@ -132,7 +133,7 @@ architecture Cuckoo_Hashing_tb of Cuckoo_Hashing is
   signal flush_cuckoo_SRAM_next : std_logic;
   signal flip_next : std_logic;
   signal rdy_firewall_hash_next : std_logic;
-  signal insertion_key_next : std_logic_vector (codeword_sum - 1 downto 0);
+  signal insertion_key_next : std_logic_vector (codeword_sum + 8 - 1 downto 0);
   signal MAX_next : integer range 0 to MAX_ITER;
   signal eq_key_next : std_logic;
   signal occupied_next : std_logic;
@@ -148,6 +149,34 @@ architecture Cuckoo_Hashing_tb of Cuckoo_Hashing is
   signal rdy_hash_read : std_logic;
   signal vld_ad_hash_read : std_logic;
   signal acc_deny_hash_read : std_logic;
+
+  signal DEBUG_crc0 : std_logic_vector(8 downto 0);
+  signal DEBUG_crc1 : std_logic_vector(8 downto 0);
+  signal DEBUG_BOOL : boolean;
+  
+  signal DEBUG_decision0 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision1 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision2 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision3 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision4 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision5 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision6 : natural range 0 to 2**16 := 0;
+  signal DEBUG_decision7 : natural range 0 to 2**16 := 0;
+  
+  alias decision_ki : std_logic_vector(7 downto 0) is key_in(7 downto 0);
+  alias alias_key_ki : std_logic_vector(codeword_sum -1 +8 downto 7) is key_in(codeword_sum - 1 + 8 downto 7);
+  
+  
+  alias decision_do : std_logic_vector(7 downto 0) is data_out(7 downto 0);
+  alias alias_key_do : std_logic_vector(codeword_sum -1 +8 downto 7) is data_out(codeword_sum - 1 + 8 downto 7);
+
+  signal hashing_key : std_logic_vector(codeword_sum -1 downto 0) := (others => '0') ;
+  signal decision_out :std_logic_vector(7 downto 0);
+  
+-- 000000000000000000000000000000010000000000000000000000000000011000000000000000000000000000000011000000000000000000000000000001000000000000000000000000000000010100000001
+
+-- 00000000000000000000000000000001000000000000000000000000000001100000000000000000000000000000001100000000000000000000000000000100000000000000000000000000000001010
+
 
   function src_hash (M : std_logic_vector; g : std_logic_vector)
     return std_logic_vector is
@@ -177,8 +206,10 @@ architecture Cuckoo_Hashing_tb of Cuckoo_Hashing is
 
   end function src_hash;
 
-begin
 
+begin
+  decision_ad <= decision_do;
+  hashing_key <= key_in(codeword_sum -1 + 8 downto 8);
   rdy_firewall_hash <= rdy_firewall_hash_next;
   rdy_hash <= rdy_hash_next;
   vld_ad_hash <= vld_ad_hash_next;
@@ -400,11 +431,18 @@ begin
     when lookup_hash1 =>
     rdy_firewall_hash_next <= '0';
     RW <= '0';
-    address_next <= '0' & src_hash(insertion_key, g1);
+    -- DEBUG_crc0 <= src_hash(insertion_key(codeword_sum -1 + 8 downto 7), g1);
+    DEBUG_crc0 <= '0' & src_hash(hashing_key, g1);
+
+    -- address_next <= '0' & src_hash(insertion_key(codeword_sum -1 downto 0), g1);
+    address_next <= '0' & src_hash(hashing_key, g1);
+    report "address_next = " & integer'image(to_integer(unsigned(address_next)));
+   -- Find ud af hvor src ikke er korrekt
+    
 
     when lookup_hash2 =>
     RW <= '0';
-    address_next <= src_hash(insertion_key, g2) + "100000000";
+    address_next <= src_hash(hashing_key, g2) + "100000000";
     
     when is_occupied =>
     if data_out(codeword_sum - 1 downto 0) = insertion_key then
@@ -418,7 +456,7 @@ begin
     when remember_and_replace =>
     RW <= '1';
     data_in <= insertion_key;
-    insertion_key_next <= data_out(codeword_sum - 1 downto 0);
+    insertion_key_next <= data_out(codeword_sum - 1 + 8 downto 0);
     MAX_next <= MAX + 1;
     if flip = '1' then
       flip_next <= '0';
@@ -442,9 +480,11 @@ begin
     previous_search_next <= '1';
 
     when matching =>
-    if data_out(codeword_sum - 1 downto 0) = header_data then
+    DEBUG_BOOL <= data_out(codeword_sum - 1 +8 downto 8) = header_data;
+    if data_out(codeword_sum - 1 +8 downto 8) = header_data then
       exits_matching_next <= '1';
       acc_deny_hash_next <= '0';
+      decision_out <= data_out(7 downto 0);
     else
       if previous_search = '1' then
         acc_deny_hash_next <= '1';
@@ -462,15 +502,20 @@ begin
     previous_search_next <= '0';
     RW <= '0';
     occupied_next <= '0';
+    
+
+
 
     when find_hashfun1 =>
     rdy_firewall_hash_next <= '0';
     --rdy_hash_next <= '0';
     RW <= '0';
-    address_next <= '0' & src_hash(key_in, g1);
+    -- address_next <= '0' & src_hash(key_in(codeword_sum -1 downto 0), g1);
+    address_next <= '0' & src_hash(hashing_key, g1);
     when find_hashfun2 =>
     RW <= '0';
-    address_next <= src_hash(key_in, g2) + "100000000";
+    -- address_next <= src_hash(key_in(codeword_sum -1 downto 0), g2) + "100000000";
+    address_next <= src_hash(hashing_key, g2) + "100000000";
     previous_search_next <= '1';
     when match_for_delete =>
     if data_out(codeword_sum - 1 downto 0) = key_in then
@@ -490,4 +535,23 @@ begin
   end case;
 
 end process;
+
+process (vld_ad_hash_next)
+  begin
+    if vld_ad_hash_next = '1' then
+      case decision_do is
+        when "00000000" => DEBUG_decision0<=DEBUG_decision0+1;
+        when "00000001" => DEBUG_decision1<=DEBUG_decision1+1;
+        when "00000010" => DEBUG_decision2<=DEBUG_decision2+1;
+        when "00000011" => DEBUG_decision3<=DEBUG_decision3+1;
+        when "00000100" => DEBUG_decision4<=DEBUG_decision4+1;
+        when "00000101" => DEBUG_decision5<=DEBUG_decision5+1;
+        when "00000110" => DEBUG_decision6<=DEBUG_decision6+1;
+        when "00000111" => DEBUG_decision7<=DEBUG_decision7+1;
+        when others =>
+          null;
+      end case;
+    end if;
+end process;
+
 end architecture; -- Cuckoo_Hashing

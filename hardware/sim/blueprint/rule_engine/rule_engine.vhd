@@ -46,9 +46,9 @@ entity rule_engine is
 
         cuckoo_select : out std_logic := '0';
         cuckoo_cmd : out std_logic_vector(1 downto 0);
-        cuckoo_key_out : out std_logic_vector(codeword_sum - 1 downto 0) := (others => '0');
+        cuckoo_key_out : out std_logic_vector(codeword_sum + 8 - 1 downto 0) := (others => '0');
 
-        cuckoo_key_in : in std_logic_vector(codeword_sum - 1 downto 0);
+        cuckoo_key_in : in std_logic_vector(codeword_sum + 8 - 1 downto 0);
 
         cuckoo_rdy : in std_logic;
         cuckoo_vld : out std_logic := '0';

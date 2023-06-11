@@ -28,6 +28,7 @@ class ACLBuilder():
         for i, tree in enumerate(self.treeList):
             # file.write(self.treeToVHDL(self.treeList[i])[0])
             file.write(self.treeToVHDL(self.treeList[i])[0])
+            logging.debug("treeToVHDL: " + str(self.treeToVHDL(self.treeList[i])[0]))
         file.write((str(format(0, '08X')) + str(format(0, '04X')) + str(format(0, '04X'))+"\n"))
         file.close()
 
@@ -138,14 +139,26 @@ class ACLBuilder():
         # for rep in repList:
         #     logging.debug(rep)
 
-    def programCuckooHashTable(self, table):
+    def programCuckooHashTable(self, table, dataLength = '08b'):
         file = open("hardware/sim/blueprint/cuckoo_hash/cuckoo_sram_data.txt", "w")
         logging.debug("table.dictionary: " + str(table.dictionary))
+        localDict = {}
+        cnt = 0
         for element in table.dictionary:
+            logging.debug("value " + str(table.dictionary[element][-1]))
             logging.debug("element: " + str(element))
-            file.write(element + "\n")
+
+            if localDict.get(table.dictionary[element][-1]) is None:
+                localDict[table.dictionary[element][-1]] = format(cnt, dataLength)
+                cnt += 1
+
+            file.write(element + localDict[table.dictionary[element][-1]] + "\n")
             # file.write(format(element, '080b')+"\n")
+        logging.debug("localDict: " + str(localDict))
         file.close()
-      
-       
+
+        file = open("hardware/sim/blueprint/cuckoo_hash/cuckoo_metadata.txt", "w")
+        for element in localDict:
+            file.write(element +" : "+ localDict[element] + "\n")
+        file.close()
        

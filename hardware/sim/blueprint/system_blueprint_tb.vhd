@@ -22,12 +22,14 @@ architecture bench of system_blueprint_tb is
       tree_cumsum : tree_array;
       codeword_length : tree_array;
       largest_codeword : integer;
-      codeword_sum : integer
+      codeword_sum : integer;
+      max_iterations : tree_array ;
+      tree_config : tree_array    
     );
     port (
       cmd_in : in std_logic_vector(4 downto 0);
       key_in : in std_logic_vector(total_key_in_length - 1 downto 0);
-      codeword_in : in std_logic_vector(largest_codeword - 1 downto 0);
+      codeword_in : in std_logic_vector(largest_codeword  - 1 downto 0);
       zero_pointer_in : in std_logic_vector(largest_address_width - 1 downto 0);
       one_pointer_in : in std_logic_vector(largest_address_width - 1 downto 0);
       rdy_driver : out std_logic;
@@ -48,7 +50,7 @@ architecture bench of system_blueprint_tb is
   end component;
 
   -- Clock period
-  constant clk_period : time := 5 ns;
+  constant clk_period : time := 8 ns;
   -- Generics
   -- constant number_of_trees : integer := 5;
   -- constant tree_depth : integer := 16;
@@ -74,6 +76,9 @@ architecture bench of system_blueprint_tb is
   constant codeword_length : tree_array := (32, 32, 32, 32, 32);
   constant largest_codeword : integer := 32;
   constant codeword_sum : integer := 160;
+  constant max_iterations : tree_array := (1, 1, 1, 1, 1);
+  constant tree_config : tree_array := (1, 1, 1, 1, 1);
+
 
   -- Ports
   signal cmd_in : std_logic_vector(4 downto 0);
@@ -86,7 +91,7 @@ architecture bench of system_blueprint_tb is
   signal rdy_collect_header : std_logic_vector(number_of_trees - 1 downto 0);
   signal vld_collect_header : std_logic_vector(number_of_trees - 1 downto 0);
   signal cuckoo_codeword : std_logic_vector(largest_codeword * number_of_trees - 1 downto 0);
-  signal cuckoo_key_in : std_logic_vector(codeword_sum - 1 downto 0);
+  signal cuckoo_key_in : std_logic_vector(codeword_sum+8- 1 downto 0);
   signal rdy_cuckoo_hash : std_logic;
   signal vld_cuckoo_hash : std_logic;
   signal clk : std_logic;
@@ -117,7 +122,9 @@ begin
     tree_cumsum => tree_cumsum,
     codeword_length => codeword_length,
     largest_codeword => largest_codeword,
-    codeword_sum => codeword_sum
+    codeword_sum => codeword_sum,
+    max_iterations => max_iterations,
+    tree_config => tree_config
   )
   port map(
     cmd_in => cmd_in,
@@ -156,7 +163,7 @@ begin
     -- file input1 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/blueprint/cuckoo_hash/large_input_file_increment.txt";
     file input1 : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/blueprint/cuckoo_hash/cuckoo_sram_data.txt";
     variable current_read_line1 : line;
-    variable hex_reader1 : std_logic_vector(codeword_sum - 1 downto 0);
+    variable hex_reader1 : std_logic_vector(codeword_sum + 8 - 1 downto 0);
 
 
     file packet_file : TEXT open READ_MODE is "C:/Users/Mig/Desktop/Layer4-Firewall/hardware/sim/blueprint/collect_header/input_packets.txt";
@@ -226,22 +233,23 @@ begin
 
                   packet_start <= '1';
                   bytenm <= bytenm + 1;
-                  readline(packet_file, current_read_line2);
-                  hread(current_read_line2, current_read_field);
-                  packet_data <= current_read_field;
+                  -- readline(packet_file, current_read_line2);
+                  -- hread(current_read_line2, current_read_field);
+                  -- packet_data <= current_read_field;
               
       
-                  read(current_read_line2, current_write_line);
-                  CH_vld <= current_write_line;
+                  -- read(current_read_line2, current_write_line);
+                  -- -- CH_vld <= current_write_line;
+                  CH_vld <= '1';
       
-                  read(current_read_line2, current_write_line);
-                  SoP <= current_write_line;
+                  -- read(current_read_line2, current_write_line);
+                  -- SoP <= current_write_line;
               
-                  read(current_read_line2, current_write_line);
-                  EoP <= current_write_line;
+                  -- read(current_read_line2, current_write_line);
+                  -- EoP <= current_write_line;
       
-                  -- packet_in <= packet_data & SoP & EoP;
-                  packet_in <= packet_data & CH_vld & SoP & EoP;
+                  -- -- packet_in <= packet_data & SoP & EoP;
+                  -- packet_in <= packet_data & CH_vld & SoP & EoP;
                 else
                   filedone <= '1';
                 end if;

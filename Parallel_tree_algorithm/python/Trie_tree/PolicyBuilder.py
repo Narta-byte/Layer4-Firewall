@@ -2,8 +2,8 @@ import random
 import logging
 import time
 import re
-import itertools
-
+#import itertools
+from itertools import chain, combinations
 
 class PolicyBuilder:
     def __init__(self, treeList):
@@ -11,7 +11,7 @@ class PolicyBuilder:
         self.ruleLength = len(treeList) + 1
         self.previousRuleTuple = []
         self.codewordLength = 32
-        self.codewordLength_for_tree = 32
+        self.codewordLength_for_tree = 6
         self.nextCodeword = 0
         self.store_inserted = []
         self.store_prev_rules = set()
@@ -22,8 +22,10 @@ class PolicyBuilder:
 
     def insertRuleIntoTree(self, rule, tree):
         ruleCodeword = ""
+        logging.debug("INSERTING RULE IN TREEE: " +str(rule))
         for i, tree in enumerate(self.treeList):
             exists, codeword = tree.getCodeword(rule[i])
+            logging.debug("Rule exists and codeword: " +str(rule[i]) + " exists: " + str(exists) + " Codeword: " + str(codeword))
             if not exists:
                 codeword = self.generateCodeword(self.codewordLength_for_tree)  # Maybe +2???
             logging.debug(f"codeword: {codeword} rule: {rule[i]} exists: {exists} ")
@@ -46,10 +48,16 @@ class PolicyBuilder:
         return unique_elements
 
     def combine_2d_lists(self, list_2d):
+        count = 0
         if list_2d == []:
             logging.debug("Empty list return [[]]")
             return [[]]
         sublist_len = len(list_2d[0])
+        for elem in list_2d[0]:
+            if elem != '':
+                count = count + 1
+        
+        sublist_len = int(count/2)
         logging.debug("sublist len: " + str(sublist_len))
 
         if sublist_len == 1:
@@ -57,16 +65,17 @@ class PolicyBuilder:
             return list_2d
 
         elif sublist_len == 2:
-            return [list(item)for item in set(tuple(sublist)for sublist in [[list_2d[i][0], list_2d[j][1]]for i in range(len(list_2d))for j in range(len(list_2d))])if list(item) != ["*", "*"] and len(item) == 2]
+            #return [list(item)for item in set(tuple(sublist)for sublist in [[list_2d[i][0], list_2d[j][1]]for i in range(len(list_2d))for j in range(len(list_2d))])if list(item) != ["*", "*"] and len(item) == 2]
+            return [list(item)for item in set(tuple(sublist)for sublist in [[list_2d[i][0], list_2d[i][1], list_2d[j][2], list_2d[j][3]]for i in range(len(list_2d))for j in range(len(list_2d))])]
 
         elif sublist_len == 3:
-            return [list(item) for item in set(tuple(sublist) for sublist in [[list_2d[i][0], list_2d[j][1], list_2d[k][2]] for i in range(len(list_2d)) for j in range(len(list_2d)) for k in range(len(list_2d))]) if list(item) != ["*", "*", "*"]]
+            return [list(item) for item in set(tuple(sublist) for sublist in [[list_2d[i][0], list_2d[i][1], list_2d[j][2], list_2d[j][3], list_2d[k][4], list_2d[k][5]] for i in range(len(list_2d)) for j in range(len(list_2d)) for k in range(len(list_2d))]) if list(item) != ["*", "*", "*"]]
             #return [list(item) for item in set(tuple(sublist) for sublist in [[list_2d[i][0], list_2d[j][1], list_2d[k][2]] for i in range(len(list_2d)) for j in range(len(list_2d)) for k in range(len(list_2d)) if list_2d[i][0] != '' and list_2d[j][1] != '' and list_2d[k][2] != '']) if list(item) != ['*', '*', '*']]
             #return [list(item) for item in set(tuple(item) for item in zip(*list_2d) if all(i != "" for i in item) and list(item) != ["*", "*", "*"])]
 
 
         elif sublist_len == 4:
-            return [list(item)for item in set(tuple(sublist)for sublist in [[list_2d[i][0], list_2d[j][1], list_2d[k][2], list_2d[l][3]]for i in range(len(list_2d))for j in range(len(list_2d))for k in range(len(list_2d))for l in range(len(list_2d))])if list(item) != ["*", "*", "*", "*"] and len(item) == 4]
+            return [list(item)for item in set(tuple(sublist)for sublist in [[list_2d[i][0], list_2d[i][1], list_2d[j][2], list_2d[j][3], list_2d[k][4],list_2d[k][5], list_2d[l][6], list_2d[l][7]] for i in range(len(list_2d))for j in range(len(list_2d))for k in range(len(list_2d))for l in range(len(list_2d))])if list(item) != ["*", "*", "*", "*"] and len(item) == 4]
 
         elif sublist_len == 5:
             return [list(item)for item in set(tuple(sublist)for sublist in [[list_2d[i][0],list_2d[j][1],list_2d[k][2],list_2d[l][3],list_2d[m][4],]for i in range(len(list_2d))for j in range(len(list_2d))for k in range(len(list_2d))for l in range(len(list_2d))for m in range(len(list_2d))])if list(item) != ["*", "*", "*", "*", "*"] and len(item) == 5]
@@ -75,14 +84,36 @@ class PolicyBuilder:
         return []
     
     def remove_empty_indices(self, list_2d):
-        return [[item for i, item in enumerate(sublist) if any(list_2d[j][i] for j in range(len(list_2d)))] for sublist in list_2d] #FOR SUBRANGES
-
-        # non_empty_indices = {i for i in range(len(list_2d[0])) if any(sublist[i] != '' for sublist in list_2d)}
-        # # only keep these indices in all sublists
-        # return [[item for i, item in enumerate(sublist) if i in non_empty_indices] for sublist in list_2d]
+        return [[item for i, item in enumerate(sublist) if not all(sub[i] == '' for sub in list_2d) and not (i - 1 in [idx for idx, sub_item in enumerate(sublist) if all(sub[idx] == '' for sub in list_2d)])] for sublist in list_2d]
 
 
-    def account_for_old_rules(self, old_rules, new_rule):
+    def modify_lists(self, nested_list):
+        modified_list = []
+
+        for sublist in nested_list:
+            temp_sublist = []
+
+            for i in range(len(sublist)):
+                # If the item is a string and the next item is an integer, put them in a list
+                if isinstance(sublist[i], str) and i+1 < len(sublist) and isinstance(sublist[i+1], int):
+                    temp_sublist.append([sublist[i], sublist[i+1]])
+
+            # Add the modified sublist to the final list
+            modified_list.append(temp_sublist)
+
+        # Find indices of common empty strings
+        empty_indices = []
+        for i in range(len(modified_list[0])):
+            if all(sublist[i] == '' for sublist in modified_list):
+                empty_indices.append(i)
+    
+        modified_list = [[item for j, item in enumerate(sublist) if j not in empty_indices] for sublist in modified_list]
+    
+        return modified_list
+
+    def generate_permutations(self, old_rules, new_rule):
+        permutations = []
+
         if new_rule.count("*") == self.ruleLength - 1:
             return []
         logging.debug("acc for old rule")
@@ -109,78 +140,51 @@ class PolicyBuilder:
                     if new_rule[i] == "*":
                         continue  # Maybe faster?
                     logging.debug("Perms in loop: " + str(permutations))
-
+                
                 for rest in self.store_inserted:
                     if rest == temp:
                         continue
                     temp = rule.copy()
-                    logging.debug("this is curr temp: " + str(temp))
-                    logging.debug("This is curr rest: " + str(rest))
+                    wildcard_indices = [i for i, element in enumerate(temp) if element == "*" and rest[i] != '*' or ((element[-1] == "*" and ((element[0] != '*'))) and rest[i].startswith(element[:-1]))]
 
-                    wildcard_indices = [i for i, element in enumerate(temp) if element == "*" and rest[i] != "*" or (element[-1] == "*" and (element[0] == "1" or element[0] == "0") and rest[i].startswith(element[:-1]))]
                     if wildcard_indices == []:
                         continue
 
-                    logging.debug("Wildcard indicies for rule old rule: "+ str(rule)+ "\nIs: "+ str(wildcard_indices)+ "\nwholenums ")  # in rule is: "+ str(currperm))
-
-                    # temparr.append([rest[i] for i in wildcard_indices])
-                    temparr.append([rest[i] if i in wildcard_indices else '' for i in range(len(rest) - 1)])
-                    logging.debug("curr temp arr: " + str(temparr))
-
-                logging.debug("temparr Before:")
-                logging.debug(temparr)
+                    new_list = []
+                    for i in range(len(rest) - 1):
+                        if i in wildcard_indices:
+                            new_list.extend([rest[i], i])
+                        else:
+                            new_list.extend(['', i])
+                    temparr.append(new_list)
 
                 temparr = self.remove_empty_indices(temparr)
-
-                logging.debug("temparr Before:")
-                logging.debug(temparr)
-
-                # temparr = [[item for item in sublist if item != ''] for sublist in temparr]
                 temparr = self.combine_2d_lists(temparr)  # , wildcard_indices)  # generate combinations
-
-                logging.debug("temparr AFTer::")
-                logging.debug(temparr)
+                temparr = self.modify_lists(temparr)
 
                 logging.debug("This is rule: " + str(rule))
+                logging.debug("wildcard:indices: " + str(wildcard_indices))
                 for i, comb in enumerate(temparr):
                     result = rule.copy()  # Should be every comb in the prev rule
-                    logging.debug("New one: " + str(result))
-                    for q, j in enumerate(wildcard_indices):
-                        # logging.debug("j: " + str(j) + " q: " + str(q))
-                        # logging.debug("i: " + str(i))
-                        # logging.debug("temparr ij: " +str(temparr[i]))
-                        if temparr[i][q] == '':
-                            logging.debug("comb == '' so skip")
-                            continue
+                    logging.debug("     New one: " + str(result))
+                    #comb = [comb]
+                    comb = [sublist for sublist in comb if sublist[0] != '']
+                    logging.debug("comb: " + str(comb))
+                    comb  = list(chain(*[combinations(comb, i) for i in range(1, len(comb) + 1)]))
+                    logging.debug("Combinations: " + str(comb))
 
-                        result[j] = temparr[i][q]
-                    logging.debug("rule maybe adding: " + str(result))
-                    if (tuple(result[:-1]) not in self.store_prev_rules):  # test packet 15 maybe append to store_inserted?
-                        logging.debug("Adding rule: " + str(result))
-                        permutations.append(result)
+                    for sub in comb:
+                        result = rule.copy()
+                        logging.debug("subs: " + str(sub))
+                        for elem in sub:
+                            result[int(elem[1])] = str(elem[0])
 
+                        logging.debug("result: " + str(result))
+                        if (tuple(result[:-1]) not in self.store_prev_rules):  # test packet 15 maybe append to store_inserted?
+                            logging.debug("adding the res: " + str(result))
+                            permutations.append(result)
+        
         logging.debug("Final perms!: " + str(permutations))
-        return permutations
-
-    def insert_stars_in_between(self, old_rules, new_rule):
-        permutations = []
-        if new_rule.count("*") == self.ruleLength - 1:
-            return []
-        for i, value in enumerate(new_rule):  # Insert eg * 19 and 64 *
-            if value == "*":
-                for old_rule in old_rules:
-                    temp = new_rule.copy()
-                    temp[i] = old_rule[i]
-                    if (tuple(temp[:-1]) not in self.store_prev_rules and temp != new_rule):
-                        logging.debug("Inserting starts in between: "+ str(temp)+ " from "+ str(old_rule))
-                        permutations.append(temp)
-        return permutations
-
-    def generate_permutations(self, old_rules, new_rule):
-        permutations = []
-
-        permutations.extend(self.account_for_old_rules(old_rules, new_rule))
-        permutations.extend(self.insert_stars_in_between(old_rules, new_rule))  # TODO: no real need for this, exept 2 tests
 
         permutations.append(new_rule)
         permutations = self._duplicate_elements(permutations)  # duplikater
@@ -228,10 +232,6 @@ class PolicyBuilder:
             self.previousRuleTuple.append((output_rule, intersection_codeword))
             self.store_prev_rules.add(tuple(output_rule[:-1]))
 
-        # logging.debug("store prevrule tuple!! ")
-        # for perms in self.store_prev_rules:
-        #     logging.debug(perms)
-
         end = time.time()
         self.insert_packet_time += end - start
 
@@ -241,8 +241,6 @@ class PolicyBuilder:
 
         file.close()
         self.counter += 1
-        logging.debug("Len of prev rule tuple " + str(len(self.previousRuleTuple)))
-        logging.debug("Store time!!!: " + str(self.insert_packet_time))
 
     def retriveCodeword(self, packet):
         start = time.time()
@@ -251,7 +249,7 @@ class PolicyBuilder:
 
         for i, packet_value in enumerate(packet):
             exists, codewordSegment = self.treeList[i].getCodeword(packet_value)
-            logging.debug(f"packet[{i}] = {packet_value} Exists{i}: {exists} subcode{i}: {codewordSegment} ")
+            logging.debug(f"packet[{i}] = {packet_value} Exists{i}: {exists} subcode{i}: {codewordSegment}")
             if exists or ((not exists) and (codewordSegment != "")):
                 codeword += str(codewordSegment)
             else:
@@ -272,7 +270,7 @@ class PolicyBuilder:
 
     def generateCodeword(self, length):
         self.nextCodeword += 1
-        return format(random.randint(0,2**(self.codewordLength-1)), f"0{length}b")
+        return format(self.nextCodeword, f"0{length}b")
 
     def writeCodewords(self):  # Writing to "codewords.txt"
         file = open("codewords.txt", "w")
